@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>绕 WAF - NeonScan</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a href="ports.html">端口扫描</a>
+      <a href="dirs.html">目录扫描</a>
+      <a href="poc.html">POC 扫描</a>
+      <a href="exp.html">EXP 验证</a>
+      <a href="probe.html">Web 探针</a>
+      <a href="shouji.html">解包与JS信息收集</a>
+      <a href="jadx_mcp.html">JADX MCP</a>
+      <a class="active" href="waf.html">绕 WAF</a>
+      <a href="ai_analysis.html">AI 分析</a>
+      <a href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+  <main class="content">
+    <section class="card">
+      <h2>绕 WAF 测试</h2>
+      <div class="grid">
+        <label>基础URL<input id="wf-base" value="http://localhost:8888" placeholder="https://target.com"/></label>
+        <label>路径<input id="wf-path" value="/search" placeholder="/api/search"/></label>
+        <label>方法(逗号分隔)<input id="wf-methods" value="GET,POST" placeholder="GET,POST"/></label>
+        <label>Payload类型
+          <select id="wf-type">
+            <option value="all" selected>全部（自动过滤）</option>
+            <option value="sqli">SQL注入专项</option>
+            <option value="xss">XSS跨站脚本专项</option>
+          </select>
+        </label>
+        <label>策略(逗号分隔)<input id="wf-strategies" value="" placeholder="留空则自动选择"/></label>
+        <label>匹配文本(可选)<input id="wf-match" placeholder="success"/></label>
+      </div>
+      <div class="btn-row">
+        <button id="wf-preset-case" class="btn btn-ghost">大小写混淆</button>
+        <button id="wf-preset-enc" class="btn btn-ghost">编码变形</button>
+        <button id="wf-preset-comment" class="btn btn-ghost">注释混淆</button>
+        <button id="wf-preset-sql" class="btn btn-ghost">SQL专用</button>
+        <button id="wf-preset-xss" class="btn btn-ghost">XSS专用</button>
+        <button id="wf-preset-all" class="btn btn-ghost">全策略</button>
+      </div>
+      <label>Payload 列表（每行一个，为空则使用内置Payload库）<textarea id="wf-payloads" rows="6" placeholder="留空则根据类型自动选择内置Payload库
+可手动输入自定义Payload"></textarea></label>
+      <div class="grid">
+        <label>并发<div class="number-input-wrapper"><input id="wf-conc" type="number" value="10"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('wf-conc', 5)">▲</div><div class="number-stepper" onclick="adjustNumber('wf-conc', -5)">▼</div></div></div></label>
+        <label>超时(毫秒)<div class="number-input-wrapper"><input id="wf-timeout" type="number" value="4000"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('wf-timeout', 500)">▲</div><div class="number-stepper" onclick="adjustNumber('wf-timeout', -500)">▼</div></div></div></label>
+      </div>
+      <div class="btn-row"><button id="wf-start" class="btn">开始测试</button> <button id="wf-stop" class="btn btn-ghost">停止</button> <button id="wf-clear" class="btn btn-ghost">清理</button></div>
+      <div class="progress"><div id="wf-bar" class="bar"></div><span id="wf-text">0%</span></div>
+      <div id="wf-out" class="output"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

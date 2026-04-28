@@ -1,0 +1,89 @@
+@startuml
+title NeonScan 2.0 主类图-POC规则
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+package "POC规则" {
+class "POC" as POC {
+  + Name: string
+  + Method: string
+  + Path: string
+  + Body: string
+  + Headers: map<string, string>
+  + Match: string
+}
+class "XRPOC" as XRPOC {
+  + ID: string
+  + Info: XRInfo
+  + Rules: map<string, XRRule>
+  + Expression: string
+}
+class "XRInfo" as XRInfo {
+  + Name: string
+  + Author: string
+  + Severity: string
+  + Reference: List<string>
+}
+class "XRRule" as XRRule {
+  + Request: XRRequest
+  + Expression: string
+}
+class "XRRequest" as XRRequest {
+  + Method: string
+  + Path: string
+  + Body: string
+  + Headers: map<string, string>
+}
+class "NucleiPOC" as NucleiPOC {
+  + ID: string
+  + Info: NucleiInfo
+  + Requests: List<NucleiRequest>
+  + Matchers: List<NucleiMatcher>
+  + MatchersCondition: string
+  + MaxRedirects: int
+}
+class "NucleiInfo" as NucleiInfo {
+  + Name: string
+  + Author: string
+  + Severity: string
+  + Risk: string
+  + Reference: List<string>
+  + Description: string
+  + Tags: List<string>
+}
+class "NucleiRequest" as NucleiRequest {
+  + Method: string
+  + Path: List<string>
+  + Headers: any
+  + Body: string
+  + Matchers: List<NucleiMatcher>
+}
+class "NucleiMatcher" as NucleiMatcher {
+  + Type: string
+  + Part: string
+  + Words: List<string>
+  + Regex: List<string>
+  + Condition: string
+  + Status: List<int>
+  + Dsl: List<string>
+}
+class "NucleiHeaders" as NucleiHeaders {
+  + MapHeaders: map<string, string>
+  + ArrayHeaders: List<any>
+  --
+  + UnmarshalYAML(unmarshal: fn): error
+}
+}
+
+XRPOC "1" *-- "1" XRInfo : contains
+XRPOC "1" *-- "1..*" XRRule : rules
+XRRule "1" *-- "1" XRRequest : request
+NucleiPOC "1" *-- "1" NucleiInfo : info
+NucleiPOC "1" *-- "1..*" NucleiRequest : requests
+NucleiPOC "1" *-- "0..*" NucleiMatcher : top-level matchers
+NucleiRequest "1" *-- "0..*" NucleiMatcher : request matchers
+NucleiHeaders "1" ..> "0..*" NucleiRequest : header parsing helper
+@enduml

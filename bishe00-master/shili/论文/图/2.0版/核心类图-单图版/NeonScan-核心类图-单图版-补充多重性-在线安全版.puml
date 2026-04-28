@@ -1,0 +1,120 @@
+@startuml
+title NeonScan 2.0 Core Class Diagram (Single, Slim)
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+' Slim version: keep class/interface names and relationship multiplicities.
+
+package "Task & Request" {
+class Task
+class SSEMessage
+class DirScanReq
+class WebProbeReq
+class PocScanReq
+class ExpExecReq
+class AIGenPythonFromExpReq
+class AIGenPythonFromExpBatchReq
+class AIAnalyzeReq
+class WAFBypassReq
+}
+
+package "POC Rules" {
+class POC
+class XRPOC
+class XRInfo
+class XRRule
+class XRRequest
+class NucleiPOC
+class NucleiInfo
+class NucleiRequest
+class NucleiMatcher
+}
+
+package "EXP / AI-EXP" {
+class ExpVerifyInfo
+class ExpSpec
+class ExpStep
+class Validation
+class StatusList
+class ExtractRule
+class ExpVerifyConfig
+class ExpVerifyResult
+}
+
+package "MCP / Session" {
+interface MCPConnection
+interface ChatSession
+class BaseChatSession
+class JADXMCPConnection
+class JADXChatSession
+class MCPTool
+}
+
+package "AI & Support" {
+class ChatMessage
+interface AIProvider
+interface ChatStreamProvider
+class AITool
+class AIToolCall
+class StreamController
+class OpenAIProvider
+class DeepSeekProvider
+class AnthropicProvider
+class OllamaProvider
+class FingerprintRule
+class FingerprintData
+class DictInfo
+class PayloadVariant
+}
+
+Task "1" --> "0..*" SSEMessage : emits
+DirScanReq "1" ..> "0..*" DictInfo : uses
+WebProbeReq "1" ..> "0..1" FingerprintData : probes with
+PocScanReq "1" ..> "0..*" POC : scans
+PocScanReq "1" ..> "0..*" XRPOC : scans
+PocScanReq "1" ..> "0..*" NucleiPOC : scans
+ExpExecReq "1" ..> "0..*" ExpSpec : InlineExps
+AIGenPythonFromExpReq "1" --> "1" ExpSpec : Exp
+AIGenPythonFromExpReq "1" ..> "0..1" ExpVerifyInfo : optional Verify
+AIGenPythonFromExpBatchReq "1" ..> "0..*" ExpSpec : InlineExps
+WAFBypassReq "1" ..> "0..*" PayloadVariant : produces
+
+XRPOC "1" *-- "1" XRInfo : info
+XRPOC "1" *-- "1..*" XRRule : rules
+XRRule "1" *-- "1" XRRequest : request
+NucleiPOC "1" *-- "1" NucleiInfo : info
+NucleiPOC "1" *-- "1..*" NucleiRequest : requests
+NucleiPOC "1" *-- "0..*" NucleiMatcher : matchers
+NucleiRequest "1" *-- "0..*" NucleiMatcher : request matchers
+
+ExpSpec "1" *-- "1..*" ExpStep : steps
+ExpStep "1" *-- "1" Validation : validate
+ExpStep "1" *-- "0..*" ExtractRule : extract
+Validation "1" *-- "1" StatusList : status
+ExpVerifyConfig "1" --> "1" ExpSpec : ExpSpec
+ExpVerifyConfig "1" ..> "1" ExpVerifyResult : verify result
+
+BaseChatSession <|-- JADXChatSession
+ChatSession <|.. BaseChatSession
+MCPConnection <|.. JADXMCPConnection
+JADXMCPConnection "1" *-- "0..*" MCPTool : tools cache
+BaseChatSession "1" *-- "0..*" ChatMessage : messages
+BaseChatSession "1" --> "0..1" MCPConnection : uses
+
+ChatMessage "1" *-- "0..*" AIToolCall : ToolCalls
+AIProvider "1" ..> "0..*" ChatMessage : input messages
+AIProvider "1" ..> "0..*" AITool : available tools
+BaseChatSession ..> AIProvider : ai support
+MCPConnection "1" ..> "0..*" AITool : provided tools
+AIProvider <|.. OpenAIProvider
+AIProvider <|.. DeepSeekProvider
+AIProvider <|.. AnthropicProvider
+AIProvider <|.. OllamaProvider
+ChatStreamProvider <|.. OpenAIProvider
+ChatStreamProvider <|.. DeepSeekProvider
+ChatStreamProvider <|.. OllamaProvider
+ChatStreamProvider "1" ..> "1" StreamController : controller
+FingerprintData "1" *-- "0..*" FingerprintRule : fingerprint
+@enduml

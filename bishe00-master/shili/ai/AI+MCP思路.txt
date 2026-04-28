@@ -1,0 +1,216 @@
+这个功能可以做成“AI 助手（只读分析 + 可选执行）”。先给你一个精简但完整的落地方案，等你确认再改代码。
+
+一、整体思路与架构
+
+目标：AI 读取本项目已产生的扫描结果与日志，给出分析、优先级、利用建议；在“可选执行模式”下，经你确认后调用已有扫描/POC/EXP/WAF接口继续操作。
+形态：前端新增 AI 页面；后端新增 AI 网关与上下文聚合；AI 以“只读模式”为默认，“执行模式”需逐条确认。
+接入：在 AI 页面填写第三方 API（如你说的 chatgpt5），后端保存到内存/会话（不落盘），通过后端代理请求，避免在前端暴露密钥。
+二、后端需要做的事（不改代码，先设计）
+
+配置接口
+POST /ai/config：接受 {provider, apiBase, apiKey, model, timeoutMs, maxTokens}，仅存内存；返回校验结果。
+上下文聚合
+统一结构：把各模块输出统一整理为 Findings JSON（按模块、时间、置信度、样例、关键证据、建议后续动作）。
+数据源：现有 SSE 的 find/end 汇总缓存 + 历史快照（仅会话内存，避免落盘泄露）。
+压缩与去重：同 URL/端口/POC 命中聚合；正文只保留片段与指纹，长度与哈希代替全文，减少隐私与token占用。
+AI 网关接口
+POST /ai/ask：{question, scope?, allowActions?} → 流式返回
+构造提示：系统提示 + 安全边界 + 项目角色 + 授权范围
+上下文填充：最近 N 分钟发现、Top 命中、关键证据、未完成任务、待验证假设
+安全裁剪：脱敏（Cookie/Token/身份证号/手机号/邮箱/账号等），URL 仅保留域+路径片段，正文片段≤几百字
+工具代理（仅在 allowActions=true 且你确认时触发）：将 AI 的“计划”映射为现有接口调用计划，返回结果再供 AI 继续分析。
+日志与合规
+审计：记录每次 /ai/ask 的提问要点与被使用的上下文条目 ID，不记录原文；记录是否发生“工具调用”及你的确认。
+数据留存：AI输入输出不落盘（仅会话内存），会话结束清空。
+三、前端需要做的事（不改代码，先设计）
+
+AI 配置页
+输入 provider/apiBase/apiKey/model，点击“验证并保存”，仅保存在后端内存。
+显示“只读模式”与“执行模式”开关（默认只读）。
+AI 助手页
+左侧对话区（SSE 流式渲染），右侧“上下文概览”（最近发现、Top 命中、未完成任务、已生成报告片段）
+当 AI 建议“执行某操作”时，生成操作卡片（例如“对 /api/login 进行 WAF 绕过测试（10 条payload）”），你点击“批准”才会调用后端接口。
+四、数据与提示词设计（关键点）
+
+上下文打包
+元信息：目标域/端口、扫描时间窗、工具版本、并发/超时
+Top 发现：开放端口、目录命中（状态/长度/Location）、POC 命中/嫌疑、EXP 结果、Web 指纹（Server/X-Powered-By/CMS 迹象）、WAF 绕过有效变体
+资产源：Shouji 合并后的 js/api/other 列表（仅URL+类别，不贴全文JS）
+小程序解包（若有）：抽取到的域名/路径关键片段
+安全/合规模板（放入系统提示）
+仅对授权范围给建议；默认不执行任何请求；涉及敏感数据的建议必须提示脱敏与风险
+优先级规则：基于指纹与路径关键字（admin、auth、file、upload、token、debug 等）先给出“最小代价—最大收益”的下一步清单
+Token 控制
+先本地归纳（每模块输出一段摘要+Top 10 列表）；超长正文不上传；大文本用“行数/hash/长度”占位
+只传最近 N 分钟数据 + Top 命中 + 未完成项，避免超限与费用
+五、工具化能力映射（AI 的“动作”到现有接口）
+
+“探测更多目录” → /scan/dirs（从 AI 推荐的关键词生成小字典）
+“验证某POC” → /scan/poc（限定路径与规则）
+“执行EXP链路” → /scan/exp（填充变量）
+“尝试WAF绕过” → /scan/waf（按建议策略与小样本 payload）
+“合并分析JS/API” → /scan/shouji/run（或单步 ffuf/urlfinder/packer）
+“生成报告草稿” → 前端导出或预留 /report/export
+六、权限与隐私
+
+API Key 存内存，不落盘；仅后端向第三方API发起请求；超时与速率限制
+默认脱敏：Cookie、Token、账号、手机号、邮箱、身份证号等；正文只给片段与哈希
+“执行模式”双重确认：AI 提议 → 你批准 → 后端才调用；每次动作都能回滚/停止
+七、最小可用版本路线（不写代码，给你落地顺序）
+
+M1：/ai/config + /ai/ask（只读），上下文聚合与脱敏；前端AI页+配置页；能回答“下一步建议/优先级/理由”
+M2：动作卡片与人工批准后执行（映射到 dirs/poc/exp/waf）；执行结果回流 AI
+M3：增强：JS/API 与小程序产物自动摘要、报告草稿生成、常见问题快捷按钮（如“帮我写POC模板/生成curl复现”）
+
+
+
+
+这里给你一套“AI + MCP（ida/jadx/wireshark）”在网页端联动的整体方案设计，先不改代码，明确怎么做、做什么。
+
+一、总体思路
+
+目标：在网页端用你的 AI 接口分析平台内已有扫描结果，并可“经你批准”调用 MCP 工具（ida/jadx/wireshark）执行业务动作；行为与 Cursor 中调用 MCP 类似，但通过你平台的后端代理与统一审计。
+关键点：AI 只读为默认，执行模式需你确认；MCP 需要后端“桥接”（浏览器直连 MCP 常受限于 CORS/本地网络），所有调用经后端代理、落在隔离的工作目录，输出流式回传。
+二、后端扩展（网关与桥接）
+
+AI 网关（沿用上条方案，新增对 MCP 的工具计划支持）
+/ai/config：保存 AI provider/apiBase/apiKey/model（内存态）
+/ai/ask：输入 question + scope + allowActions；内部构造“上下文+系统提示”，并支持工具计划（tool plan）生成
+MCP 注册与代理
+/mcp/register：注册 MCP 服务端信息（name, endpoint, auth，如本地 ida/wireshark/jadx 的 MCP Server），仅存内存
+/mcp/tools：列出已注册工具与其 schema（从 MCP server 拉取 tools/commands 描述并缓存）
+/mcp/call：代理一次工具调用（{mcpName, tool, args, timeoutMs, stream?}），将结果按 SSE 流式回传；长任务支持 /stop
+/mcp/stream：内部用于与 MCP server 的双向流通信，后端转发为 SSE 给前端
+上下文聚合与脱敏（重用）
+将平台已有“端口/目录/POC/EXP/WebProbe/WAF/JS/API/小程序解包”等 Find/End 汇总成 Findings JSON，AI 只读
+传 AI 前做脱敏（Token/Cookie/账号/邮箱/手机号/身份证号等），正文片段裁剪、hash 占位
+三、AI 工具化映射（AI 的“动作”落到 MCP 或平台接口）
+
+平台内置接口（已有）：dirs/poc/exp/waf/webprobe/shouji/mp 等
+MCP 工具三类占位（示例映射）：
+ida_mcp
+analyze_binary(inputPath, views:["functions","strings","xrefs"], scripts?[])
+find_patterns(patterns:[...], maxResults?)
+export_snippets(selectors:[{fn,range}])
+wireshark_mcp
+analyze_pcap(inputPath, filters:["http","dns",...], stats:["conversations","endpoints"])
+grep_payloads(keywords:[...], limit?)
+export_sessions(sessionIds:[...])
+jadx_mcp
+decompile(inputPath, options:{deobf?, rename?})
+search_code(keywords:[...], packages?[], limit?)
+export_files(paths:[...])
+AI 规划与执行闭环
+AI 输出 plan（自然语言或结构化）：如“对 capture.pcap 做 http 过滤，找含 token 的请求；对 app.apk 反编译并搜索 ‘/api/’；对 ida 加载 bin 并列出可疑导出函数”
+平台生成“动作卡片”（可编辑参数），你点“批准”后调用 /mcp/call 或平台接口执行
+执行结果流式回传，再作为上下文供 AI 下一轮分析
+四、前端页面与交互
+
+AI 配置页：填 provider/apiBase/apiKey/model，验证后仅存后端内存；AI 模式开关（只读/需批准执行）
+MCP 配置页：为 ida/jadx/wireshark 分别配置 MCP endpoint/鉴权，测试连通与工具清单
+AI 助手页：
+左侧对话（流式），右侧“上下文概览 + MCP 工具面板”
+当 AI 产出 plan，生成“动作卡片”（含：目标文件/过滤条件/输出形式/耗时提示），手动批准后执行
+结果区支持三类渲染：表格（会话/端点/匹配条目）、树（包/类/函数）、代码/报文片段高亮、下载导出
+五、文件与沙箱
+
+上传/选择输入：pcap/apk/bin 通过现有上传模块进入 uploads/{pcap|jadx|ida}/u-时间戳/ 隔离目录
+MCP 调用时仅使用沙箱内路径（白名单），防止越权访问
+产物索引化：对 MCP 大体量输出（反编译文件树、会话列表），只缓存索引与 Top N 片段，全文按需读取
+六、安全与合规
+
+API Key 与 MCP 配置仅存内存；不落盘；会话结束清空
+严格脱敏与最小化上下文；输出可导出时，默认脱敏开关开启
+“执行模式”双确认（AI建议→你批准→执行）；可随时停止
+速率与资源控制：队列与令牌池；MCP 调用并发与超时上限；CPU/内存监控与提示
+七、最小实现路径（阶段性）
+
+M1（只读 + MCP 配置）
+/ai/config、/ai/ask（只读分析）
+/mcp/register、/mcp/tools（列出工具），MCP 连接验证
+前端 AI 页 + MCP 配置页 + 上下文概览
+M2（执行模式 + 结果回流）
+动作卡片与批准执行；/mcp/call（SSE 流式）；结果回流 AI
+内置 3 个典型动作：jadx.decompile+search_code；wireshark.analyze_pcap+filter；ida.analyze_binary+list_functions
+M3（增强与报告）
+自动摘要与报告草稿；多步计划链；批量导出（pcap会话摘要、JADX关键源码、IDA片段）
+八、你需要准备/决定的事项
+
+AI：chatgpt5 的 apiBase、model、apiKey；费用与限额设定（maxTokens/timeout）
+MCP：ida/jadx/wireshark 的 MCP server 启动方式与 endpoint（本机或远端）、鉴权方式
+文件规模：pcap/apk/bin 的单文件上限（建议 ≤100–300MB，超大建议离线预处理）
+默认动作模板：每类 MCP 的 2–3 个常用指令预设，便于 AI 直接推荐与用户快速批准
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+加入“本地 AI（Ollama）直连”能力，统一到同一套 AI 网关与对话流里，并把流式输出同时抄送网页端。方案如下（先设计，不改代码）：
+
+一、模式与路由
+
+三种提供方：remote（如 chatgpt5 API）、local-ollama、none。
+配置接口扩展
+POST /ai/config
+字段：provider:["remote","local-ollama"], apiBase?, apiKey?, model, timeoutMs, maxTokens, topP/topK/temperature, systemPrompt?
+local-ollama 专属：ollamaBase（默认 http://127.0.0.1:11434）、stream=true
+验证：remote 走简单校验请求；local-ollama 调用 /api/tags 确认可用模型
+路由策略
+/ai/ask 根据 provider 分流：remote→第三方API；local-ollama→Ollama HTTP 接口
+优先级：可选“优先本地，失败回退远程”开关
+二、上下文与对话
+
+会话态：后端维护 sessionId 的短期记忆（最近 N 轮摘要 + Top 发现），不落盘
+上下文裁剪：同远程 AI 一致（脱敏、摘要、Top10），防止本地模型 token 溢出
+提示模板：system（安全边界/只读默认/需批准执行）、user（问题）、context（发现摘要），可配置
+三、与 Ollama 通信（HTTP 流式）
+
+首选接口：POST /api/chat
+body：{model, messages:[{role,content}...], options:{temperature,top_p,top_k,max_tokens}, stream:true}
+备选接口：/api/generate（适用于纯文本，不含多轮 messages）
+流式抄送（tee）
+后端从本地 Ollama 获取 chunk 流
+同时：
+累积到会话缓存（便于后续继续对话）
+以 SSE 转发到网页端（event: delta/complete）
+失败处理：超时/断流→发送错误事件并结束 SSE
+四、网页端交互
+
+AI 配置页：新增“本地 AI（Ollama）”选项；自动检测本地端口（可选）与模型列表下拉；一键“拉取模型/预热”按钮
+AI 助手页：与远程模式一致（只读为默认），执行模式需人工批准；对话流实时显示本地模型输出（SSE）
+MCP 面板：不变。AI 可在本地/远程两种模式下生成“动作卡片”，批准后走 /mcp/call 或平台内置接口
+五、权限与安全
+
+本地优先隐私：选择 local-ollama 时，不向外网发送扫描数据；仅在本机 11434 通信
+风险提示：当切换到远程 provider 时，前端明确提示“数据将发送至第三方 API”
+资源控制：限制 local 并发 ask 数量、总 tokens；超限返回友好提示
+六、参数与能力对齐
+
+统一 options 映射：temperature/top_p/top_k/max_tokens 对齐到 Ollama options；不支持的字段静默忽略
+function/tool 调用：若未来引入函数调用协议，先由后端解析模型输出，再转动作卡片（不依赖模型原生函数调用）
+多模型：支持在 /ai/config 选择不同本地模型（如 qwen/llama 等），并提供“切换后自动热身（空问答）”选项
+七、文件与上下文扩展
+
+大上下文策略：优先传“Findings 摘要 + Top 命中 + 未完成项”，全文不直传；需要查看具体文件（如 pcap 摘要、JADX 代码片段）时，通过“动作卡片”让 MCP 生成短片段再回喂 AI
+小程序/JS 产物：仅传索引与关键 URL 列表；大 JS 不直接喂给模型
+八、最小实现路径（建议里程碑）
+
+M1：/ai/config 支持 local-ollama；/ai/ask 分流；SSE tee 转发；前端添加“本地 AI”配置与对话
+M2：与 MCP 联动；AI 产出动作卡片→批准执行→结果回流；本地/远程都可用
+M3：模型管理增强（拉取/删除本地模型、用量提示）、离线模式检测与自动降级
+九、测试清单
+
+本地可用性：未安装/未启动 Ollama、无模型/模型名错误、首轮冷启动延迟
+流式稳定性：长输出不丢块；断线重连策略；SSE 心跳
+隐私验证：local 模式下禁止外发；日志不落盘；会话结束自动清空
+性能：并发 3–5 个会话，流畅度与 CPU 占用在可接受范围

@@ -1,0 +1,108 @@
+@startuml
+title NeonScan 2.0 主类图-EXP与AI-EXP
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+package "扫描请求" {
+class "ExpExecReq" as ExpExecReq {
+  + BaseURL: string
+  + ExpDir: string
+  + ExpPaths: List<string>
+  + InlineExps: List<ExpSpec>
+  + Concurrency: int
+  + TimeoutMs: int
+}
+class "AIGenPythonFromExpReq" as AIGenPythonFromExpReq {
+  + Provider: string
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + TargetBaseURL: string
+  + TimeoutMs: int
+  + Exp: ExpSpec
+  + Verify: *ExpVerifyInfo
+  + AutoVerify: bool
+  + TargetURL: string
+  + MaxRetries: int
+}
+class "AIGenPythonFromExpBatchReq" as AIGenPythonFromExpBatchReq {
+  + Provider: string
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + TargetBaseURL: string
+  + TimeoutMs: int
+  + ExpDir: string
+  + ExpPaths: List<string>
+  + InlineExps: List<ExpSpec>
+  + Concurrency: int
+}
+}
+package "EXP与AI-EXP" {
+class "ExpVerifyInfo" as ExpVerifyInfo {
+  + MatchedSteps: int
+  + LastStatus: int
+  + Usage: string
+  + Suggestion: string
+}
+class "ExpSpec" as ExpSpec {
+  + Name: string
+  + Steps: List<ExpStep>
+  + ExploitSuggestion: string
+}
+class "ExpStep" as ExpStep {
+  + Method: string
+  + Path: string
+  + Body: string
+  + Headers: map<string, string>
+  + Validate: Validation
+  + Extract: map<string, ExtractRule>
+  + Retry: int
+  + RetryDelayMs: int
+  + SleepMs: int
+}
+class "Validation" as Validation {
+  + Status: StatusList
+  + BodyContains: List<string>
+  + HeaderContains: map<string, string>
+}
+class "StatusList" as StatusList {
+  + UnmarshalJSON(data: bytes): error
+  + UnmarshalYAML(unmarshal: fn): error
+}
+class "ExtractRule" as ExtractRule {
+  + BodyRegex: List<string>
+  + HeaderRegex: map<string, string>
+}
+class "ExpVerifyConfig" as ExpVerifyConfig {
+  + TargetURL: string
+  + ExpSpec: ExpSpec
+  + PythonCode: string
+  + Category: VulnCategory
+  + MaxRetries: int
+  + TimeoutSec: int
+}
+class "ExpVerifyResult" as ExpVerifyResult {
+  + Success: bool
+  + Output: string
+  + Error: string
+  + Matched: bool
+  + CanExtract: bool
+  + ExtractDemo: string
+}
+}
+
+ExpExecReq "1" ..> "0..*" ExpSpec : InlineExps
+AIGenPythonFromExpReq "1" --> "1" ExpSpec : Exp
+AIGenPythonFromExpReq "1" ..> "0..1" ExpVerifyInfo : optional Verify
+AIGenPythonFromExpBatchReq "1" ..> "0..*" ExpSpec : InlineExps
+ExpSpec "1" *-- "1..*" ExpStep : steps
+ExpStep "1" *-- "1" Validation : validate
+ExpStep "1" *-- "0..*" ExtractRule : extract rules
+Validation "1" *-- "1" StatusList : status
+ExpVerifyConfig "1" --> "1" ExpSpec : ExpSpec
+ExpVerifyConfig "1" ..> "1" ExpVerifyResult : verifyExp returns
+@enduml

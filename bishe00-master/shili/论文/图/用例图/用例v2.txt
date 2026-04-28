@@ -1,0 +1,131 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+left to right direction
+
+title NeonScan 安全测试工具 - 优化用例图
+
+package "NeonScan核心系统" {
+    
+    package "扫描引擎" {
+        usecase "端口扫描" as UC01
+        usecase "目录扫描" as UC02
+        usecase "Web探针" as UC03
+        usecase "POC漏洞检测" as UC04
+        usecase "EXP漏洞验证" as UC05
+        usecase "WAF绕过测试" as UC06
+    }
+    
+    package "资产管理" {
+        usecase "JS/URL收集" as UC07
+        usecase "目录爆破" as UC08
+        usecase "文件解包" as UC09
+        usecase "指纹识别" as UC10
+    }
+    
+    package "AI分析" {
+        usecase "AI安全对话" as UC11
+        usecase "AI漏洞分析" as UC12
+        usecase "AI代码审计" as UC13
+        usecase "AI自动扫描" as UC14
+    }
+    
+    package "专业工具集成" {
+        usecase "IDA Pro集成" as UC15
+        usecase "JADX APK分析" as UC16
+        usecase "二进制分析" as UC17
+        usecase "反编译分析" as UC18
+    }
+    
+    package "任务管理" {
+        usecase "任务控制" as UC19
+        usecase "进度监控" as UC20
+        usecase "结果导出" as UC21
+        usecase "实时推送" as UC22
+    }
+}
+
+' 外部系统分组
+rectangle "AI服务" {
+    usecase "OpenAI API" as EXT01
+    usecase "DeepSeek API" as EXT02
+    usecase "Anthropic API" as EXT03
+    usecase "Ollama本地" as EXT04
+}
+
+rectangle "MCP服务" {
+    usecase "IDA MCP Server" as EXT05
+    usecase "JADX MCP Server" as EXT06
+}
+
+rectangle "安全工具" {
+    usecase "URLFinder" as EXT07
+    usecase "FFUF" as EXT08
+    usecase "Packer-Fuzzer" as EXT09
+}
+
+' 角色
+actor "安全测试人员" as User
+
+' ========== 核心用户流程 ==========
+User --> UC01
+User --> UC02
+User --> UC04
+User --> UC05
+User --> UC07
+User --> UC11
+User --> UC14
+User --> UC15
+User --> UC16
+User --> UC19
+User --> UC20
+User --> UC21
+
+' ========== 内部依赖关系 ==========
+UC04 .> UC02 : <<使用扫描结果>>
+UC14 .> UC01 : <<包含>>
+UC14 .> UC02 : <<包含>>
+UC14 .> UC04 : <<包含>>
+UC12 .> UC04 : <<分析结果>>
+UC13 .> UC16 : <<分析代码>>
+
+' ========== 外部系统调用 ==========
+UC11 ..> EXT01 : <<调用>>
+UC11 ..> EXT02 : <<调用>>
+UC11 ..> EXT03 : <<调用>>
+UC11 ..> EXT04 : <<调用>>
+UC15 ..> EXT05 : <<MCP通信>>
+UC16 ..> EXT06 : <<MCP通信>>
+UC07 ..> EXT07 : <<调用工具>>
+UC08 ..> EXT08 : <<调用工具>>
+UC09 ..> EXT09 : <<调用工具>>
+
+' ========== 关键技术说明 ==========
+note right of UC04
+  POC引擎支持：
+  - 传统POC
+  - X-Ray格式
+  - Nuclei格式
+end note
+
+note right of UC22
+  实时推送技术：
+  - SSE协议
+  - 毫秒级延迟
+  - 自动重连
+end note
+
+note right of UC15
+  MCP集成功能：
+  - 二进制分析
+  - 函数提取
+  - 字符串提取
+end note
+
+note right of UC16
+  APK分析功能：
+  - 反编译
+  - Activity分析
+  - 权限分析
+end note
+@enduml

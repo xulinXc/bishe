@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 00-architecture.svg 00-功能模块框图 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="11in" height="11in" viewBox="0 0 792 792"
+		xml:space="preserve" color-interpolation-filters="sRGB" class="st7">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false"/>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st2 {fill:#000000;font-family:宋体;font-size:1.00001em}
+		.st3 {font-size:1em}
+		.st4 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st5 {fill:#ffffff;stroke:none;stroke-linecap:butt}
+		.st6 {fill:#ffffff;stroke:none;stroke-linecap:butt;stroke-width:7.2}
+		.st7 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>00-功能模块框图</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<g id="shape1-1" v:mID="1" v:groupContext="shape" transform="translate(244.8,-655.2)">
+			<title>工作表.1</title>
+			<desc>Web 前端 HTML 页面 + app.js</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="756" width="158.4" height="72"/>
+			<rect x="0" y="720" width="158.4" height="72" class="st1"/>
+			<text x="55.2" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Web 前端<v:newlineChar/><tspan
+						x="25.2" dy="1.2em" class="st3">HTML </tspan>页面 + app.js</text>		</g>
+		<g id="shape2-5" v:mID="2" v:groupContext="shape" transform="translate(244.8,-547.2)">
+			<title>工作表.2</title>
+			<desc>Go 单体服务 HTTP Router</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="756" width="158.4" height="72"/>
+			<rect x="0" y="720" width="158.4" height="72" class="st1"/>
+			<text x="46.2" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Go 单体服务<v:newlineChar/><tspan
+						x="46.2" dy="1.2em" class="st3">HTTP Router</tspan></text>		</g>
+		<g id="shape3-9" v:mID="3" v:groupContext="shape" transform="translate(244.8,-439.2)">
+			<title>工作表.3</title>
+			<desc>Task 管理 + SSE 推送</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="756" width="158.4" height="72"/>
+			<rect x="0" y="720" width="158.4" height="72" class="st1"/>
+			<text x="19.2" y="759.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Task 管理 + SSE 推送</text>		</g>
+		<g id="shape4-12" v:mID="4" v:groupContext="shape" transform="translate(244.8,-331.2)">
+			<title>工作表.4</title>
+			<desc>扫描与利用模块 Port / Dir / POC / EXP / WebProbe / WAF</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="756" width="158.4" height="72"/>
+			<rect x="0" y="720" width="158.4" height="72" class="st1"/>
+			<text x="37.2" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>扫描与利用模块<v:newlineChar/><tspan
+						x="7.2" dy="1.2em" class="st3">Port / Dir / POC / EXP / </tspan><tspan x="37.2" dy="1.2em" class="st3">WebProbe / WAF</tspan></text>		</g>
+		<g id="shape5-17" v:mID="5" v:groupContext="shape" transform="translate(244.8,-223.2)">
+			<title>工作表.5</title>
+			<desc>AI 能力 AI 分析 / AI 自动扫描 / Python EXP 生成</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="756" width="158.4" height="72"/>
+			<rect x="0" y="720" width="158.4" height="72" class="st1"/>
+			<text x="58.2" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>AI 能力<v:newlineChar/><tspan
+						x="10.2" dy="1.2em" class="st3">AI </tspan>分析 / AI 自动扫描 / <tspan x="34.2" dy="1.2em" class="st3">Python EXP </tspan>生成</text>		</g>
+		<g id="shape6-22" v:mID="6" v:groupContext="shape" transform="translate(244.8,-115.2)">
+			<title>工作表.6</title>
+			<desc>Python 运行时 自动验证 / 失败分析 / AI修正 / 规则修复</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="756" width="158.4" height="72"/>
+			<rect x="0" y="720" width="158.4" height="72" class="st1"/>
+			<text x="40.2" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Python 运行时<v:newlineChar/><tspan
+						x="7.2" dy="1.2em" class="st3">自动验证</tspan> / 失败分析 / AI<tspan x="34.2" dy="1.2em" class="st3">修正</tspan> / 规则修复</text>		</g>
+		<g id="shape7-27" v:mID="7" v:groupContext="shape" transform="translate(244.8,-7.2)">
+			<title>工作表.7</title>
+			<desc>Shouji 工具链 FFUF / URLFinder / Packer-Fuzzer</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="756" width="158.4" height="72"/>
+			<rect x="0" y="720" width="158.4" height="72" class="st1"/>
+			<text x="40.2" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Shouji 工具链<v:newlineChar/><tspan
+						x="25.2" dy="1.2em" class="st3">FFUF / URLFinder / </tspan><tspan x="40.2" dy="1.2em" class="st3">Packer</tspan>-Fuzzer</text>		</g>
+		<g id="shape8-32" v:mID="8" v:groupContext="shape" transform="translate(244.8,100.8)">
+			<title>工作表.8</title>
+			<desc>JADX MCP 连接 / 会话 / 流式聊天</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="756" width="158.4" height="72"/>
+			<rect x="0" y="720" width="158.4" height="72" class="st1"/>
+			<text x="55.2" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>JADX MCP<v:newlineChar/><tspan
+						x="13.2" dy="1.2em" class="st3">连接</tspan> / 会话 / 流式聊天</text>		</g>
+		<g id="shape9-36" v:mID="9" v:groupContext="shape" transform="translate(450,-568.8)">
+			<title>工作表.9</title>
+			<desc>资源层 uploads / dict / library / shili / web</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="82.8" cy="756" width="165.6" height="72"/>
+			<rect x="0" y="720" width="165.6" height="72" class="st1"/>
+			<text x="64.8" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>资源层<v:newlineChar/><tspan
+						x="4.8" dy="1.2em" class="st3">uploads / dict / library / </tspan><tspan x="49.8" dy="1.2em" class="st3">shili / web</tspan></text>		</g>
+		<g id="shape10-41" v:mID="10" v:groupContext="shape" transform="translate(1116,136.8) rotate(90)">
+			<title>工作表.10</title>
+			<desc>HTTP 请求</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="18" cy="792" width="36" height="0"/>
+			<path d="M0 792 L36 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="5.99963" y="777.6" width="24.0007" height="28.8001" class="st5"/>
+			<text x="6" y="788.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>HTTP <tspan x="6"
+						dy="1.2em" class="st3">请求</tspan></text>		</g>
+		<g id="shape11-47" v:mID="11" v:groupContext="shape" transform="translate(1116,244.8) rotate(90)">
+			<title>工作表.11</title>
+			<desc>创建 Task / 订阅 SSE</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="18" cy="792" width="36" height="0"/>
+			<path d="M0 792 L36 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="5.99963" y="756" width="24.0007" height="72.0003" class="st5"/>
+			<text x="6" y="766.8" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>创建 <tspan x="6" dy="1.2em"
+						class="st3">Task </tspan><tspan x="6" dy="1.2em" class="st3">/ </tspan>订<tspan x="12" dy="1.2em"
+						class="st3">阅</tspan> <tspan x="9" dy="1.2em" class="st3">SSE</tspan></text>		</g>
+		<g id="shape12-56" v:mID="12" v:groupContext="shape" transform="translate(-468,280.8) rotate(-90)">
+			<title>工作表.12</title>
+			<desc>实时进度 / 结果</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="72" cy="792" width="144" height="0"/>
+			<path d="M0 792 L144 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="26.9995" y="784.8" width="90.0011" height="14.4001" class="st5"/>
+			<text x="27" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>实时进度 / 结果</text>		</g>
+		<g id="shape13-61" v:mID="13" v:groupContext="shape" transform="translate(1116,244.8) rotate(90)">
+			<title>工作表.13</title>
+			<desc>常规扫描调用</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="72" cy="792" width="144" height="0"/>
+			<path d="M0 792 L144 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="35.9997" y="784.8" width="72.0005" height="14.4001" class="st5"/>
+			<text x="36" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>常规扫描调用</text>		</g>
+		<g id="shape14-66" v:mID="14" v:groupContext="shape" transform="translate(1116,244.8) rotate(90)">
+			<title>工作表.14</title>
+			<desc>AI 分析与自动扫描</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="126" cy="792" width="252" height="0"/>
+			<path d="M0 792 L252 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="74.9995" y="784.8" width="102.001" height="14.4001" class="st5"/>
+			<text x="75" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>AI 分析与自动扫描</text>		</g>
+		<g id="shape15-71" v:mID="15" v:groupContext="shape" transform="translate(-468,496.8) rotate(-90)">
+			<title>工作表.15</title>
+			<desc>AI 自动编排工具调用</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="18" cy="792" width="36" height="0"/>
+			<path d="M0 792 L36 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="5.99991" y="756" width="24.0002" height="72.0003" class="st5"/>
+			<text x="12" y="766.8" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>AI <tspan x="6"
+						dy="1.2em" class="st3">自动</tspan><tspan x="6" dy="1.2em" class="st3">编排</tspan><tspan x="6" dy="1.2em"
+						class="st3">工具</tspan><tspan x="6" dy="1.2em" class="st3">调用</tspan></text>		</g>
+		<g id="shape16-80" v:mID="16" v:groupContext="shape" transform="translate(1116,568.8) rotate(90)">
+			<title>工作表.16</title>
+			<desc>自动验证与修正</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="18" cy="792" width="36" height="0"/>
+			<path d="M0 792 L36 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="5.99991" y="763.2" width="24.0002" height="57.6002" class="st5"/>
+			<text x="6" y="774" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>自动<tspan x="6" dy="1.2em"
+						class="st3">验证</tspan><tspan x="6" dy="1.2em" class="st3">与修</tspan><tspan x="12" dy="1.2em" class="st3">正</tspan></text>		</g>
+		<g id="shape17-88" v:mID="17" v:groupContext="shape" transform="translate(1116,244.8) rotate(90)">
+			<title>工作表.17</title>
+			<desc>外部工具调用</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="234" cy="792" width="468" height="0"/>
+			<path d="M0 792 L468 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="198" y="784.8" width="72.0005" height="14.4001" class="st6"/>
+			<text x="198" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>外部工具调用</text>		</g>
+		<g id="shape18-93" v:mID="18" v:groupContext="shape" transform="translate(1116,244.8) rotate(90)">
+			<title>工作表.18</title>
+			<desc>MCP 会话</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="288" cy="792" width="576" height="0"/>
+			<path d="M0 792 L576 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="264" y="784.8" width="48.0009" height="14.4001" class="st5"/>
+			<text x="264" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>MCP 会话</text>		</g>
+		<g id="shape19-98" v:mID="19" v:groupContext="shape" transform="translate(71.3059,-510.304) rotate(-24.7751)">
+			<title>工作表.19</title>
+			<desc>上传 / 静态资源</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="25.7721" cy="792" width="51.55" height="0"/>
+			<path d="M0 792 L51.54 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="7.77173" y="770.4" width="36.0005" height="43.2002" class="st5"/>
+			<text x="7.77" y="781.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>上传 / <tspan x="7.77"
+						dy="1.2em" class="st3">静态资</tspan><tspan x="19.77" dy="1.2em" class="st3">源</tspan></text>		</g>
+		<g id="shape20-105" v:mID="20" v:groupContext="shape" transform="translate(-168.145,-231.73) rotate(-38.4181)">
+			<title>工作表.20</title>
+			<desc>读取字典 / POC / 指纹</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="133.249" cy="792" width="266.5" height="0"/>
+			<path d="M0 792 L266.5 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="70.2477" y="784.8" width="126.002" height="14.4001" class="st5"/>
+			<text x="70.25" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>读取字典 / POC / 指纹</text>		</g>
+		<g id="shape21-110" v:mID="21" v:groupContext="shape" transform="translate(-404.516,402.109) rotate(-66.9032)">
+			<title>工作表.21</title>
+			<desc>读取工具输出 / 报告</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="266.132" cy="792" width="532.27" height="0"/>
+			<path d="M0 792 L532.26 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="209.132" y="784.8" width="114.001" height="14.4001" class="st5"/>
+			<text x="209.13" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>读取工具输出 / 报告</text>		</g>
+		<g id="shape22-115" v:mID="22" v:groupContext="shape" transform="translate(-305.601,16.3147) rotate(-52.6507)">
+			<title>工作表.22</title>
+			<desc>读取 POC 结果 / 输出 Python EXP</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="172.086" cy="792" width="344.18" height="0"/>
+			<path d="M0 792 L344.17 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="79.084" y="784.8" width="186.004" height="14.4001" class="st6"/>
+			<text x="79.08" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>读取 POC 结果 / 输出 Python EXP</text>		</g>
+	</g>
+</svg>

@@ -1,0 +1,207 @@
+{
+  "diagram_type": "use_case",
+  "title": "NeonScan 2.0 系统用例图",
+  "page_name": "01-系统用例图",
+  "metadata": {
+    "system_name": "NeonScan 2.0",
+    "chapter": "系统分析",
+    "evidence_basis": [
+      "source_code",
+      "frontend_pages"
+    ],
+    "status": "confirmed"
+  },
+  "items": [
+    {
+      "id": "actor_user",
+      "kind": "actor",
+      "text": "安全测试人员"
+    },
+    {
+      "id": "actor_ai",
+      "kind": "actor",
+      "text": "AI Provider"
+    },
+    {
+      "id": "actor_tools",
+      "kind": "actor",
+      "text": "外部收集工具"
+    },
+    {
+      "id": "actor_jadx",
+      "kind": "actor",
+      "text": "JADX MCP Server"
+    },
+    {
+      "id": "actor_python",
+      "kind": "actor",
+      "text": "Python 运行时"
+    },
+    {
+      "id": "uc_basic_scan",
+      "kind": "use_case",
+      "text": "执行基础扫描\n(端口/目录/Web探针)"
+    },
+    {
+      "id": "uc_vuln_scan",
+      "kind": "use_case",
+      "text": "执行漏洞检测\n(POC/EXP/WAF)"
+    },
+    {
+      "id": "uc_asset_collect",
+      "kind": "use_case",
+      "text": "执行资产收集与解包"
+    },
+    {
+      "id": "uc_upload",
+      "kind": "use_case",
+      "text": "上传字典/POC/报告/样本"
+    },
+    {
+      "id": "uc_progress",
+      "kind": "use_case",
+      "text": "查看 SSE 实时进度"
+    },
+    {
+      "id": "uc_report",
+      "kind": "use_case",
+      "text": "查看与导出扫描报告"
+    },
+    {
+      "id": "uc_ai_analysis",
+      "kind": "use_case",
+      "text": "执行 AI 安全分析"
+    },
+    {
+      "id": "uc_ai_autoscan",
+      "kind": "use_case",
+      "text": "启动 AI 自动扫描工作流"
+    },
+    {
+      "id": "uc_ai_python",
+      "kind": "use_case",
+      "text": "生成 Python EXP\n(单个/批量)"
+    },
+    {
+      "id": "uc_ai_verify",
+      "kind": "use_case",
+      "text": "自动验证并修正 Python EXP"
+    },
+    {
+      "id": "uc_jadx",
+      "kind": "use_case",
+      "text": "使用 JADX MCP 分析 APK"
+    }
+  ],
+  "connectors": [
+    {
+      "from": "actor_user",
+      "to": "uc_basic_scan",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_vuln_scan",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_asset_collect",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_upload",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_progress",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_report",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_ai_analysis",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_ai_autoscan",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_ai_python",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_ai_verify",
+      "kind": "association"
+    },
+    {
+      "from": "actor_user",
+      "to": "uc_jadx",
+      "kind": "association"
+    },
+    {
+      "from": "actor_ai",
+      "to": "uc_ai_analysis",
+      "kind": "association"
+    },
+    {
+      "from": "actor_ai",
+      "to": "uc_ai_autoscan",
+      "kind": "association"
+    },
+    {
+      "from": "actor_ai",
+      "to": "uc_ai_python",
+      "kind": "association"
+    },
+    {
+      "from": "actor_ai",
+      "to": "uc_ai_verify",
+      "kind": "association"
+    },
+    {
+      "from": "actor_tools",
+      "to": "uc_asset_collect",
+      "kind": "association"
+    },
+    {
+      "from": "actor_jadx",
+      "to": "uc_jadx",
+      "kind": "association"
+    },
+    {
+      "from": "actor_python",
+      "to": "uc_ai_verify",
+      "kind": "association"
+    },
+    {
+      "from": "uc_ai_autoscan",
+      "to": "uc_basic_scan",
+      "kind": "include",
+      "label": "编排调用"
+    },
+    {
+      "from": "uc_ai_autoscan",
+      "to": "uc_vuln_scan",
+      "kind": "include",
+      "label": "编排调用"
+    },
+    {
+      "from": "uc_ai_verify",
+      "to": "uc_ai_python",
+      "kind": "extend",
+      "label": "autoVerify=true"
+    }
+  ]
+}
+

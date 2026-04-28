@@ -1,0 +1,213 @@
+{
+  "diagram_type": "system_flowchart",
+  "title": "AI Python EXP 自动验证闭环流程图",
+  "page_name": "04-AI_EXP自动验证闭环",
+  "metadata": {
+    "system_name": "NeonScan 2.0",
+    "chapter": "详细设计",
+    "evidence_basis": [
+      "source_code"
+    ],
+    "status": "confirmed"
+  },
+  "items": [
+    {
+      "id": "start",
+      "kind": "terminator",
+      "text": "开始"
+    },
+    {
+      "id": "input_spec",
+      "kind": "process",
+      "text": "接收 ExpSpec / POC结果 / 目标URL"
+    },
+    {
+      "id": "detect_category",
+      "kind": "process",
+      "text": "DetectVulnCategory\n构造分类提示词"
+    },
+    {
+      "id": "gen_python",
+      "kind": "process",
+      "text": "调用 AIProvider\n生成初始 Python EXP"
+    },
+    {
+      "id": "need_verify",
+      "kind": "decision",
+      "text": "是否启用 autoVerify?"
+    },
+    {
+      "id": "build_config",
+      "kind": "process",
+      "text": "构建 ExpVerifyConfig\n设置重试次数与超时"
+    },
+    {
+      "id": "temp_store",
+      "kind": "data_store",
+      "text": "临时目录\n%TEMP%/neonscan_exp"
+    },
+    {
+      "id": "run_python",
+      "kind": "process",
+      "text": "保存 exp_attempt_n.py\n调用 python --target --cmd"
+    },
+    {
+      "id": "verify_success",
+      "kind": "decision",
+      "text": "检测到 VULNERABLE\n且成功提取输出?"
+    },
+    {
+      "id": "return_verified",
+      "kind": "process",
+      "text": "返回已验证脚本\n记录 verifyLogs / verifyAttempts"
+    },
+    {
+      "id": "max_retry",
+      "kind": "decision",
+      "text": "已达到最大重试次数?"
+    },
+    {
+      "id": "analyze_failure",
+      "kind": "process",
+      "text": "analyzeFailure\n构建 correctionPrompt"
+    },
+    {
+      "id": "ai_fix",
+      "kind": "decision",
+      "text": "AI 是否返回修正版本?"
+    },
+    {
+      "id": "apply_ai_fix",
+      "kind": "process",
+      "text": "requestExpCorrection\n替换 currentCode"
+    },
+    {
+      "id": "fallback_fix",
+      "kind": "process",
+      "text": "tryAlternativeFix\n语法修复 / 输出提取增强 / 标记补齐"
+    },
+    {
+      "id": "return_failure",
+      "kind": "process",
+      "text": "返回失败结果\n保留最后脚本与日志"
+    },
+    {
+      "id": "end",
+      "kind": "terminator",
+      "text": "结束"
+    }
+  ],
+  "connectors": [
+    {
+      "from": "start",
+      "to": "input_spec",
+      "kind": "data_flow"
+    },
+    {
+      "from": "input_spec",
+      "to": "detect_category",
+      "kind": "data_flow"
+    },
+    {
+      "from": "detect_category",
+      "to": "gen_python",
+      "kind": "data_flow"
+    },
+    {
+      "from": "gen_python",
+      "to": "need_verify",
+      "kind": "data_flow"
+    },
+    {
+      "from": "need_verify",
+      "to": "return_verified",
+      "kind": "data_flow",
+      "label": "否"
+    },
+    {
+      "from": "need_verify",
+      "to": "build_config",
+      "kind": "data_flow",
+      "label": "是"
+    },
+    {
+      "from": "build_config",
+      "to": "temp_store",
+      "kind": "data_flow"
+    },
+    {
+      "from": "temp_store",
+      "to": "run_python",
+      "kind": "data_flow"
+    },
+    {
+      "from": "run_python",
+      "to": "verify_success",
+      "kind": "data_flow"
+    },
+    {
+      "from": "verify_success",
+      "to": "return_verified",
+      "kind": "data_flow",
+      "label": "是"
+    },
+    {
+      "from": "verify_success",
+      "to": "max_retry",
+      "kind": "data_flow",
+      "label": "否"
+    },
+    {
+      "from": "max_retry",
+      "to": "return_failure",
+      "kind": "data_flow",
+      "label": "是"
+    },
+    {
+      "from": "max_retry",
+      "to": "analyze_failure",
+      "kind": "data_flow",
+      "label": "否"
+    },
+    {
+      "from": "analyze_failure",
+      "to": "ai_fix",
+      "kind": "data_flow"
+    },
+    {
+      "from": "ai_fix",
+      "to": "apply_ai_fix",
+      "kind": "data_flow",
+      "label": "是"
+    },
+    {
+      "from": "ai_fix",
+      "to": "fallback_fix",
+      "kind": "data_flow",
+      "label": "否"
+    },
+    {
+      "from": "apply_ai_fix",
+      "to": "temp_store",
+      "kind": "data_flow",
+      "label": "下一次重试"
+    },
+    {
+      "from": "fallback_fix",
+      "to": "temp_store",
+      "kind": "data_flow",
+      "label": "下一次重试"
+    },
+    {
+      "from": "return_verified",
+      "to": "end",
+      "kind": "data_flow"
+    },
+    {
+      "from": "return_failure",
+      "to": "end",
+      "kind": "data_flow"
+    }
+  ]
+}
+

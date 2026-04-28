@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 04-ai-exp-flow.svg 04-AI_EXP自动验证闭环 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="11in" height="11in" viewBox="0 0 792 792"
+		xml:space="preserve" color-interpolation-filters="sRGB" class="st7">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false"/>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st2 {fill:#000000;font-family:宋体;font-size:1.00001em}
+		.st3 {font-size:1em}
+		.st4 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st5 {fill:#ffffff;stroke:none;stroke-linecap:butt;stroke-width:7.2}
+		.st6 {fill:#ffffff;stroke:none;stroke-linecap:butt}
+		.st7 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>04-AI_EXP自动验证闭环</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<g id="shape1-1" v:mID="1" v:groupContext="shape" transform="translate(244.8,-658.8)">
+			<title>工作表.1</title>
+			<desc>开始</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="759.6" width="158.4" height="64.8"/>
+			<rect x="0" y="727.2" width="158.4" height="64.8" rx="10.8" ry="10.8" class="st1"/>
+			<text x="67.2" y="763.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>开始</text>		</g>
+		<g id="shape2-4" v:mID="2" v:groupContext="shape" transform="translate(237.6,-547.2)">
+			<title>工作表.2</title>
+			<desc>接收 ExpSpec / POC结果 / 目标URL</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="5.4" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>接收 ExpSpec / POC结果 / 目<tspan
+						x="71.4" dy="1.2em" class="st3">标</tspan>URL</text>		</g>
+		<g id="shape3-8" v:mID="3" v:groupContext="shape" transform="translate(237.6,-439.2)">
+			<title>工作表.3</title>
+			<desc>DetectVulnCategory 构造分类提示词</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="32.4" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>DetectVulnCategory<v:newlineChar/><tspan
+						x="44.4" dy="1.2em" class="st3">构造分类提示词</tspan></text>		</g>
+		<g id="shape4-12" v:mID="4" v:groupContext="shape" transform="translate(237.6,-331.2)">
+			<title>工作表.4</title>
+			<desc>调用 AIProvider 生成初始 Python EXP</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="41.4" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>调用 AIProvider<v:newlineChar/><tspan
+						x="29.4" dy="1.2em" class="st3">生成初始</tspan> Python EXP</text>		</g>
+		<g id="shape5-16" v:mID="5" v:groupContext="shape" transform="translate(-246.211,44.0478) rotate(-45)">
+			<title>工作表.5</title>
+			<desc>是否启用 autoVerify?</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="57.6" cy="748.8" width="115.2" height="86.4"/>
+			<rect x="0" y="705.6" width="115.2" height="86.4" class="st1"/>
+			<text x="33.6" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>是否启用 <tspan x="24.6"
+						dy="1.2em" class="st3">autoVerify?</tspan></text>		</g>
+		<g id="shape6-20" v:mID="6" v:groupContext="shape" transform="translate(237.6,-115.2)">
+			<title>工作表.6</title>
+			<desc>构建 ExpVerifyConfig 设置重试次数与超时</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="26.4" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>构建 ExpVerifyConfig<v:newlineChar/><tspan
+						x="32.4" dy="1.2em" class="st3">设置重试次数与超时</tspan></text>		</g>
+		<g id="shape7-24" v:mID="7" v:groupContext="shape" transform="translate(450,-568.8)">
+			<title>工作表.7</title>
+			<desc>临时目录 %TEMP%/neonscan_exp</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="82.8" cy="756" width="165.6" height="72"/>
+			<rect x="0" y="720" width="165.6" height="72" class="st1"/>
+			<text x="58.8" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>临时目录<v:newlineChar/><tspan
+						x="25.8" dy="1.2em" class="st3">%TEMP%/neonscan_exp</tspan></text>		</g>
+		<g id="shape8-28" v:mID="8" v:groupContext="shape" transform="translate(237.6,-7.2)">
+			<title>工作表.8</title>
+			<desc>保存 exp_attempt_n.py 调用 python --target --cmd</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="23.4" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>保存 exp_attempt_n.py<v:newlineChar/><tspan
+						x="8.4" dy="1.2em" class="st3">调用</tspan> python --target --cmd</text>		</g>
+		<g id="shape9-32" v:mID="9" v:groupContext="shape" transform="translate(-246.211,368.048) rotate(-45)">
+			<title>工作表.9</title>
+			<desc>检测到 VULNERABLE 且成功提取输出?</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="57.6" cy="748.8" width="115.2" height="86.4"/>
+			<rect x="0" y="705.6" width="115.2" height="86.4" class="st1"/>
+			<text x="6.6" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>检测到 VULNERABLE<v:newlineChar/><tspan
+						x="12.6" dy="1.2em" class="st3">且成功提取输出</tspan>?</text>		</g>
+		<g id="shape10-36" v:mID="10" v:groupContext="shape" transform="translate(237.6,208.8)">
+			<title>工作表.10</title>
+			<desc>返回已验证脚本 记录 verifyLogs / verifyAttempts</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="44.4" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>返回已验证脚本<v:newlineChar/><tspan
+						x="35.4" dy="1.2em" class="st3">记录</tspan> verifyLogs / <tspan x="44.4" dy="1.2em" class="st3">verifyAttempts</tspan></text>		</g>
+		<g id="shape11-41" v:mID="11" v:groupContext="shape" transform="translate(-246.211,584.048) rotate(-45)">
+			<title>工作表.11</title>
+			<desc>已达到最大重试次数?</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="57.6" cy="748.8" width="115.2" height="86.4"/>
+			<rect x="0" y="705.6" width="115.2" height="86.4" class="st1"/>
+			<text x="9.6" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>已达到最大重试次<tspan x="48.6"
+						dy="1.2em" class="st3">数</tspan>?</text>		</g>
+		<g id="shape12-45" v:mID="12" v:groupContext="shape" transform="translate(237.6,424.8)">
+			<title>工作表.12</title>
+			<desc>analyzeFailure 构建 correctionPrompt</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="44.4" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>analyzeFailure<v:newlineChar/><tspan
+						x="23.4" dy="1.2em" class="st3">构建</tspan> correctionPrompt</text>		</g>
+		<g id="shape13-49" v:mID="13" v:groupContext="shape" transform="translate(-246.211,800.048) rotate(-45)">
+			<title>工作表.13</title>
+			<desc>AI 是否返回修正版本?</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="57.6" cy="748.8" width="115.2" height="86.4"/>
+			<rect x="0" y="705.6" width="115.2" height="86.4" class="st1"/>
+			<text x="6.6" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>AI 是否返回修正版<tspan
+						x="48.6" dy="1.2em" class="st3">本</tspan>?</text>		</g>
+		<g id="shape14-53" v:mID="14" v:groupContext="shape" transform="translate(237.6,640.8)">
+			<title>工作表.14</title>
+			<desc>requestExpCorrection 替换 currentCode</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="26.4" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>requestExpCorrection<v:newlineChar/><tspan
+						x="38.4" dy="1.2em" class="st3">替换</tspan> currentCode</text>		</g>
+		<g id="shape15-57" v:mID="15" v:groupContext="shape" transform="translate(237.6,748.8)">
+			<title>工作表.15</title>
+			<desc>tryAlternativeFix 语法修复 / 输出提取增强 / 标记补齐</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="35.4" y="745.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>tryAlternativeFix<v:newlineChar/><tspan
+						x="11.4" dy="1.2em" class="st3">语法修复</tspan> / 输出提取增强 / <tspan x="62.4" dy="1.2em" class="st3">标记补齐</tspan></text>		</g>
+		<g id="shape16-62" v:mID="16" v:groupContext="shape" transform="translate(237.6,856.8)">
+			<title>工作表.16</title>
+			<desc>返回失败结果 保留最后脚本与日志</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="86.4" cy="756" width="172.8" height="72"/>
+			<rect x="0" y="720" width="172.8" height="72" class="st1"/>
+			<text x="50.4" y="752.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>返回失败结果<v:newlineChar/><tspan
+						x="32.4" dy="1.2em" class="st3">保留最后脚本与日志</tspan></text>		</g>
+		<g id="shape17-66" v:mID="17" v:groupContext="shape" transform="translate(244.8,961.2)">
+			<title>工作表.17</title>
+			<desc>结束</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="79.2" cy="759.6" width="158.4" height="64.8"/>
+			<rect x="0" y="727.2" width="158.4" height="64.8" rx="10.8" ry="10.8" class="st1"/>
+			<text x="67.2" y="763.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>结束</text>		</g>
+		<g id="shape18-69" v:mID="18" v:groupContext="shape" transform="translate(1116,133.2) rotate(90)">
+			<title>工作表.18</title>
+			<path d="M0 792 L39.6 792" class="st4"/>
+		</g>
+		<g id="shape19-72" v:mID="19" v:groupContext="shape" transform="translate(1116,244.8) rotate(90)">
+			<title>工作表.19</title>
+			<path d="M0 792 L36 792" class="st4"/>
+		</g>
+		<g id="shape20-75" v:mID="20" v:groupContext="shape" transform="translate(1116,352.8) rotate(90)">
+			<title>工作表.20</title>
+			<path d="M0 792 L36 792" class="st4"/>
+		</g>
+		<g id="shape21-78" v:mID="21" v:groupContext="shape" transform="translate(1116,460.8) rotate(90)">
+			<title>工作表.21</title>
+			<path d="M0 792 L28.8 792" class="st4"/>
+		</g>
+		<g id="shape22-81" v:mID="22" v:groupContext="shape" transform="translate(1116,576) rotate(90)">
+			<title>工作表.22</title>
+			<desc>否</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="176.4" cy="792" width="352.8" height="0"/>
+			<path d="M0 792 L352.8 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="170.4" y="784.8" width="12.0001" height="14.4001" class="st5"/>
+			<text x="170.4" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>否</text>		</g>
+		<g id="shape23-86" v:mID="23" v:groupContext="shape" transform="translate(1116,576) rotate(90)">
+			<title>工作表.23</title>
+			<desc>是</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.4" cy="792" width="28.8" height="0"/>
+			<path d="M0 792 L28.8 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="8.39987" y="784.8" width="12.0001" height="14.4001" class="st5"/>
+			<text x="8.4" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>是</text>		</g>
+		<g id="shape24-91" v:mID="24" v:groupContext="shape" transform="translate(-370.792,224.631) rotate(-61.3139)">
+			<title>工作表.24</title>
+			<path d="M0 792 L434.99 792" class="st4"/>
+		</g>
+		<g id="shape25-94" v:mID="25" v:groupContext="shape" transform="translate(1261.32,533.891) rotate(113.097)">
+			<title>工作表.25</title>
+			<path d="M0 792 L532.26 792" class="st4"/>
+		</g>
+		<g id="shape26-97" v:mID="26" v:groupContext="shape" transform="translate(1116,784.8) rotate(90)">
+			<title>工作表.26</title>
+			<path d="M0 792 L28.8 792" class="st4"/>
+		</g>
+		<g id="shape27-100" v:mID="27" v:groupContext="shape" transform="translate(1116,900) rotate(90)">
+			<title>工作表.27</title>
+			<desc>是</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.4" cy="792" width="28.8" height="0"/>
+			<path d="M0 792 L28.8 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="8.39987" y="784.8" width="12.0001" height="14.4001" class="st5"/>
+			<text x="8.4" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>是</text>		</g>
+		<g id="shape28-105" v:mID="28" v:groupContext="shape" transform="translate(1116,900) rotate(90)">
+			<title>工作表.28</title>
+			<desc>否</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="64.8" cy="792" width="129.6" height="0"/>
+			<path d="M0 792 L129.6 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="58.7999" y="784.8" width="12.0001" height="14.4001" class="st5"/>
+			<text x="58.8" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>否</text>		</g>
+		<g id="shape29-110" v:mID="29" v:groupContext="shape" transform="translate(1116,1116) rotate(90)">
+			<title>工作表.29</title>
+			<desc>是</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="230.4" cy="792" width="460.8" height="0"/>
+			<path d="M0 792 L460.8 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="224.4" y="784.8" width="12.0001" height="14.4001" class="st6"/>
+			<text x="224.4" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>是</text>		</g>
+		<g id="shape30-115" v:mID="30" v:groupContext="shape" transform="translate(1116,1116) rotate(90)">
+			<title>工作表.30</title>
+			<desc>否</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.4" cy="792" width="28.8" height="0"/>
+			<path d="M0 792 L28.8 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="8.39987" y="784.8" width="12.0001" height="14.4001" class="st6"/>
+			<text x="8.4" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>否</text>		</g>
+		<g id="shape31-120" v:mID="31" v:groupContext="shape" transform="translate(1116,1216.8) rotate(90)">
+			<title>工作表.31</title>
+			<path d="M0 792 L28.8 792" class="st4"/>
+		</g>
+		<g id="shape32-123" v:mID="32" v:groupContext="shape" transform="translate(1116,1332) rotate(90)">
+			<title>工作表.32</title>
+			<desc>是</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="14.4" cy="792" width="28.8" height="0"/>
+			<path d="M0 792 L28.8 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="8.39987" y="784.8" width="12.0001" height="14.4001" class="st6"/>
+			<text x="8.4" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>是</text>		</g>
+		<g id="shape33-128" v:mID="33" v:groupContext="shape" transform="translate(1116,1332) rotate(90)">
+			<title>工作表.33</title>
+			<desc>否</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="68.4" cy="792" width="136.8" height="0"/>
+			<path d="M0 792 L136.8 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="62.3999" y="784.8" width="12.0001" height="14.4001" class="st6"/>
+			<text x="62.4" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>否</text>		</g>
+		<g id="shape34-133" v:mID="34" v:groupContext="shape" transform="translate(-454.987,1217.82) rotate(-79.5994)">
+			<title>工作表.34</title>
+			<desc>下一次重试</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="578.302" cy="792" width="1156.61" height="0"/>
+			<path d="M0 792 L1156.6 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="548.302" y="784.8" width="60.0005" height="14.4001" class="st6"/>
+			<text x="548.3" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>下一次重试</text>		</g>
+		<g id="shape35-138" v:mID="35" v:groupContext="shape" transform="translate(-457.102,1337.86) rotate(-80.484)">
+			<title>工作表.35</title>
+			<desc>下一次重试</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="631.49" cy="792" width="1262.98" height="0"/>
+			<path d="M0 792 L1262.98 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="601.489" y="784.8" width="60.0005" height="14.4001" class="st6"/>
+			<text x="601.49" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>下一次重试</text>		</g>
+		<g id="shape36-143" v:mID="36" v:groupContext="shape" transform="translate(1116,1000.8) rotate(90)">
+			<title>工作表.36</title>
+			<path d="M0 792 L687.6 792" class="st4"/>
+		</g>
+		<g id="shape37-146" v:mID="37" v:groupContext="shape" transform="translate(1116,1648.8) rotate(90)">
+			<title>工作表.37</title>
+			<path d="M0 792 L39.6 792" class="st4"/>
+		</g>
+	</g>
+</svg>

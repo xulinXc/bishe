@@ -1,0 +1,171 @@
+@startuml 类图-补充部分
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+hide empty members
+skinparam shadowing false
+skinparam roundcorner 5
+skinparam ArrowColor #000000
+skinparam ClassBackgroundColor #FEFECE
+
+' 引用主类图中的关键类（简化表示）
+class "基础聊天会话\n(主类图中)" as BaseChatSession {
+}
+
+class "WAF绕过请求\n(主类图中)" as WAFBypassReq {
+}
+
+class "目录扫描请求\n(主类图中)" as DirScanReq {
+}
+
+class "MCP连接\n(主类图中)" as MCPConnection {
+}
+
+package "WAF绕过" {
+  class 载荷变体 {
+    + Variant: string
+    + Strategies: []string
+  }
+}
+
+' 与主类图的连接关系
+WAFBypassReq "1" --> "N" 载荷变体 : 使用
+
+package "AI提供者" {
+  interface AI提供者 {
+    + 聊天(消息列表: []聊天消息, 工具列表: []AI工具): (string, []AI工具调用, error)
+  }
+  
+  interface 聊天流提供者 {
+    + 流式聊天(消息列表: []聊天消息, 工具列表: []AI工具, 控制器: *流控制器): (string, []AI工具调用, error)
+  }
+  
+  class 聊天消息 {
+    + Role: string
+    + Content: string
+    + Time: string
+    + ToolCallID: string
+    + ToolCalls: []AI工具调用
+  }
+  
+  class AI工具 {
+    + Type: string
+    + Name: string
+    + Description: string
+    + Parameters: map[string]interface{}
+  }
+  
+  class AI工具调用 {
+    + ID: string
+    + Name: string
+    + Arguments: map[string]interface{}
+  }
+  
+  class OpenAI提供者 {
+    - APIKey: string
+    - BaseURL: string
+    - Model: string
+    - MaxTokens: int
+    - Timeout: time.Duration
+    --
+    + 新建OpenAI提供者(API密钥: string): *OpenAI提供者
+    + 设置超时(超时时间: time.Duration): void
+    + 聊天(消息列表: []聊天消息, 工具列表: []AI工具): (string, []AI工具调用, error)
+    + 流式聊天(消息列表: []聊天消息, 工具列表: []AI工具, 控制器: *流控制器): (string, []AI工具调用, error)
+  }
+  
+  class DeepSeek提供者 {
+    - APIKey: string
+    - BaseURL: string
+    - Model: string
+    - MaxTokens: int
+    - Timeout: time.Duration
+    --
+    + 新建DeepSeek提供者(API密钥: string): *DeepSeek提供者
+    + 设置超时(超时时间: time.Duration): void
+    + 聊天(消息列表: []聊天消息, 工具列表: []AI工具): (string, []AI工具调用, error)
+    + 流式聊天(消息列表: []聊天消息, 工具列表: []AI工具, 控制器: *流控制器): (string, []AI工具调用, error)
+  }
+  
+  class Anthropic提供者 {
+    - APIKey: string
+    - BaseURL: string
+    - Model: string
+    - MaxTokens: int
+    - Timeout: time.Duration
+    --
+    + 新建Anthropic提供者(API密钥: string): *Anthropic提供者
+    + 设置超时(超时时间: time.Duration): void
+    + 聊天(消息列表: []聊天消息, 工具列表: []AI工具): (string, []AI工具调用, error)
+  }
+  
+  class Ollama提供者 {
+    - APIKey: string
+    - BaseURL: string
+    - Model: string
+    - MaxTokens: int
+    - Timeout: time.Duration
+    --
+    + 新建Ollama提供者(基础URL: string, 模型名称: string): *Ollama提供者
+    + 设置超时(超时时间: time.Duration): void
+    + 聊天(消息列表: []聊天消息, 工具列表: []AI工具): (string, []AI工具调用, error)
+    + 流式聊天(消息列表: []聊天消息, 工具列表: []AI工具, 控制器: *流控制器): (string, []AI工具调用, error)
+  }
+  
+  class 流控制器 {
+    - aborted: bool
+    - stream: chan string
+    --
+    + 发送数据(数据: string): bool
+    + 是否已中止(): bool
+    + 中止(): void
+  }
+  
+  AI提供者 <|.. OpenAI提供者
+  AI提供者 <|.. DeepSeek提供者
+  AI提供者 <|.. Anthropic提供者
+  AI提供者 <|.. Ollama提供者
+  聊天流提供者 <|.. OpenAI提供者
+  聊天流提供者 <|.. DeepSeek提供者
+  聊天流提供者 <|.. Ollama提供者
+  聊天消息 "1" *-- "N" AI工具调用
+}
+
+' 与主类图的连接关系
+BaseChatSession "1" --> "0..1" AI提供者 : 使用
+BaseChatSession "1" *-- "N" 聊天消息 : 包含
+MCPConnection "1" --> "N" AI工具 : 提供工具
+
+package "其他" {
+  class 指纹规则 {
+    + Location: string
+    + Method: string
+    + Keyword: []string
+    + Regular: string
+    + Tech: string
+  }
+  
+  class 指纹数据 {
+    + Rules: []指纹规则
+  }
+  
+  class 字典信息 {
+    + Name: string
+    + Path: string
+    + Count: int
+  }
+  
+  指纹数据 "1" *-- "N" 指纹规则
+}
+
+' 与主类图的连接关系
+DirScanReq "1" --> "N" 字典信息 : 使用
+
+note right of BaseChatSession
+  此部分类图补充主类图中
+  被遮挡的AI提供者、WAF绕过
+  和其他相关类
+end note
+
+@enduml
+

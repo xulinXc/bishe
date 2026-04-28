@@ -1,0 +1,284 @@
+{
+  "diagram_type": "class",
+  "title": "NeonScan 2.0 AI-EXP 与会话核心类图",
+  "page_name": "02-AI_EXP核心类图",
+  "metadata": {
+    "system_name": "NeonScan 2.0",
+    "chapter": "详细设计",
+    "evidence_basis": [
+      "source_code"
+    ],
+    "status": "confirmed"
+  },
+  "items": [
+    {
+      "id": "task",
+      "kind": "class",
+      "title": "Task",
+      "attributes": [
+        "ID: string",
+        "Total: int",
+        "Done: int",
+        "Created: time.Time",
+        "ch: chan SSEMessage",
+        "stop: chan struct{}"
+      ],
+      "methods": [
+        "IncDone()",
+        "Send(msg)",
+        "Close()"
+      ]
+    },
+    {
+      "id": "sse_message",
+      "kind": "class",
+      "title": "SSEMessage",
+      "attributes": [
+        "Type: string",
+        "TaskID: string",
+        "Progress: string",
+        "Percent: int",
+        "Data: interface{}"
+      ],
+      "methods": []
+    },
+    {
+      "id": "ai_exp_req",
+      "kind": "class",
+      "title": "AIGenPythonFromExpReq",
+      "attributes": [
+        "Provider: string",
+        "TargetBaseURL: string",
+        "Exp: ExpSpec",
+        "Verify: *ExpVerifyInfo",
+        "AutoVerify: bool",
+        "TargetURL: string",
+        "MaxRetries: int"
+      ],
+      "methods": []
+    },
+    {
+      "id": "ai_exp_batch_req",
+      "kind": "class",
+      "title": "AIGenPythonFromExpBatchReq",
+      "attributes": [
+        "TargetBaseURL: string",
+        "ExpDir: string",
+        "ExpPaths: []string",
+        "InlineExps: []ExpSpec",
+        "Concurrency: int"
+      ],
+      "methods": []
+    },
+    {
+      "id": "exp_verify_info",
+      "kind": "class",
+      "title": "ExpVerifyInfo",
+      "attributes": [
+        "MatchedSteps: int",
+        "LastStatus: int",
+        "Usage: string",
+        "Suggestion: string"
+      ],
+      "methods": []
+    },
+    {
+      "id": "exp_spec",
+      "kind": "class",
+      "title": "ExpSpec",
+      "attributes": [
+        "Name: string",
+        "ExploitSuggestion: string",
+        "Steps: []ExpStep"
+      ],
+      "methods": []
+    },
+    {
+      "id": "exp_step",
+      "kind": "class",
+      "title": "ExpStep",
+      "attributes": [
+        "Method: string",
+        "Path: string",
+        "Body: string",
+        "Headers: map[string]string",
+        "Retry: int",
+        "RetryDelayMs: int",
+        "SleepMs: int"
+      ],
+      "methods": []
+    },
+    {
+      "id": "validation",
+      "kind": "class",
+      "title": "Validation",
+      "attributes": [
+        "Status: StatusList",
+        "BodyContains: []string",
+        "HeaderContains: map[string]string"
+      ],
+      "methods": []
+    },
+    {
+      "id": "extract_rule",
+      "kind": "class",
+      "title": "ExtractRule",
+      "attributes": [
+        "BodyRegex: []string",
+        "HeaderRegex: map[string]string"
+      ],
+      "methods": []
+    },
+    {
+      "id": "verify_config",
+      "kind": "class",
+      "title": "ExpVerifyConfig",
+      "attributes": [
+        "TargetURL: string",
+        "ExpSpec: ExpSpec",
+        "PythonCode: string",
+        "Category: VulnCategory",
+        "MaxRetries: int",
+        "TimeoutSec: int"
+      ],
+      "methods": []
+    },
+    {
+      "id": "verify_result",
+      "kind": "class",
+      "title": "ExpVerifyResult",
+      "attributes": [
+        "Success: bool",
+        "Output: string",
+        "Error: string",
+        "Matched: bool",
+        "CanExtract: bool",
+        "ExtractDemo: string"
+      ],
+      "methods": []
+    },
+    {
+      "id": "ai_provider",
+      "kind": "class",
+      "title": "<<interface>> AIProvider",
+      "attributes": [],
+      "methods": [
+        "Chat(messages, tools)"
+      ]
+    },
+    {
+      "id": "base_chat_session",
+      "kind": "class",
+      "title": "BaseChatSession",
+      "attributes": [
+        "ID: string",
+        "APIType: string",
+        "Messages: []ChatMessage",
+        "MCPConnection: MCPConnection",
+        "LastActivity: time.Time"
+      ],
+      "methods": [
+        "GetMessages()",
+        "AddMessage(msg)",
+        "UpdateLastActivity()"
+      ]
+    },
+    {
+      "id": "jadx_conn",
+      "kind": "class",
+      "title": "JADXMCPConnection",
+      "attributes": [
+        "baseURL: string",
+        "connected: bool",
+        "tools: []MCPTool",
+        "sessionID: string"
+      ],
+      "methods": [
+        "GetTools()",
+        "CallTool()",
+        "Close()"
+      ]
+    }
+  ],
+  "connectors": [
+    {
+      "from": "task",
+      "to": "sse_message",
+      "kind": "association",
+      "label": "emits"
+    },
+    {
+      "from": "ai_exp_req",
+      "to": "exp_verify_info",
+      "kind": "association",
+      "label": "optional verify hint"
+    },
+    {
+      "from": "ai_exp_req",
+      "to": "exp_spec",
+      "kind": "association",
+      "label": "contains"
+    },
+    {
+      "from": "ai_exp_batch_req",
+      "to": "exp_spec",
+      "kind": "association",
+      "label": "loads many"
+    },
+    {
+      "from": "exp_spec",
+      "to": "exp_step",
+      "kind": "association",
+      "label": "1..N steps"
+    },
+    {
+      "from": "exp_step",
+      "to": "validation",
+      "kind": "association",
+      "label": "validate"
+    },
+    {
+      "from": "exp_step",
+      "to": "extract_rule",
+      "kind": "association",
+      "label": "extract"
+    },
+    {
+      "from": "ai_exp_req",
+      "to": "verify_config",
+      "kind": "association",
+      "label": "builds when autoVerify"
+    },
+    {
+      "from": "verify_config",
+      "to": "exp_spec",
+      "kind": "association",
+      "label": "uses"
+    },
+    {
+      "from": "verify_config",
+      "to": "verify_result",
+      "kind": "association",
+      "label": "produces"
+    },
+    {
+      "from": "verify_config",
+      "to": "ai_provider",
+      "kind": "association",
+      "label": "AI correction via"
+    },
+    {
+      "from": "base_chat_session",
+      "to": "ai_provider",
+      "kind": "association",
+      "label": "uses"
+    },
+    {
+      "from": "base_chat_session",
+      "to": "jadx_conn",
+      "kind": "association",
+      "label": "holds"
+    }
+  ]
+}
+

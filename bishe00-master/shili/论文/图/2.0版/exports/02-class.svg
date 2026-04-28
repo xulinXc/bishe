@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 02-class.svg 02-AI_EXP核心类图 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="11in" height="11in" viewBox="0 0 792 792"
+		xml:space="preserve" color-interpolation-filters="sRGB" class="st6">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false"/>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:#ffffff;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st2 {fill:#000000;font-family:宋体;font-size:1.00001em}
+		.st3 {font-size:1em}
+		.st4 {stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.75}
+		.st5 {fill:#ffffff;stroke:none;stroke-linecap:butt;stroke-width:7.2}
+		.st6 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<g v:mID="0" v:index="1" v:groupContext="foregroundPage">
+		<title>02-AI_EXP核心类图</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<g id="shape1-1" v:mID="1" v:groupContext="shape" transform="translate(86.4,-583.2)">
+			<title>工作表.1</title>
+			<desc>Task ---------------- ID: string Total: int Done: int Created...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="81.6" y="651.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Task<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="63.6" dy="1.2em"
+						class="st3">ID: string<v:newlineChar/></tspan><tspan x="63.6" dy="1.2em" class="st3">Total: int<v:newlineChar/></tspan><tspan
+						x="66.6" dy="1.2em" class="st3">Done: int<v:newlineChar/></tspan><tspan x="39.6" dy="1.2em" class="st3">Created: time.Time<v:newlineChar/></tspan><tspan
+						x="36.6" dy="1.2em" class="st3">ch: chan SSEMessage<v:newlineChar/></tspan><tspan x="36.6" dy="1.2em"
+						class="st3">stop: chan struct{}<v:newlineChar/></tspan><tspan x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan
+						x="66.6" dy="1.2em" class="st3">IncDone()<v:newlineChar/></tspan><tspan x="66.6" dy="1.2em" class="st3">Send(msg)<v:newlineChar/></tspan><tspan
+						x="72.6" dy="1.2em" class="st3">Close()</tspan></text>		</g>
+		<g id="shape2-15" v:mID="2" v:groupContext="shape" transform="translate(345.6,-583.2)">
+			<title>工作表.2</title>
+			<desc>SSEMessage ---------------- Type: string TaskID: string Progr...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="63.6" y="687.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>SSEMessage<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="57.6" dy="1.2em"
+						class="st3">Type: string<v:newlineChar/></tspan><tspan x="51.6" dy="1.2em" class="st3">TaskID: string<v:newlineChar/></tspan><tspan
+						x="45.6" dy="1.2em" class="st3">Progress: string<v:newlineChar/></tspan><tspan x="57.6" dy="1.2em"
+						class="st3">Percent: int<v:newlineChar/></tspan><tspan x="42.6" dy="1.2em" class="st3">Data: interface{}</tspan></text>		</g>
+		<g id="shape3-24" v:mID="3" v:groupContext="shape" transform="translate(86.4,-381.6)">
+			<title>工作表.3</title>
+			<desc>AIGenPythonFromExpReq ---------------- Provider: string Targe...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="30.6" y="673.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>AIGenPythonFromExpReq<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="45.6" dy="1.2em"
+						class="st3">Provider: string<v:newlineChar/></tspan><tspan x="30.6" dy="1.2em" class="st3">TargetBaseURL: string<v:newlineChar/></tspan><tspan
+						x="57.6" dy="1.2em" class="st3">Exp: ExpSpec<v:newlineChar/></tspan><tspan x="27.6" dy="1.2em" class="st3">Verify: *ExpVerifyInfo<v:newlineChar/></tspan><tspan
+						x="45.6" dy="1.2em" class="st3">AutoVerify: bool<v:newlineChar/></tspan><tspan x="42.6" dy="1.2em"
+						class="st3">TargetURL: string<v:newlineChar/></tspan><tspan x="48.6" dy="1.2em" class="st3">MaxRetries: int</tspan></text>		</g>
+		<g id="shape4-35" v:mID="4" v:groupContext="shape" transform="translate(345.6,-381.6)">
+			<title>工作表.4</title>
+			<desc>AIGenPythonFromExpBatchReq ---------------- TargetBaseURL: st...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="15.6" y="687.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>AIGenPythonFromExpBatchReq<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="30.6" dy="1.2em"
+						class="st3">TargetBaseURL: string<v:newlineChar/></tspan><tspan x="51.6" dy="1.2em" class="st3">ExpDir: string<v:newlineChar/></tspan><tspan
+						x="39.6" dy="1.2em" class="st3">ExpPaths: []string<v:newlineChar/></tspan><tspan x="30.6" dy="1.2em"
+						class="st3">InlineExps: []ExpSpec<v:newlineChar/></tspan><tspan x="45.6" dy="1.2em" class="st3">Concurrency: int</tspan></text>		</g>
+		<g id="shape5-44" v:mID="5" v:groupContext="shape" transform="translate(86.4,-180)">
+			<title>工作表.5</title>
+			<desc>ExpVerifyInfo ---------------- MatchedSteps: int LastStatus: ...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="54.6" y="694.8" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>ExpVerifyInfo<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="42.6" dy="1.2em"
+						class="st3">MatchedSteps: int<v:newlineChar/></tspan><tspan x="48.6" dy="1.2em" class="st3">LastStatus: int<v:newlineChar/></tspan><tspan
+						x="54.6" dy="1.2em" class="st3">Usage: string<v:newlineChar/></tspan><tspan x="39.6" dy="1.2em" class="st3">Suggestion: string</tspan></text>		</g>
+		<g id="shape6-52" v:mID="6" v:groupContext="shape" transform="translate(345.6,-180)">
+			<title>工作表.6</title>
+			<desc>ExpSpec ---------------- Name: string ExploitSuggestion: stri...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="72.6" y="702" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>ExpSpec<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="57.6" dy="1.2em"
+						class="st3">Name: string<v:newlineChar/></tspan><tspan x="18.6" dy="1.2em" class="st3">ExploitSuggestion: string<v:newlineChar/></tspan><tspan
+						x="45.6" dy="1.2em" class="st3">Steps: []ExpStep</tspan></text>		</g>
+		<g id="shape7-59" v:mID="7" v:groupContext="shape" transform="translate(86.4,21.6)">
+			<title>工作表.7</title>
+			<desc>ExpStep ---------------- Method: string Path: string Body: st...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="72.6" y="673.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>ExpStep<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="51.6" dy="1.2em"
+						class="st3">Method: string<v:newlineChar/></tspan><tspan x="57.6" dy="1.2em" class="st3">Path: string<v:newlineChar/></tspan><tspan
+						x="57.6" dy="1.2em" class="st3">Body: string<v:newlineChar/></tspan><tspan x="15.6" dy="1.2em" class="st3">Headers: map[string]string<v:newlineChar/></tspan><tspan
+						x="63.6" dy="1.2em" class="st3">Retry: int<v:newlineChar/></tspan><tspan x="42.6" dy="1.2em" class="st3">RetryDelayMs: int<v:newlineChar/></tspan><tspan
+						x="57.6" dy="1.2em" class="st3">SleepMs: int</tspan></text>		</g>
+		<g id="shape8-70" v:mID="8" v:groupContext="shape" transform="translate(345.6,21.6)">
+			<title>工作表.8</title>
+			<desc>Validation ---------------- Status: StatusList BodyContains: ...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="63.6" y="694.8" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>Validation<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="39.6" dy="1.2em"
+						class="st3">Status: StatusList<v:newlineChar/></tspan><tspan x="27.6" dy="1.2em" class="st3">BodyContains: []string<v:newlineChar/></tspan><tspan
+						x="48.6" dy="1.2em" class="st3">HeaderContains: </tspan><tspan x="42.6" dy="1.2em" class="st3">map[string]string</tspan></text>		</g>
+		<g id="shape9-78" v:mID="9" v:groupContext="shape" transform="translate(86.4,223.2)">
+			<title>工作表.9</title>
+			<desc>ExtractRule ---------------- BodyRegex: []string HeaderRegex:...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="60.6" y="702" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>ExtractRule<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="36.6" dy="1.2em"
+						class="st3">BodyRegex: []string<v:newlineChar/></tspan><tspan x="57.6" dy="1.2em" class="st3">HeaderRegex: </tspan><tspan
+						x="42.6" dy="1.2em" class="st3">map[string]string</tspan></text>		</g>
+		<g id="shape10-85" v:mID="10" v:groupContext="shape" transform="translate(345.6,223.2)">
+			<title>工作表.10</title>
+			<desc>ExpVerifyConfig ---------------- TargetURL: string ExpSpec: E...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="48.6" y="680.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>ExpVerifyConfig<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="42.6" dy="1.2em"
+						class="st3">TargetURL: string<v:newlineChar/></tspan><tspan x="45.6" dy="1.2em" class="st3">ExpSpec: ExpSpec<v:newlineChar/></tspan><tspan
+						x="39.6" dy="1.2em" class="st3">PythonCode: string<v:newlineChar/></tspan><tspan x="27.6" dy="1.2em"
+						class="st3">Category: VulnCategory<v:newlineChar/></tspan><tspan x="48.6" dy="1.2em" class="st3">MaxRetries: int<v:newlineChar/></tspan><tspan
+						x="48.6" dy="1.2em" class="st3">TimeoutSec: int</tspan></text>		</g>
+		<g id="shape11-95" v:mID="11" v:groupContext="shape" transform="translate(86.4,424.8)">
+			<title>工作表.11</title>
+			<desc>ExpVerifyResult ---------------- Success: bool Output: string...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="48.6" y="680.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>ExpVerifyResult<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="54.6" dy="1.2em"
+						class="st3">Success: bool<v:newlineChar/></tspan><tspan x="51.6" dy="1.2em" class="st3">Output: string<v:newlineChar/></tspan><tspan
+						x="54.6" dy="1.2em" class="st3">Error: string<v:newlineChar/></tspan><tspan x="54.6" dy="1.2em" class="st3">Matched: bool<v:newlineChar/></tspan><tspan
+						x="45.6" dy="1.2em" class="st3">CanExtract: bool<v:newlineChar/></tspan><tspan x="36.6" dy="1.2em"
+						class="st3">ExtractDemo: string</tspan></text>		</g>
+		<g id="shape12-105" v:mID="12" v:groupContext="shape" transform="translate(345.6,424.8)">
+			<title>工作表.12</title>
+			<desc>&#60;&#60;interface&#62;&#62; AIProvider ---------------- Chat(messages, tools)</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="21.6" y="716.4" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>&#60;&#60;interface&#62;&#62; AIProvider<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="30.6" dy="1.2em"
+						class="st3">Chat(messages, tools)</tspan></text>		</g>
+		<g id="shape13-110" v:mID="13" v:groupContext="shape" transform="translate(86.4,626.4)">
+			<title>工作表.13</title>
+			<desc>BaseChatSession ---------------- ID: string APIType: string M...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="48.6" y="658.8" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>BaseChatSession<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="63.6" dy="1.2em"
+						class="st3">ID: string<v:newlineChar/></tspan><tspan x="48.6" dy="1.2em" class="st3">APIType: string<v:newlineChar/></tspan><tspan
+						x="24.6" dy="1.2em" class="st3">Messages: []ChatMessage<v:newlineChar/></tspan><tspan x="9.6" dy="1.2em"
+						class="st3">MCPConnection: MCPConnection<v:newlineChar/></tspan><tspan x="24.6" dy="1.2em" class="st3">LastActivity: time.Time<v:newlineChar/></tspan><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="54.6" dy="1.2em"
+						class="st3">GetMessages()<v:newlineChar/></tspan><tspan x="48.6" dy="1.2em" class="st3">AddMessage(msg)<v:newlineChar/></tspan><tspan
+						x="33.6" dy="1.2em" class="st3">UpdateLastActivity()</tspan></text>		</g>
+		<g id="shape14-123" v:mID="14" v:groupContext="shape" transform="translate(345.6,626.4)">
+			<title>工作表.14</title>
+			<desc>JADXMCPConnection ---------------- baseURL: string connected:...</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="93.6" cy="727.2" width="187.2" height="129.6"/>
+			<rect x="0" y="662.4" width="187.2" height="129.6" class="st1"/>
+			<text x="42.6" y="666" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>JADXMCPConnection<v:newlineChar/><tspan
+						x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan x="48.6" dy="1.2em"
+						class="st3">baseURL: string<v:newlineChar/></tspan><tspan x="48.6" dy="1.2em" class="st3">connected: bool<v:newlineChar/></tspan><tspan
+						x="45.6" dy="1.2em" class="st3">tools: []MCPTool<v:newlineChar/></tspan><tspan x="42.6" dy="1.2em"
+						class="st3">sessionID: string<v:newlineChar/></tspan><tspan x="45.6" dy="1.2em" class="st3">----------------<v:newlineChar/></tspan><tspan
+						x="63.6" dy="1.2em" class="st3">GetTools()<v:newlineChar/></tspan><tspan x="63.6" dy="1.2em" class="st3">CallTool()<v:newlineChar/></tspan><tspan
+						x="72.6" dy="1.2em" class="st3">Close()</tspan></text>		</g>
+		<g id="shape15-135" v:mID="15" v:groupContext="shape" transform="translate(273.6,-648)">
+			<title>工作表.15</title>
+			<desc>emits</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="36" cy="792" width="72" height="0"/>
+			<path d="M0 792 L72 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="20.9995" y="784.8" width="30.0009" height="14.4001" class="st5"/>
+			<text x="21" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>emits</text>		</g>
+		<g id="shape16-140" v:mID="16" v:groupContext="shape" transform="translate(972,410.4) rotate(90)">
+			<title>工作表.16</title>
+			<desc>optional verify hint</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="36" cy="792" width="72" height="0"/>
+			<path d="M0 792 L72 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="11.9993" y="770.4" width="48.0015" height="43.2002" class="st5"/>
+			<text x="12" y="781.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>optional <tspan x="18"
+						dy="1.2em" class="st3">verify </tspan><tspan x="24" dy="1.2em" class="st3">hint</tspan></text>		</g>
+		<g id="shape17-147" v:mID="17" v:groupContext="shape" transform="translate(1019.46,79.2216) rotate(70.3462)">
+			<title>工作表.17</title>
+			<desc>contains</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="107.036" cy="792" width="214.08" height="0"/>
+			<path d="M0 792 L214.07 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="83.0349" y="784.8" width="48.0015" height="14.4001" class="st5"/>
+			<text x="83.03" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>contains</text>		</g>
+		<g id="shape18-152" v:mID="18" v:groupContext="shape" transform="translate(1231.2,410.4) rotate(90)">
+			<title>工作表.18</title>
+			<desc>loads many</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="36" cy="792" width="72" height="0"/>
+			<path d="M0 792 L72 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="5.99908" y="784.8" width="60.0018" height="14.4001" class="st5"/>
+			<text x="6" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>loads many</text>		</g>
+		<g id="shape19-157" v:mID="19" v:groupContext="shape" transform="translate(1091.46,813.578) rotate(109.654)">
+			<title>工作表.19</title>
+			<desc>1..N steps</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="107.036" cy="792" width="214.08" height="0"/>
+			<path d="M0 792 L214.07 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="77.0348" y="784.8" width="60.0018" height="14.4001" class="st5"/>
+			<text x="77.03" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>1..N steps</text>		</g>
+		<g id="shape20-162" v:mID="20" v:groupContext="shape" transform="translate(273.6,-43.2)">
+			<title>工作表.20</title>
+			<desc>validate</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="36" cy="792" width="72" height="0"/>
+			<path d="M0 792 L72 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="11.9993" y="784.8" width="48.0015" height="14.4001" class="st5"/>
+			<text x="12" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>validate</text>		</g>
+		<g id="shape21-167" v:mID="21" v:groupContext="shape" transform="translate(972,813.6) rotate(90)">
+			<title>工作表.21</title>
+			<desc>extract</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="36" cy="792" width="72" height="0"/>
+			<path d="M0 792 L72 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="14.9994" y="784.8" width="42.0013" height="14.4001" class="st5"/>
+			<text x="15" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>extract</text>		</g>
+		<g id="shape22-172" v:mID="22" v:groupContext="shape" transform="translate(875.293,31.1491) rotate(61.3895)">
+			<title>工作表.22</title>
+			<desc>builds when autoVerify</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="270.647" cy="792" width="541.3" height="0"/>
+			<path d="M0 792 L541.29 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="204.645" y="784.8" width="132.004" height="14.4001" class="st5"/>
+			<text x="204.65" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>builds when autoVerify</text>		</g>
+		<g id="shape23-177" v:mID="23" v:groupContext="shape" transform="translate(-352.8,885.6) rotate(-90)">
+			<title>工作表.23</title>
+			<desc>uses</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="136.8" cy="792" width="273.6" height="0"/>
+			<path d="M0 792 L273.6 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="124.8" y="784.8" width="24.0007" height="14.4001" class="st5"/>
+			<text x="124.8" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>uses</text>		</g>
+		<g id="shape24-182" v:mID="24" v:groupContext="shape" transform="translate(1091.46,1216.78) rotate(109.654)">
+			<title>工作表.24</title>
+			<desc>produces</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="107.036" cy="792" width="214.08" height="0"/>
+			<path d="M0 792 L214.07 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="83.0349" y="784.8" width="48.0015" height="14.4001" class="st5"/>
+			<text x="83.03" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>produces</text>		</g>
+		<g id="shape25-187" v:mID="25" v:groupContext="shape" transform="translate(1231.2,1015.2) rotate(90)">
+			<title>工作表.25</title>
+			<desc>AI correction via</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="36" cy="792" width="72" height="0"/>
+			<path d="M0 792 L72 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="5.99908" y="770.4" width="60.0018" height="43.2002" class="st5"/>
+			<text x="30" y="781.2" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>AI <tspan x="6"
+						dy="1.2em" class="st3">correction </tspan><tspan x="27" dy="1.2em" class="st3">via</tspan></text>		</g>
+		<g id="shape26-194" v:mID="26" v:groupContext="shape" transform="translate(-472.26,1087.22) rotate(-70.3462)">
+			<title>工作表.26</title>
+			<desc>uses</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="107.036" cy="792" width="214.08" height="0"/>
+			<path d="M0 792 L214.07 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="95.0353" y="784.8" width="24.0007" height="14.4001" class="st5"/>
+			<text x="95.04" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>uses</text>		</g>
+		<g id="shape27-199" v:mID="27" v:groupContext="shape" transform="translate(273.6,561.6)">
+			<title>工作表.27</title>
+			<desc>holds</desc>
+			<v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
+			<v:textRect cx="36" cy="792" width="72" height="0"/>
+			<path d="M0 792 L72 792" class="st4"/>
+			<rect v:rectContext="textBkgnd" x="20.9995" y="784.8" width="30.0009" height="14.4001" class="st5"/>
+			<text x="21" y="795.6" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>holds</text>		</g>
+	</g>
+</svg>

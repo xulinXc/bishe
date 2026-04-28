@@ -1,0 +1,393 @@
+@startuml
+title NeonScan 2.0 总类图（论文压缩版）
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam nodesep 25
+skinparam ranksep 35
+
+package "任务与扫描请求" {
+class Task {
+  - m: sync.Mutex
+  + ID: string
+  + Total: int
+  + Done: int
+  + Created: time.Time
+  - ch: chan SSEMessage
+  - stop: chan struct
+  --
+  + IncDone(): tuple<int, int>
+  + Send(msg: SSEMessage): bool
+  + Close(): void
+}
+
+class SSEMessage {
+  + Type: string
+  + TaskID: string
+  + Progress: string
+  + Percent: int
+  + Data: any
+}
+
+class DirScanReq {
+  + BaseURL: string
+  + DictPaths: List<string>
+  + BuiltinDicts: List<string>
+  + Concurrency: int
+}
+
+class PocScanReq {
+  + BaseURL: string
+  + PocDir: string
+  + PocPaths: List<string>
+  + Concurrency: int
+}
+
+class ExpExecReq {
+  + BaseURL: string
+  + ExpPaths: List<string>
+  + InlineExps: List<ExpSpec>
+  + Concurrency: int
+}
+
+class AIGenPythonFromExpReq {
+  + Provider: string
+  + TargetBaseURL: string
+  + Exp: ExpSpec
+  + Verify: ExpVerifyInfo
+  + AutoVerify: bool
+  + TargetURL: string
+  + MaxRetries: int
+}
+
+class AIGenPythonFromExpBatchReq {
+  + Provider: string
+  + TargetBaseURL: string
+  + ExpPaths: List<string>
+  + InlineExps: List<ExpSpec>
+  + Concurrency: int
+}
+
+class AIAnalyzeReq {
+  + Provider: string
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+}
+}
+
+package "POC规则" {
+class POC {
+  + Name: string
+  + Method: string
+  + Path: string
+  + Headers: map<string, string>
+  + Match: string
+}
+
+class XRPOC {
+  + ID: string
+  + Info: XRInfo
+  + Rules: map<string, XRRule>
+}
+
+class XRInfo {
+  + Name: string
+  + Severity: string
+  + Reference: List<string>
+}
+
+class XRRule {
+  + Request: XRRequest
+  + Expression: string
+}
+
+class XRRequest {
+  + Method: string
+  + Path: string
+  + Body: string
+}
+
+class NucleiPOC {
+  + ID: string
+  + Info: NucleiInfo
+  + Requests: List<NucleiRequest>
+  + Matchers: List<NucleiMatcher>
+}
+
+class NucleiInfo {
+  + Name: string
+  + Severity: string
+  + Description: string
+}
+
+class NucleiRequest {
+  + Method: string
+  + Path: List<string>
+  + Headers: any
+  + Matchers: List<NucleiMatcher>
+}
+
+class NucleiMatcher {
+  + Type: string
+  + Part: string
+  + Words: List<string>
+  + Status: List<int>
+}
+}
+
+package "EXP与AI-EXP" {
+class ExpVerifyInfo {
+  + MatchedSteps: int
+  + LastStatus: int
+  + Usage: string
+  + Suggestion: string
+}
+
+class ExpSpec {
+  + Name: string
+  + Steps: List<ExpStep>
+  + ExploitSuggestion: string
+}
+
+class ExpStep {
+  + Method: string
+  + Path: string
+  + Headers: map<string, string>
+  + Validate: Validation
+  + Extract: map<string, ExtractRule>
+}
+
+class Validation {
+  + Status: StatusList
+  + BodyContains: List<string>
+  + HeaderContains: map<string, string>
+}
+
+class StatusList {
+  + UnmarshalJSON(data: bytes): error
+  + UnmarshalYAML(unmarshal: fn): error
+}
+
+class ExtractRule {
+  + BodyRegex: List<string>
+  + HeaderRegex: map<string, string>
+}
+
+class ExpVerifyConfig {
+  + TargetURL: string
+  + ExpSpec: ExpSpec
+  + PythonCode: string
+  + MaxRetries: int
+}
+
+class ExpVerifyResult {
+  + Success: bool
+  + Output: string
+  + Error: string
+  + Matched: bool
+  + CanExtract: bool
+}
+}
+
+package "MCP / 会话 / AI能力" {
+interface MCPConnection {
+  + IsConnected(): bool
+  + GetTools(): List<AITool>
+  + CallTool(name: string, arguments: map<string, any>): result
+}
+
+interface ChatSession {
+  + GetID(): string
+  + GetMessages(): List<ChatMessage>
+  + AddMessage(msg: ChatMessage): void
+  + UpdateLastActivity(): void
+}
+
+class BaseChatSession {
+  - mu: sync.RWMutex
+  + ID: string
+  + APIKey: string
+  + APIType: string
+  + Messages: List<ChatMessage>
+  + MCPConnection: MCPConnection
+  + LastActivity: time.Time
+}
+
+class JADXMCPConnection {
+  - baseURL: string
+  - client: http.Client
+  - connected: bool
+  - tools: List<MCPTool>
+  - sessionID: string
+  --
+  + SendMCPRequest(method: string, params: map<string, any>): result
+  + CallTool(toolName: string, arguments: map<string, any>): result
+  + GetTools(): List<AITool>
+}
+
+class JADXChatSession {
+  + GetOrCreateJADXSession(sessionID: string): JADXChatSession
+  + CleanupOldJADXSessions(maxAge: time.Duration): void
+}
+
+class MCPTool {
+  + Name: string
+  + Description: string
+  + Parameters: map<string, any>
+}
+
+class ChatMessage {
+  + Role: string
+  + Content: string
+  + Time: string
+  + ToolCalls: List<AIToolCall>
+}
+
+interface AIProvider {
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): result
+}
+
+interface ChatStreamProvider {
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: StreamController): result
+}
+
+class AITool {
+  + Type: string
+  + Name: string
+  + Description: string
+}
+
+class AIToolCall {
+  + ID: string
+  + Name: string
+  + Arguments: map<string, any>
+}
+
+class StreamController {
+  - aborted: bool
+  - abortChan: chan struct
+  - messageChan: chan string
+  --
+  + Abort(): void
+  + Send(message: string): bool
+}
+
+class OpenAIProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + Timeout: time.Duration
+}
+
+class DeepSeekProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + Timeout: time.Duration
+}
+
+class AnthropicProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + Timeout: time.Duration
+}
+
+class OllamaProvider {
+  + BaseURL: string
+  + Model: string
+  + Timeout: time.Duration
+}
+}
+
+package "WAF与辅助数据" {
+class WAFBypassReq {
+  + BaseURL: string
+  + Path: string
+  + Payloads: List<string>
+  + Methods: List<string>
+  + Strategies: List<string>
+}
+
+class PayloadVariant {
+  + Variant: string
+  + Strategies: List<string>
+}
+
+class FingerprintRule {
+  + CMS: string
+  + Method: string
+  + Location: string
+  + Keyword: List<string>
+}
+
+class FingerprintData {
+  + Fingerprint: List<FingerprintRule>
+}
+
+class DictInfo {
+  + Name: string
+  + Path: string
+  + Category: string
+}
+}
+
+Task "1" --> "0..*" SSEMessage : emits
+
+PocScanReq ..> POC : scans
+PocScanReq ..> XRPOC : scans
+PocScanReq ..> NucleiPOC : scans
+
+XRPOC "1" *-- "1" XRInfo : info
+XRPOC "1" *-- "1..*" XRRule : rules
+XRRule "1" *-- "1" XRRequest : request
+
+NucleiPOC "1" *-- "1" NucleiInfo : info
+NucleiPOC "1" *-- "1..*" NucleiRequest : requests
+NucleiPOC "1" *-- "0..*" NucleiMatcher : matchers
+NucleiRequest "1" *-- "0..*" NucleiMatcher : request matchers
+
+ExpExecReq ..> ExpSpec : InlineExps
+AIGenPythonFromExpReq --> ExpSpec : Exp
+AIGenPythonFromExpReq ..> ExpVerifyInfo : optional Verify
+AIGenPythonFromExpBatchReq ..> ExpSpec : InlineExps
+
+ExpSpec "1" *-- "1..*" ExpStep : steps
+ExpStep "1" *-- "1" Validation : validate
+ExpStep "1" *-- "0..*" ExtractRule : extract rules
+Validation "1" *-- "1" StatusList : status
+ExpVerifyConfig --> ExpSpec : ExpSpec
+ExpVerifyConfig ..> ExpVerifyResult : verify result
+
+BaseChatSession <|-- JADXChatSession
+ChatSession <|.. BaseChatSession
+MCPConnection <|.. JADXMCPConnection
+JADXMCPConnection "1" *-- "0..*" MCPTool : tools cache
+BaseChatSession "1" *-- "0..*" ChatMessage : messages
+BaseChatSession ..> MCPConnection : uses
+
+ChatMessage "1" *-- "0..*" AIToolCall : ToolCalls
+AIProvider ..> ChatMessage : input messages
+AIProvider ..> AITool : available tools
+AIProvider ..> AIToolCall : returns tool calls
+BaseChatSession ..> AIProvider : ai support
+MCPConnection ..> AITool : provided tools
+
+AIProvider <|.. OpenAIProvider
+AIProvider <|.. DeepSeekProvider
+AIProvider <|.. AnthropicProvider
+AIProvider <|.. OllamaProvider
+ChatStreamProvider <|.. OpenAIProvider
+ChatStreamProvider <|.. DeepSeekProvider
+ChatStreamProvider <|.. OllamaProvider
+ChatStreamProvider ..> StreamController : controller
+
+WAFBypassReq ..> PayloadVariant : produces variants
+DirScanReq ..> DictInfo : uses dictionaries
+FingerprintData "1" *-- "0..*" FingerprintRule : Fingerprint
+@enduml
+

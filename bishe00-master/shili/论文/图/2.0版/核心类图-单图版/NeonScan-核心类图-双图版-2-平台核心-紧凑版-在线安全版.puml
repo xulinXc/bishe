@@ -1,0 +1,94 @@
+@startuml
+title NeonScan 2.0 核心类图（平台核心-紧凑版）
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam nodesep 16
+skinparam ranksep 18
+
+package "MCP / 会话" {
+interface MCPConnection {
+  + IsConnected(): bool
+  + GetTools(): AIToolList
+}
+
+interface ChatSession {
+  + GetID(): string
+  + GetMessages(): ChatMessageList
+}
+
+class BaseChatSession {
+  + ID: string
+  + APIType: string
+  + Messages: ChatMessageList
+}
+
+class JADXMCPConnection {
+  + baseURL: string
+  + GetTools(): AIToolList
+}
+
+class JADXChatSession {
+  + GetOrCreateJADXSession(): JADXChatSession
+}
+}
+
+package "AI核心" {
+class ChatMessage {
+  + Role: string
+  + Content: string
+}
+
+interface AIProvider {
+  + Chat(): result
+}
+
+class AITool {
+  + Name: string
+}
+
+class OpenAIProvider {
+  + APIKey: string
+  + Model: string
+}
+
+class DeepSeekProvider {
+  + APIKey: string
+  + Model: string
+}
+
+class AnthropicProvider {
+  + APIKey: string
+  + Model: string
+}
+
+class OllamaProvider {
+  + BaseURL: string
+  + Model: string
+}
+}
+
+BaseChatSession <|-- JADXChatSession
+ChatSession <|.. BaseChatSession
+MCPConnection <|.. JADXMCPConnection
+BaseChatSession *-- ChatMessage : messages
+BaseChatSession ..> MCPConnection : uses
+BaseChatSession ..> AIProvider : ai
+AIProvider ..> ChatMessage : input
+MCPConnection ..> AITool : exports
+
+AIProvider <|.. OpenAIProvider
+AIProvider <|.. DeepSeekProvider
+AIProvider <|.. AnthropicProvider
+AIProvider <|.. OllamaProvider
+
+note bottom of AIProvider
+跨图连接：
+AIGenPythonFromExpReq ..> AIProvider
+ExpVerifyConfig ..> AIProvider
+end note
+@enduml
+

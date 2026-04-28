@@ -1,0 +1,82 @@
+@startuml
+title NeonScan 2.0 主类图-任务与扫描请求
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+package "任务管理" {
+class "Task" as Task {
+  - m: sync.Mutex
+  + ID: string
+  + Total: int
+  + Done: int
+  + Created: time.Time
+  - ch: chan SSEMessage
+  - stop: chan struct
+  - stopped: bool
+  --
+  + IncDone(): tuple<int, int>
+  + Send(msg: SSEMessage): bool
+  + Close(): void
+}
+class "SSEMessage" as SSEMessage {
+  + Type: string
+  + TaskID: string
+  + Progress: string
+  + Percent: int
+  + Data: any
+}
+}
+package "扫描请求" {
+class "PortScanReq" as PortScanReq {
+  + Host: string
+  + Ports: string
+  + Concurrency: int
+  + TimeoutMs: int
+  + ScanType: string
+  + GrabBanner: bool
+}
+class "DirScanReq" as DirScanReq {
+  + BaseURL: string
+  + DictPaths: List<string>
+  + BuiltinDicts: List<string>
+  + Concurrency: int
+  + TimeoutMs: int
+}
+class "WebProbeReq" as WebProbeReq {
+  + URLs: List<string>
+  + Concurrency: int
+  + TimeoutMs: int
+  + Headers: map<string, string>
+  + FollowRedirect: bool
+  + FetchFavicon: bool
+  + FetchRobots: bool
+}
+class "PocScanReq" as PocScanReq {
+  + BaseURL: string
+  + PocDir: string
+  + PocPaths: List<string>
+  + TimeoutMs: int
+  + Concurrency: int
+}
+class "ExpExecReq" as ExpExecReq {
+  + BaseURL: string
+  + ExpDir: string
+  + ExpPaths: List<string>
+  + InlineExps: List<ExpSpec>
+  + Concurrency: int
+  + TimeoutMs: int
+}
+class "AIAnalyzeReq" as AIAnalyzeReq {
+  + Provider: string
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + ReportData: map<string, any>
+}
+}
+
+Task "1" --> "0..*" SSEMessage : emits
+@enduml

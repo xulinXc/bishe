@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JADX MCP - NeonScan</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 200px);
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(20, 20, 30, 0.63);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      /* 自定义滚动条样式 */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 229, 255, 0.6) rgba(17, 24, 39, 0.56);
+    }
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(17, 24, 39, 0.56);
+      border-radius: 4px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(0, 229, 255, 0.6), rgba(124, 58, 237, 0.6));
+      border-radius: 4px;
+      border: 1px solid rgba(0, 229, 255, 0.3);
+    }
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(0, 229, 255, 0.8), rgba(124, 58, 237, 0.8));
+      box-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+    }
+    .message {
+      display: flex;
+      gap: 12px;
+      animation: fadeIn 0.3s;
+    }
+    .message.user {
+      flex-direction: row-reverse;
+    }
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .message.user .message-avatar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .message.assistant .message-avatar {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    .message-content {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      max-width: 80%;
+      min-width: fit-content;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    /* 用户消息根据内容自适应宽度 */
+    .message.user .message-content {
+      max-width: fit-content;
+      width: auto;
+      background: rgba(102, 126, 234, 0.2);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+    /* AI 消息保持最大宽度限制 */
+    .message.assistant .message-content {
+      max-width: 80%;
+    }
+    .message.assistant .message-content {
+      background: rgba(245, 87, 108, 0.2);
+      border: 1px solid rgba(245, 87, 108, 0.3);
+    }
+    .message-time {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+    }
+    .chat-input-container {
+      padding: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 15, 25, 0.63);
+    }
+    .chat-input-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+    .chat-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      resize: none;
+      min-height: 44px;
+      max-height: 200px;
+      font-family: inherit;
+    }
+    .chat-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .send-button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .send-button:hover:not(:disabled) {
+      transform: scale(1.05);
+    }
+    .send-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .config-panel {
+      background: rgba(20, 20, 30, 0.63);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .config-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .config-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .config-item.full-width {
+      grid-column: 1 / -1;
+    }
+    .config-label {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .config-input {
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+    }
+    .config-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    select.config-input {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      appearance: none;
+      -moz-appearance: none;
+      -webkit-appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, #667eea 50%), 
+                        linear-gradient(135deg, #667eea 50%, transparent 50%);
+      background-position: calc(100% - 18px) calc(1em + 2px), 
+                           calc(100% - 13px) calc(1em + 2px);
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+      padding-right: 30px;
+    }
+    select.config-input option {
+      background-color: #1a1a2e;
+      color: #ffffff;
+      padding: 8px;
+    }
+    select.config-input::-ms-expand {
+      display: none;
+    }
+    /* 确保下拉菜单背景可见 */
+    select.config-input:focus {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .status-connected {
+      background: #4ade80;
+    }
+    .status-disconnected {
+      background: #ef4444;
+    }
+    .loading-indicator {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .error-message {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a href="ports.html">端口扫描</a>
+      <a href="dirs.html">目录扫描</a>
+      <a href="poc.html">POC 扫描</a>
+      <a href="exp.html">EXP 验证</a>
+      <a href="probe.html">Web 探针</a>
+      <a href="shouji.html">解包与JS信息收集</a>
+      <a class="active" href="jadx_mcp.html">JADX MCP</a>
+      <a href="waf.html">绕 WAF</a>
+      <a href="ai_analysis.html">AI 分析</a>
+      <a href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+  <main class="content">
+    <section class="card">
+      <h2>JADX MCP 对话</h2>
+      
+      <!-- 配置面板 -->
+      <div class="config-panel" id="configPanel">
+        <h3 style="margin-top: 0;">配置</h3>
+        <div class="config-form">
+          <div class="config-item">
+            <label class="config-label">AI 提供商</label>
+            <select class="config-input" id="apiType">
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="deepseek" selected>DeepSeek</option>
+              <option value="ollama">Ollama (本地)</option>
+            </select>
+          </div>
+          <div class="config-item" id="apiKeyItem">
+            <label class="config-label" id="apiKeyLabel">API Key</label>
+            <input type="password" class="config-input" id="apiKey" value="sk-a16f6cb9003a42629d9584197e7f58c8" placeholder="输入您的 API Key">
+          </div>
+          <div class="config-item" id="deepseekModelItem" style="display: none;">
+            <label class="config-label">DeepSeek 模型</label>
+            <select class="config-input" id="deepseekModel">
+              <option value="deepseek-chat">deepseek-chat (非思考模式)</option>
+              <option value="deepseek-reasoner">deepseek-reasoner (思考模式)</option>
+            </select>
+          </div>
+          <div class="config-item" id="ollamaConfig" style="display: none;">
+            <label class="config-label">Ollama 地址</label>
+            <input type="text" class="config-input" id="ollamaBaseURL" placeholder="http://localhost:11434" value="http://localhost:11434">
+          </div>
+          <div class="config-item" id="ollamaModelItem" style="display: none;">
+            <label class="config-label">Ollama 模型</label>
+            <input type="text" class="config-input" id="ollamaModel" placeholder="gpt-oss:20b, llama2, mistral 等" value="gpt-oss:20b">
+          </div>
+          <div class="config-item">
+            <label class="config-label">JADX MCP 服务器地址</label>
+            <input type="text" class="config-input" id="mcpBaseURL" placeholder="http://127.0.0.1:9999 (默认) 或 http://127.0.0.1:8651" value="http://127.0.0.1:9999">
+          </div>
+          <div class="config-item full-width">
+            <button type="button" class="send-button" id="saveConfigBtn" style="width: auto;">保存配置并连接</button>
+          </div>
+        </div>
+        <div id="statusInfo" style="margin-top: 16px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.7);">
+          <span class="status-indicator status-disconnected"></span>
+          <span>未连接</span>
+        </div>
+      </div>
+
+      <!-- 对话容器 -->
+      <div class="chat-container" id="chatContainer" style="display: none;">
+        <!-- 清除对话按钮 -->
+        <div style="padding: 12px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: flex-end;">
+          <button class="send-button" id="clearChatBtn" style="padding: 8px 16px; font-size: 14px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(220, 38, 38, 0.8) 100%);">
+            清除对话
+          </button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="message assistant">
+            <div class="message-avatar">AI</div>
+            <div class="message-content">
+              <div>您好！我是 JADX MCP 助手。我可以帮您分析 Android APK 文件。请先配置 API Key 和 MCP 服务器地址。</div>
+              <div class="message-time">系统</div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-container">
+          <div class="chat-input-wrapper">
+            <textarea 
+              class="chat-input" 
+              id="chatInput" 
+              placeholder="输入您的问题，例如：分析当前选中的类，查找安全漏洞..." 
+              rows="1"
+            ></textarea>
+            <button class="send-button" id="sendBtn" disabled>发送</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+  <script>
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', () => {
+    let sessionId = '';
+    let isLoading = false;
+    let currentAbortController = null;
+    let currentEventSource = null;
+
+    // 加载消息历史（智能合并，不覆盖正在显示的消息）
+    async function loadMessages() {
+      if (!sessionId) return;
+      
+      // 如果正在加载中，不要清空消息（避免删除正在流式传输的消息）
+      if (isLoading) {
+        console.log('[loadMessages] 正在加载中，跳过重新加载消息');
+        return;
+      }
+      
+      try {
+        const resp = await fetch(`/mcp/jadx/messages?sessionId=${sessionId}`);
+        const data = await resp.json();
+        if (data.success && data.messages) {
+          const messagesDiv = document.getElementById('chatMessages');
+          // 再次检查（可能在请求期间状态改变了）
+          if (isLoading) {
+            console.log('[loadMessages] 在请求期间检测到正在加载，跳过清空消息');
+            return;
+          }
+          
+          // 智能合并策略：保留正在显示的消息，只更新/添加服务器上的消息
+          // 获取当前显示的消息（用于比较）
+          const existingMessages = Array.from(messagesDiv.querySelectorAll('.message')).map(msgEl => {
+            const role = msgEl.classList.contains('user') ? 'user' : 'assistant';
+            const contentEl = msgEl.querySelector('.message-content');
+            const content = contentEl ? contentEl.textContent.trim() : '';
+            const timeEl = contentEl ? contentEl.querySelector('.message-time') : null;
+            const time = timeEl ? timeEl.textContent : '';
+            return { role, content, time };
+          });
+          
+          // 如果服务器消息数量明显少于当前显示的消息，可能是服务器还未保存，不覆盖
+          const serverMessages = data.messages.filter(msg => msg.role !== 'tool');
+          if (serverMessages.length < existingMessages.length - 2) { // 允许一些误差
+            console.log('[loadMessages] 服务器消息数量少于当前显示，跳过覆盖（可能正在保存中）');
+            return;
+          }
+          
+          // 清空并重新加载（此时应该是安全的）
+          messagesDiv.innerHTML = '';
+          serverMessages.forEach(msg => {
+            addMessage(msg.role, msg.content, msg.time);
+          });
+          scrollToBottom();
+        }
+      } catch (err) {
+        console.error('加载消息失败:', err);
+      }
+    }
+
+    // 检查会话状态
+    async function checkStatus() {
+      if (!sessionId) return;
+      
+      try {
+        const resp = await fetch(`/mcp/jadx/status?sessionId=${sessionId}`);
+        const data = await resp.json();
+        if (data.success) {
+          updateStatus(data);
+        }
+      } catch (err) {
+        console.error('检查状态失败:', err);
+      }
+    }
+
+    // 更新状态显示
+    function updateStatus(data) {
+      const statusInfo = document.getElementById('statusInfo');
+      const indicator = statusInfo.querySelector('.status-indicator');
+      const sendBtn = document.getElementById('sendBtn');
+      const chatContainer = document.getElementById('chatContainer');
+      
+      if (data.mcpConnected && data.hasApiKey) {
+        indicator.className = 'status-indicator status-connected';
+        statusInfo.innerHTML = `<span class="status-indicator status-connected"></span><span>已连接 (${data.apiType || 'unknown'})</span>`;
+        // 已连接时确保发送按钮可用（不检查 isLoading，允许随时发送）
+        if (sendBtn) {
+          sendBtn.disabled = false;
+        }
+        
+        // 如果是首次连接（chatContainer 未显示），显示容器并发送欢迎消息
+        if (chatContainer && chatContainer.style.display === 'none') {
+          chatContainer.style.display = 'flex';
+          // 检查消息列表是否为空或只有系统消息
+          const messagesDiv = document.getElementById('chatMessages');
+          const messages = messagesDiv.querySelectorAll('.message');
+          // 如果消息为空或只有一条系统消息，发送欢迎消息
+          if (messages.length === 0 || (messages.length === 1 && messages[0].querySelector('.message-content').textContent.includes('请先配置'))) {
+            // 清空现有消息
+            messagesDiv.innerHTML = '';
+            // 自动添加 AI 欢迎消息
+            addMessage('assistant', '您好！我是 JADX MCP 助手。我可以帮您分析 Android APK 文件。', '', false);
+          }
+        }
+      } else {
+        indicator.className = 'status-indicator status-disconnected';
+        let statusText = '未连接';
+        if (!data.hasApiKey) statusText += ' (缺少 API Key)';
+        if (!data.mcpConnected) statusText += ' (MCP 未连接)';
+        statusInfo.innerHTML = `<span class="status-indicator status-disconnected"></span><span>${statusText}</span>`;
+        // 未连接时禁用发送按钮（因为无法正常使用）
+        if (sendBtn) {
+          sendBtn.disabled = true;
+        }
+      }
+    }
+
+    // 更新 UI 根据 API 类型
+    function updateUIForAPIType(apiType) {
+      const apiKeyItem = document.getElementById('apiKeyItem');
+      const apiKeyLabel = document.getElementById('apiKeyLabel');
+      const deepseekModelItem = document.getElementById('deepseekModelItem');
+      const ollamaConfig = document.getElementById('ollamaConfig');
+      const ollamaModelItem = document.getElementById('ollamaModelItem');
+      
+      if (apiType === 'ollama') {
+        apiKeyItem.style.display = 'none';
+        deepseekModelItem.style.display = 'none';
+        ollamaConfig.style.display = 'flex';
+        ollamaModelItem.style.display = 'flex';
+      } else if (apiType === 'deepseek') {
+        apiKeyItem.style.display = 'flex';
+        deepseekModelItem.style.display = 'flex';
+        ollamaConfig.style.display = 'none';
+        ollamaModelItem.style.display = 'none';
+        apiKeyLabel.textContent = 'API Key';
+      } else {
+        apiKeyItem.style.display = 'flex';
+        deepseekModelItem.style.display = 'none';
+        ollamaConfig.style.display = 'none';
+        ollamaModelItem.style.display = 'none';
+        apiKeyLabel.textContent = 'API Key';
+      }
+    }
+    
+    // 确保 DOM 元素已加载后再绑定事件
+    const apiTypeSelect = document.getElementById('apiType');
+    if (apiTypeSelect) {
+      // 切换 AI 提供商时的 UI 更新
+      apiTypeSelect.addEventListener('change', (e) => {
+        updateUIForAPIType(e.target.value);
+      });
+      
+      // 页面加载时根据默认值更新 UI（已经在 DOMContentLoaded 中，直接执行）
+      const defaultApiType = apiTypeSelect.value;
+      updateUIForAPIType(defaultApiType);
+    } else {
+      console.error('[初始化] 找不到 apiType 元素');
+    }
+
+    // 保存配置事件处理函数
+    const handleSaveConfig = async () => {
+      const apiType = document.getElementById('apiType').value;
+      let apiKey = '';
+      const mcpBaseURL = document.getElementById('mcpBaseURL').value.trim();
+      let ollamaBaseURL = '';
+      let ollamaModel = '';
+
+      if (apiType === 'ollama') {
+        ollamaBaseURL = document.getElementById('ollamaBaseURL').value.trim();
+        ollamaModel = document.getElementById('ollamaModel').value.trim();
+        
+        if (!ollamaBaseURL) {
+          alert('请输入 Ollama 地址');
+          return;
+        }
+        if (!ollamaModel) {
+          alert('请输入 Ollama 模型名称');
+          return;
+        }
+      } else if (apiType === 'deepseek') {
+        apiKey = document.getElementById('apiKey').value.trim();
+        if (!apiKey) {
+          alert('请输入 DeepSeek API Key');
+          return;
+        }
+        // DeepSeek 的 model 会在后端处理
+      } else {
+        apiKey = document.getElementById('apiKey').value.trim();
+        if (!apiKey) {
+          alert('请输入 API Key');
+          return;
+        }
+      }
+
+      if (!mcpBaseURL) {
+        alert('请输入 MCP 服务器地址');
+        return;
+      }
+
+      try {
+        const deepseekModel = apiType === 'deepseek' ? document.getElementById('deepseekModel').value.trim() : '';
+        const resp = await fetch('/mcp/jadx/configure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: sessionId || '',
+            apiKey: apiType === 'ollama' ? '' : apiKey,
+            apiType,
+            baseURL: mcpBaseURL, // MCP 服务器地址
+            model: apiType === 'ollama' ? ollamaModel : (apiType === 'deepseek' ? deepseekModel : ''),  // 模型名称
+            ollamaBaseURL: apiType === 'ollama' ? ollamaBaseURL : '' // Ollama 地址
+          })
+        });
+
+        const data = await resp.json();
+        if (data.success) {
+          sessionId = data.sessionId;
+          localStorage.setItem('jadx_session_id', sessionId);
+          await checkStatus();
+          // checkStatus 中会处理显示欢迎消息，这里只需要确保容器显示
+          const chatContainer = document.getElementById('chatContainer');
+          if (chatContainer) {
+            chatContainer.style.display = 'flex';
+          }
+          await loadMessages();
+          // 检查是否有欢迎消息，如果没有则添加
+          const messagesDiv = document.getElementById('chatMessages');
+          const messages = messagesDiv.querySelectorAll('.message');
+          let hasWelcome = false;
+          for (let msg of messages) {
+            const content = msg.querySelector('.message-content')?.textContent || '';
+            if (content.includes('您好！我是 JADX MCP 助手')) {
+              hasWelcome = true;
+              break;
+            }
+          }
+          if (!hasWelcome) {
+            // 如果没有欢迎消息，添加一个
+            messagesDiv.innerHTML = '';
+            addMessage('assistant', '您好！我是 JADX MCP 助手。我可以帮您分析 Android APK 文件。', '', false);
+          }
+          alert('配置保存成功！');
+        } else {
+          alert('配置失败: ' + (data.message || '未知错误'));
+        }
+      } catch (err) {
+        alert('配置失败: ' + err.message);
+      }
+    };
+
+    // 绑定保存配置按钮事件（确保在 DOMContentLoaded 中执行）
+    function bindSaveConfigButton() {
+      const saveConfigBtn = document.getElementById('saveConfigBtn');
+      if (saveConfigBtn) {
+        console.log('[初始化] 找到保存配置按钮，绑定事件监听器');
+        // 移除可能存在的旧监听器（防止重复绑定）
+        saveConfigBtn.onclick = null;
+        // 直接绑定事件
+        saveConfigBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('[按钮点击] 保存配置按钮被点击');
+          console.log('[按钮点击] 准备调用 handleSaveConfig');
+          try {
+            handleSaveConfig();
+          } catch (err) {
+            console.error('[按钮点击] 调用 handleSaveConfig 时发生错误:', err);
+            alert('配置失败: ' + err.message);
+          }
+        });
+        console.log('[初始化] 保存配置按钮事件绑定成功');
+        return true;
+      } else {
+        console.error('[初始化] 找不到保存配置按钮元素! 请检查按钮ID是否为 saveConfigBtn');
+        return false;
+      }
+    }
+    
+    // 立即尝试绑定
+    if (!bindSaveConfigButton()) {
+      // 延迟重试
+      setTimeout(() => {
+        if (!bindSaveConfigButton()) {
+          console.error('[初始化] 延迟重试后仍然找不到保存配置按钮!');
+        }
+      }, 100);
+    }
+
+    // 发送消息
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('chatInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    
+    // 清除对话按钮
+    document.getElementById('clearChatBtn').addEventListener('click', () => {
+      if (confirm('确定要清除所有对话记录吗？此操作不可恢复。')) {
+        const messagesDiv = document.getElementById('chatMessages');
+        messagesDiv.innerHTML = '';
+        // 添加初始欢迎消息
+        addMessage('assistant', '您好！我是 JADX MCP 助手。我可以帮您分析 Android APK 文件。', '', false);
+        scrollToBottom();
+      }
+    });
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      // 检查是否可以发送
+      if (!message) {
+        console.log('[sendMessage] 消息为空，不发送');
+        return;
+      }
+      if (!sessionId) {
+        console.log('[sendMessage] sessionId 未设置，不发送');
+        return;
+      }
+      // 如果正在加载中，取消当前请求后发送新消息
+      if (isLoading) {
+        console.log('[sendMessage] 检测到正在加载中，取消当前请求后发送新消息，当前 isLoading:', isLoading);
+        if (currentAbortController) {
+          console.log('[sendMessage] 中止当前请求');
+          currentAbortController.abort();
+          // 注意：不立即设置为 null，让 finally 块处理
+        }
+        if (currentEventSource) {
+          currentEventSource.close();
+          currentEventSource = null;
+        }
+        // 等待一小段时间，确保前一个请求的 finally 块执行完成并重置 isLoading
+        // 这很重要，确保 finally 块中的 isLoading = false 先执行
+        await new Promise(resolve => setTimeout(resolve, 150));
+        // 再次检查，如果仍然是 true，强制重置（防御性编程）
+        if (isLoading) {
+          console.warn('[sendMessage] 警告：等待后 isLoading 仍为 true，强制重置');
+          isLoading = false;
+        }
+        document.getElementById('sendBtn').disabled = false;
+        console.log('[sendMessage] 等待完成，isLoading 已重置为:', isLoading);
+      }
+      console.log('[sendMessage] 开始发送消息，isLoading:', isLoading);
+
+      // 检查 API 类型
+      const apiType = document.getElementById('apiType').value;
+      const isOllama = apiType === 'ollama';
+
+      input.value = '';
+      isLoading = true;
+      // 不禁用发送按钮，允许用户随时发送新消息
+      // document.getElementById('sendBtn').disabled = true;
+      
+      // 先添加用户消息（确保顺序正确：用户消息在 AI 消息之前）
+      addMessage('user', message);
+      
+      // 然后创建 AI 的空消息框（用于实时更新），确保是 assistant 角色
+      const loadingId = addMessage('assistant', '', '', false);
+      // 验证创建的消息框确实是 assistant 角色
+      const createdMsg = document.getElementById(loadingId);
+      if (!createdMsg) {
+        console.error('[sendMessage] 错误: 无法找到创建的消息元素!', loadingId);
+        isLoading = false;
+        document.getElementById('sendBtn').disabled = false;
+        return;
+      }
+      if (!createdMsg.classList.contains('assistant')) {
+        console.error('[sendMessage] 错误: 创建的 loadingId 消息不是 assistant 角色!', loadingId, '实际类名:', createdMsg.className);
+        // 尝试找到最后一个 assistant 消息
+        const assistantMessages = document.querySelectorAll('.message.assistant');
+        if (assistantMessages.length > 0) {
+          const lastAssistant = assistantMessages[assistantMessages.length - 1];
+          console.log('[sendMessage] 使用找到的 assistant 消息:', lastAssistant.id);
+          await sendMessageStream(lastAssistant.id, message);
+        } else {
+          console.error('[sendMessage] 找不到任何 assistant 消息框，无法继续');
+          isLoading = false;
+          document.getElementById('sendBtn').disabled = false;
+        }
+        return;
+      }
+      
+      await sendMessageStream(loadingId, message);
+    }
+
+    async function sendMessageStream(loadingId, message) {
+      let currentText = '';
+      let aborted = false;
+
+      // 创建 AbortController 用于取消请求
+      currentAbortController = new AbortController();
+      
+      // 监听中止事件
+      currentAbortController.signal.addEventListener('abort', () => {
+        aborted = true;
+        console.log('[Stream] AbortController 被中止');
+      });
+
+      try {
+        console.log('[Stream] 开始发送流式请求');
+        const response = await fetch('/mcp/jadx/chat/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            message
+          }),
+          signal: currentAbortController.signal
+        });
+        
+        console.log('[Stream] 收到响应，状态:', response.status);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let firstDataReceived = false;
+
+        console.log('[Stream] 开始读取流式数据');
+
+        while (true) {
+          if (aborted) {
+            console.log('[Stream] 用户中止');
+            break;
+          }
+
+          const { done, value } = await reader.read();
+          
+          if (done) {
+            console.log('[Stream] 流结束，buffer剩余:', buffer);
+            // 处理剩余的 buffer
+            if (buffer.trim()) {
+              const lines = buffer.split('\n');
+              for (const line of lines) {
+                if (line.trim().startsWith('data: ')) {
+                  try {
+                    const jsonStr = line.substring(6).trim();
+                    if (jsonStr && jsonStr !== 'null') {
+                      const data = JSON.parse(jsonStr);
+                      if (typeof data === 'string') {
+                        currentText += data;
+                        firstDataReceived = true;
+                      }
+                    }
+                  } catch (e) {
+                    console.warn('[Stream] 处理剩余buffer时出错:', e);
+                  }
+                }
+              }
+            }
+            // 流结束时立即恢复发送状态（必须在 finally 之前设置）
+            console.log('[Stream] 流处理完成，恢复发送状态，done=true');
+            // 不在这里设置 isLoading，统一在 finally 块中处理
+            break;
+          }
+
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+          
+          // 按行处理（SSE格式: data: ...\n\n）
+          const lines = buffer.split('\n');
+          
+          // 保留最后一个不完整的行
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (trimmedLine.startsWith('data: ')) {
+              try {
+                const jsonStr = trimmedLine.substring(6).trim();
+                if (jsonStr && jsonStr !== 'null' && jsonStr !== '""') {
+                  const data = JSON.parse(jsonStr);
+                  if (typeof data === 'string') {
+                    currentText += data;
+                    firstDataReceived = true;
+                    // 实时更新显示到 AI 的消息框（确保是 assistant 角色）
+                    console.log('[Stream] 收到数据片段，长度:', data.length, '总长度:', currentText.length, 'loadingId:', loadingId);
+                    // 验证 loadingId 对应的消息是 assistant 角色
+                    const messageDiv = document.getElementById(loadingId);
+                    if (messageDiv && !messageDiv.classList.contains('assistant')) {
+                      console.error('[Stream] 错误: loadingId 对应的消息不是 assistant 角色!', loadingId);
+                    }
+                    updateMessageStreaming(loadingId, currentText);
+                    scrollToBottom();
+        } else {
+                    console.warn('[Stream] 数据不是字符串:', typeof data, data);
+                  }
+                }
+              } catch (e) {
+                // 输出详细错误信息用于调试
+                console.warn('[Stream] 解析 SSE 数据失败:', e, '原始行:', line, 'JSON字符串:', trimmedLine.substring(6));
+              }
+            } else if (trimmedLine.length > 0) {
+              // 记录非 data: 行的内容（可能是其他 SSE 事件）
+              console.log('[Stream] 收到非 data 行:', trimmedLine.substring(0, 50));
+            }
+          }
+        }
+
+        // 完成时添加时间戳并确保恢复发送状态
+        if (aborted) {
+          // 如果被中止，保留已收到的内容（不显示错误信息），只添加时间戳
+          if (currentText.trim()) {
+            // 有内容，保留内容并添加时间戳
+            updateMessage(loadingId, 'assistant', currentText);
+            console.log('[Stream] 流被中止，但保留了已收到的内容');
+          } else {
+            // 没有内容，可能需要显示错误或移除消息框
+            const messageDiv = document.getElementById(loadingId);
+            if (messageDiv) {
+              const contentDiv = messageDiv.querySelector('.message-content');
+              if (contentDiv) {
+                // 移除加载指示器（如果有）
+                const loadingIndicator = contentDiv.querySelector('.loading-indicator');
+                if (loadingIndicator) {
+                  contentDiv.innerHTML = '';
+                  contentDiv.textContent = '请求已取消';
+                  const timeDiv = document.createElement('div');
+                  timeDiv.className = 'message-time';
+                  timeDiv.textContent = new Date().toLocaleString();
+                  contentDiv.appendChild(timeDiv);
+                }
+              }
+            }
+          }
+          isLoading = false;
+        } else if (currentText.trim()) {
+          // 正常完成，有内容
+          updateMessage(loadingId, 'assistant', currentText);
+          isLoading = false;
+        } else if (!firstDataReceived) {
+          // 正常完成但没有收到任何数据
+          console.warn('[Stream] 警告: 没有收到任何数据');
+          updateMessage(loadingId, 'assistant', '错误: 没有收到响应数据');
+          isLoading = false;
+        } else {
+          // 其他情况，确保状态恢复
+          isLoading = false;
+        }
+      } catch (err) {
+        // 检查是否是中止错误
+        if (err.name === 'AbortError' || aborted) {
+          aborted = true;
+          // 如果被中止，保留已收到的内容，不显示错误
+          if (currentText.trim()) {
+            updateMessage(loadingId, 'assistant', currentText);
+            console.log('[Stream] 流被中止但有错误，保留了已收到的内容');
+          }
+        } else {
+          // 只有在没有被中止的情况下才显示错误
+          updateMessage(loadingId, 'assistant', '错误: ' + err.message);
+        }
+      } finally {
+        // 确保状态完全恢复（立即执行，不等待异步操作）
+        console.log('[Stream] finally 块执行，立即恢复所有状态，aborted:', aborted, 'isLoading 设为 false');
+        // 最重要：立即重置 isLoading 状态，确保后续请求不被误判
+        isLoading = false;
+        // 不再修改发送按钮状态，允许用户随时发送
+        currentAbortController = null;
+        currentEventSource = null;
+        
+        // 只在流正常完成（非取消）时才重新加载消息
+        // 避免在流式传输期间或取消时清空正在显示的消息
+        if (!aborted) {
+          // 异步操作放到后台执行，不阻塞状态恢复
+          // 延迟一点再加载，确保消息已保存到服务器
+          setTimeout(() => {
+            // 再次检查状态，确保不在加载中
+            if (!isLoading) {
+              Promise.all([
+                checkStatus().catch(e => console.error('[Stream] checkStatus 失败:', e)),
+                loadMessages().catch(e => console.error('[Stream] loadMessages 失败:', e))
+              ]).then(() => {
+                console.log('[Stream] 所有清理操作完成，用户可以发送新消息了，isLoading:', isLoading);
+              }).catch(e => {
+                console.error('[Stream] 清理操作失败:', e);
+              });
+            } else {
+              console.log('[Stream] 检测到新的加载中状态，跳过 loadMessages');
+            }
+          }, 500); // 延迟500ms，确保服务器已保存消息
+        } else {
+          // 如果被取消，只检查状态，不重新加载消息（避免清空正在显示的内容）
+          // 被中止的流已经在前端保留了已收到的内容，不需要从服务器重新加载
+          checkStatus().catch(e => console.error('[Stream] checkStatus 失败:', e));
+        }
+      }
+    }
+
+    // 添加消息
+    function addMessage(role, content, time = '', isLoading = false) {
+      const messagesDiv = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+      // 使用更高精度的时间戳和随机数确保 ID 唯一性
+      const id = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5) + '_' + role;
+      messageDiv.id = id;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'message-avatar';
+      avatar.textContent = role === 'user' ? 'U' : 'AI';
+
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+      
+      if (isLoading) {
+        contentDiv.innerHTML = '<div class="loading-indicator"></div> 正在思考...';
+      } else {
+        contentDiv.textContent = content;
+        if (time) {
+          const timeDiv = document.createElement('div');
+          timeDiv.className = 'message-time';
+          timeDiv.textContent = new Date(time).toLocaleString();
+          contentDiv.appendChild(timeDiv);
+        }
+      }
+
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(contentDiv);
+      messagesDiv.appendChild(messageDiv);
+      scrollToBottom();
+      return id;
+    }
+
+    // 更新消息
+    function updateMessage(id, role, content) {
+      const messageDiv = document.getElementById(id);
+      if (!messageDiv) return;
+      const contentDiv = messageDiv.querySelector('.message-content');
+      // 清除加载指示器
+      contentDiv.innerHTML = '';
+      // 使用 textContent 避免 XSS，但保留换行
+      const textNode = document.createTextNode(content);
+      contentDiv.appendChild(textNode);
+      // 添加时间戳
+      const timeDiv = document.createElement('div');
+      timeDiv.className = 'message-time';
+      timeDiv.textContent = new Date().toLocaleString();
+      contentDiv.appendChild(timeDiv);
+      scrollToBottom();
+    }
+
+    // 流式更新消息（实时显示思考过程）
+    function updateMessageStreaming(id, content) {
+      const messageDiv = document.getElementById(id);
+      if (!messageDiv) {
+        console.warn('找不到消息元素:', id);
+        return;
+      }
+      
+      // 确保这个消息是 assistant 角色（工具调用结果应该显示在 AI 对话框中）
+      if (!messageDiv.classList.contains('assistant')) {
+        console.error('[updateMessageStreaming] 错误: 尝试更新非 assistant 消息框! ID:', id, '类名:', messageDiv.className);
+        // 如果错误地尝试更新用户消息，找到或创建正确的 assistant 消息框
+        const assistantMessages = document.querySelectorAll('.message.assistant');
+        if (assistantMessages.length > 0) {
+          const lastAssistant = assistantMessages[assistantMessages.length - 1];
+          // 使用找到的 assistant 消息框
+          const correctMessageDiv = lastAssistant;
+          const correctId = lastAssistant.id;
+          console.log('[updateMessageStreaming] 已切换到正确的 assistant 消息框:', correctId);
+          // 使用正确的消息框继续处理
+          const contentDiv = correctMessageDiv.querySelector('.message-content');
+          if (!contentDiv) {
+            console.warn('找不到内容元素');
+            return;
+          }
+          
+          // 清除加载指示器和之前的内容
+          const loadingIndicator = contentDiv.querySelector('.loading-indicator');
+          if (loadingIndicator) {
+            contentDiv.innerHTML = '';
+          }
+          
+          // 移除时间戳（如果存在，完成后再添加）
+          const timeDiv = contentDiv.querySelector('.message-time');
+          if (timeDiv) {
+            timeDiv.remove();
+          }
+          
+          // 更新文本内容
+          let textNode = contentDiv.firstChild;
+          if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+            // 更新现有文本节点
+            textNode.textContent = content;
+          } else {
+            // 清除所有内容并添加新内容
+            contentDiv.innerHTML = '';
+            if (content) {
+              contentDiv.textContent = content;
+            }
+          }
+          return;
+        } else {
+          console.error('[updateMessageStreaming] 找不到任何 assistant 消息框');
+          return;
+        }
+      }
+      
+      const contentDiv = messageDiv.querySelector('.message-content');
+      if (!contentDiv) {
+        console.warn('找不到内容元素');
+        return;
+      }
+      
+      // 清除加载指示器和之前的内容
+      const loadingIndicator = contentDiv.querySelector('.loading-indicator');
+      if (loadingIndicator) {
+        contentDiv.innerHTML = '';
+      }
+      
+      // 如果没有内容，显示空字符串（但不返回，允许显示空内容）
+      
+      // 更新内容（保留换行）
+      // 先检查是否已经有文本节点
+      let textNode = contentDiv.firstChild;
+      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+        // 更新现有文本节点
+        textNode.textContent = content;
+      } else {
+        // 清除所有子节点并添加新内容
+        // 移除时间戳（如果存在）
+        const timeDiv = contentDiv.querySelector('.message-time');
+        if (timeDiv) {
+          timeDiv.remove();
+        }
+        // 清除所有内容
+        contentDiv.innerHTML = '';
+        // 添加新内容（使用 textContent 和 CSS white-space: pre-wrap 来处理换行）
+        if (content) {
+          contentDiv.textContent = content;
+        }
+      }
+      
+      // 移除时间戳，完成后再添加
+      const timeDiv = contentDiv.querySelector('.message-time');
+      if (timeDiv) {
+        timeDiv.remove();
+      }
+    }
+
+    // 滚动到底部
+    function scrollToBottom() {
+      const messagesDiv = document.getElementById('chatMessages');
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // 初始化（已经在 DOMContentLoaded 中，确保所有元素都已加载）
+    (async () => {
+      const savedSessionId = localStorage.getItem('jadx_session_id');
+      if (savedSessionId) {
+        sessionId = savedSessionId;
+        await checkStatus();
+        // checkStatus 中会处理显示欢迎消息和容器
+        const chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) {
+          chatContainer.style.display = 'flex';
+        }
+        await loadMessages();
+      }
+    })();
+    }); // DOMContentLoaded 结束
+  </script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>扫描报告 - NeonScan</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a href="ports.html">端口扫描</a>
+      <a href="dirs.html">目录扫描</a>
+      <a href="poc.html">POC 扫描</a>
+      <a href="exp.html">EXP 验证</a>
+      <a href="probe.html">Web 探针</a>
+      <a href="shouji.html">解包与JS信息收集</a>
+      <a href="jadx_mcp.html">JADX MCP</a>
+      <a href="waf.html">绕 WAF</a>
+      <a href="ai_analysis.html">AI 分析</a>
+      <a class="active" href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+
+  <main class="content">
+    <section class="card">
+      <h2>扫描报告</h2>
+      <div class="report-controls">
+        <div class="btn-row">
+          <button id="clear-report" class="btn btn-ghost">清空报告</button>
+          <button id="export-report" class="btn">导出报告</button>
+          <button id="refresh-report" class="btn btn-ghost">刷新</button>
+        </div>
+      </div>
+      
+      <div class="report-summary">
+        <h3>扫描概览</h3>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-label">扫描时间</span>
+            <span class="summary-value" id="scan-time">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">目标数量</span>
+            <span class="summary-value" id="target-count">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">发现端口</span>
+            <span class="summary-value" id="port-count">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">发现目录</span>
+            <span class="summary-value" id="dir-count">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">漏洞数量</span>
+            <span class="summary-value" id="vuln-count">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Web应用</span>
+            <span class="summary-value" id="web-count">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">JS/URL收集</span>
+            <span class="summary-value" id="shouji-count">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-sections">
+        <!-- 端口扫描报告 -->
+        <div class="report-section" id="port-scan-section" style="display:none">
+          <h3>端口扫描结果</h3>
+          <div class="section-content">
+            <div class="section-info">
+              <span class="info-item">目标: <span id="port-target">-</span></span>
+              <span class="info-item">扫描时间: <span id="port-time">-</span></span>
+              <span class="info-item">扫描类型: <span id="port-type">-</span></span>
+            </div>
+            <div class="results-table" id="port-results"></div>
+          </div>
+        </div>
+
+        <!-- 目录扫描报告 -->
+        <div class="report-section" id="dir-scan-section" style="display:none">
+          <h3>目录扫描结果</h3>
+          <div class="section-content">
+            <div class="section-info">
+              <span class="info-item">目标: <span id="dir-target">-</span></span>
+              <span class="info-item">扫描时间: <span id="dir-time">-</span></span>
+              <span class="info-item">字典文件: <span id="dir-dict">-</span></span>
+            </div>
+            <div class="results-table" id="dir-results"></div>
+          </div>
+        </div>
+
+        <!-- POC扫描报告 -->
+        <div class="report-section" id="poc-scan-section" style="display:none">
+          <h3>POC 扫描结果</h3>
+          <div class="section-content">
+            <div class="section-info">
+              <span class="info-item">目标: <span id="poc-target">-</span></span>
+              <span class="info-item">扫描时间: <span id="poc-time">-</span></span>
+              <span class="info-item">POC数量: <span id="poc-count">-</span></span>
+            </div>
+            <div class="results-table" id="poc-results"></div>
+          </div>
+        </div>
+
+        <!-- EXP验证报告 -->
+        <div class="report-section" id="exp-scan-section" style="display:none">
+          <h3>EXP 验证结果</h3>
+          <div class="section-content">
+            <div class="section-info">
+              <span class="info-item">目标: <span id="exp-target">-</span></span>
+              <span class="info-item">验证时间: <span id="exp-time">-</span></span>
+              <span class="info-item">EXP数量: <span id="exp-count">-</span></span>
+            </div>
+            <div class="results-table" id="exp-results"></div>
+          </div>
+        </div>
+
+        <!-- Web探针报告 -->
+        <div class="report-section" id="web-probe-section" style="display:none">
+          <h3>Web 探针结果</h3>
+          <div class="section-content">
+            <div class="section-info">
+              <span class="info-item">扫描时间: <span id="web-time">-</span></span>
+              <span class="info-item">目标数量: <span id="web-target-count">-</span></span>
+            </div>
+            <div class="results-table" id="web-results"></div>
+          </div>
+        </div>
+
+        <!-- WAF绕过报告 -->
+        <div class="report-section" id="waf-scan-section" style="display:none">
+          <h3>WAF绕过结果</h3>
+          <div class="section-content">
+            <div class="section-info">
+              <span class="info-item">目标: <span id="waf-target">-</span></span>
+              <span class="info-item">测试时间: <span id="waf-time">-</span></span>
+              <span class="info-item">策略: <span id="waf-strategies">-</span></span>
+            </div>
+            <div class="results-table" id="waf-results"></div>
+          </div>
+        </div>
+
+        <!-- 解包与JS信息收集报告 -->
+        <div class="report-section" id="shouji-scan-section" style="display:none">
+          <h3>解包与JS信息收集结果</h3>
+          <div class="section-content">
+            <div class="section-info">
+              <span class="info-item">目标: <span id="shouji-target">-</span></span>
+              <span class="info-item">扫描时间: <span id="shouji-time">-</span></span>
+              <span class="info-item">JS文件: <span id="shouji-js-count">0</span></span>
+              <span class="info-item">URL数量: <span id="shouji-url-count">0</span></span>
+            </div>
+            <div class="results-table" id="shouji-results"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-empty" id="report-empty">
+        <div class="empty-content">
+          <h3>暂无扫描数据</h3>
+          <p>请先执行扫描任务，扫描结果将自动添加到报告中</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
+

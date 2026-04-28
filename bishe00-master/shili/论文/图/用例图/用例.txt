@@ -1,0 +1,175 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+left to right direction
+
+title NeonScan 安全测试工具 - 用例图
+
+' ========== 功能模块 ==========
+package "NeonScan安全测试系统" {
+    
+    ' ========== 基础扫描模块 ==========
+    package "基础扫描模块" {
+        usecase "UC01: 端口扫描" as UC01
+        usecase "UC02: TCP端口扫描" as UC02
+        usecase "UC03: UDP端口扫描" as UC03
+        usecase "UC04: Banner抓取" as UC04
+        usecase "UC05: 目录扫描" as UC05
+        usecase "UC06: Web探针扫描" as UC06
+        
+        UC01 ..> UC02 : <<include>>
+        UC01 ..> UC03 : <<include>>
+        UC01 ..> UC04 : <<extend>>
+    }
+    
+    ' ========== 漏洞检测模块 ==========
+    package "漏洞检测模块" {
+        usecase "UC07: POC漏洞扫描" as UC07
+        usecase "UC08: 传统POC检测" as UC08
+        usecase "UC09: X-Ray POC检测" as UC09
+        usecase "UC10: Nuclei POC检测" as UC10
+        usecase "UC11: EXP漏洞验证" as UC11
+        usecase "UC12: WAF绕过测试" as UC12
+        
+        UC07 ..> UC08 : <<include>>
+        UC07 ..> UC09 : <<include>>
+        UC07 ..> UC10 : <<include>>
+    }
+    
+    ' ========== 资产收集模块 ==========
+    package "资产收集模块" {
+        usecase "UC13: JS/URL收集" as UC13
+        usecase "UC14: FFUF目录爆破" as UC14
+        usecase "UC15: URLFinder收集" as UC15
+        usecase "UC16: Packer解包" as UC16
+        usecase "UC17: 结果合并分析" as UC17
+        usecase "UC18: 文件上传管理" as UC18
+    }
+    
+    ' ========== AI智能分析模块 ==========
+    package "AI智能分析模块" {
+        usecase "UC19: AI安全对话" as UC19
+        usecase "UC20: AI漏洞分析" as UC20
+        usecase "UC21: AI代码审计" as UC21
+        usecase "UC22: AI报告生成" as UC22
+        usecase "UC23: AI自动扫描" as UC23
+        usecase "UC24: 选择AI Provider" as UC24
+        
+        UC19 ..> UC24 : <<include>>
+        UC23 ..> UC01 : <<include>>
+        UC23 ..> UC05 : <<include>>
+        UC23 ..> UC07 : <<include>>
+    }
+    
+    ' ========== MCP工具集成模块 ==========
+    package "MCP工具集成模块" {
+        usecase "UC25: IDA Pro集成" as UC25
+        usecase "UC26: IDA二进制分析" as UC26
+        usecase "UC27: IDA函数提取" as UC27
+        usecase "UC28: IDA字符串提取" as UC28
+        usecase "UC29: JADX集成" as UC29
+        usecase "UC30: JADX APK反编译" as UC30
+        usecase "UC31: JADX Activity分析" as UC31
+        usecase "UC32: JADX权限分析" as UC32
+        
+        UC25 ..> UC26 : <<include>>
+        UC25 ..> UC27 : <<include>>
+        UC25 ..> UC28 : <<include>>
+        UC29 ..> UC30 : <<include>>
+        UC29 ..> UC31 : <<include>>
+        UC29 ..> UC32 : <<include>>
+    }
+    
+    ' ========== 任务管理模块 ==========
+    package "任务管理模块" {
+        usecase "UC33: 创建扫描任务" as UC33
+        usecase "UC34: 停止扫描任务" as UC34
+        usecase "UC35: 查看任务进度" as UC35
+        usecase "UC36: 导出扫描结果" as UC36
+        usecase "UC37: SSE实时推送" as UC37
+        
+        UC33 ..> UC37 : <<include>>
+        UC35 ..> UC37 : <<include>>
+    }
+}
+
+' ========== 外部系统 ==========
+rectangle "外部系统" {
+    usecase "OpenAI API" as EXT01
+    usecase "DeepSeek API" as EXT02
+    usecase "Anthropic API" as EXT03
+    usecase "Ollama本地模型" as EXT04
+    usecase "IDA Pro MCP Server" as EXT05
+    usecase "JADX MCP Server" as EXT06
+    usecase "URLFinder工具" as EXT07
+    usecase "FFUF工具" as EXT08
+    usecase "Packer-Fuzzer工具" as EXT09
+}
+
+' ========== 角色定义 ==========
+actor "安全测试人员" as User <<user>>
+
+' ========== 用户与用例的关联 ==========
+
+' 安全测试人员 - 使用所有功能
+User --> UC01
+User --> UC05
+User --> UC06
+User --> UC07
+User --> UC11
+User --> UC12
+User --> UC13
+User --> UC14
+User --> UC15
+User --> UC16
+User --> UC17
+User --> UC18
+User --> UC19
+User --> UC23
+User --> UC24
+User --> UC25
+User --> UC29
+User --> UC33
+User --> UC34
+User --> UC35
+User --> UC36
+
+' ========== 外部系统关联 ==========
+UC24 ..> EXT01 : <<使用>>
+UC24 ..> EXT02 : <<使用>>
+UC24 ..> EXT03 : <<使用>>
+UC24 ..> EXT04 : <<使用>>
+UC25 ..> EXT05 : <<通信>>
+UC29 ..> EXT06 : <<通信>>
+UC15 ..> EXT07 : <<调用>>
+UC14 ..> EXT08 : <<调用>>
+UC16 ..> EXT09 : <<调用>>
+
+' ========== 注释 ==========
+note right of User
+  安全测试人员：
+  - 执行各类扫描任务
+  - 使用AI辅助分析
+  - 调用MCP工具分析
+  - 查看和导出结果
+  
+  本地工具特点：
+  所有使用者权限相同
+  无需角色区分
+end note
+
+note bottom of UC37
+  SSE实时推送技术：
+  - 扫描进度实时更新
+  - 毫秒级延迟
+  - 自动重连机制
+end note
+
+note bottom of UC24
+  支持4种AI Provider：
+  - OpenAI (GPT-4o)
+  - DeepSeek (国内可用)
+  - Anthropic (Claude)
+  - Ollama (本地部署)
+end note
+@enduml

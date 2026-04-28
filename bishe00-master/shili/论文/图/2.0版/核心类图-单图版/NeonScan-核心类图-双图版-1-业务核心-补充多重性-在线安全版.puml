@@ -1,0 +1,205 @@
+@startuml
+title NeonScan 2.0 核心类图（双图版-业务核心）
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam nodesep 18
+skinparam ranksep 22
+
+package "任务与请求" {
+class Task {
+  + ID: string
+  + Total: int
+  + Done: int
+  + IncDone(): result
+  + Send(msg: SSEMessage): bool
+}
+
+class SSEMessage {
+  + Type: string
+  + TaskID: string
+  + Percent: int
+}
+
+class DirScanReq {
+  + BaseURL: string
+  + DictPaths: List(string)
+}
+
+class WebProbeReq {
+  + URLs: List(string)
+  + Headers: Map(string, string)
+}
+
+class PocScanReq {
+  + BaseURL: string
+  + PocDir: string
+}
+
+class ExpExecReq {
+  + BaseURL: string
+  + InlineExps: List(ExpSpec)
+}
+
+class AIGenPythonFromExpReq {
+  + Provider: string
+  + Exp: ExpSpec
+  + Verify: ExpVerifyInfo
+  + AutoVerify: bool
+}
+
+class AIGenPythonFromExpBatchReq {
+  + Provider: string
+  + InlineExps: List(ExpSpec)
+}
+
+class WAFBypassReq {
+  + BaseURL: string
+  + Payloads: List(string)
+  + Strategies: List(string)
+}
+}
+
+package "POC规则" {
+class POC {
+  + Name: string
+  + Path: string
+  + Match: string
+}
+
+class XRPOC {
+  + ID: string
+  + Info: XRInfo
+  + Rules: XRRuleMap
+}
+
+class XRInfo {
+  + Name: string
+  + Severity: string
+}
+
+class XRRule {
+  + Request: XRRequest
+  + Expression: string
+}
+
+class XRRequest {
+  + Method: string
+  + Path: string
+}
+
+class NucleiPOC {
+  + ID: string
+  + Info: NucleiInfo
+  + Requests: NucleiRequestList
+}
+
+class NucleiInfo {
+  + Name: string
+  + Severity: string
+}
+
+class NucleiRequest {
+  + Method: string
+  + Path: StringList
+  + Matchers: NucleiMatcherList
+}
+
+class NucleiMatcher {
+  + Type: string
+  + Words: StringList
+}
+}
+
+package "EXP与AI-EXP" {
+class ExpVerifyInfo {
+  + MatchedSteps: int
+  + LastStatus: int
+}
+
+class ExpSpec {
+  + Name: string
+  + Steps: ExpStepList
+}
+
+class ExpStep {
+  + Method: string
+  + Path: string
+  + Validate: Validation
+  + Extract: ExtractRuleMap
+}
+
+class Validation {
+  + Status: StatusList
+}
+
+class StatusList {
+  + UnmarshalJSON(): error
+}
+
+class ExtractRule {
+  + BodyRegex: StringList
+}
+
+class ExpVerifyConfig {
+  + TargetURL: string
+  + ExpSpec: ExpSpec
+}
+
+class ExpVerifyResult {
+  + Success: bool
+  + Matched: bool
+}
+}
+
+package "辅助数据" {
+class FingerprintRule {
+  + CMS: string
+  + Keyword: StringList
+}
+
+class FingerprintData {
+  + Fingerprint: FingerprintRuleList
+}
+
+class DictInfo {
+  + Name: string
+  + Path: string
+}
+
+class PayloadVariant {
+  + Variant: string
+}
+}
+
+Task "1" --> "0..*" SSEMessage : emits
+DirScanReq "1" ..> "0..*" DictInfo : uses
+WebProbeReq "1" ..> "0..1" FingerprintData : uses
+PocScanReq "1" ..> "0..*" POC : scans
+PocScanReq "1" ..> "0..*" XRPOC : scans
+PocScanReq "1" ..> "0..*" NucleiPOC : scans
+ExpExecReq "1" ..> "0..*" ExpSpec : InlineExps
+AIGenPythonFromExpReq "1" --> "1" ExpSpec : Exp
+AIGenPythonFromExpReq "1" ..> "0..1" ExpVerifyInfo : Verify
+AIGenPythonFromExpBatchReq "1" ..> "0..*" ExpSpec : InlineExps
+WAFBypassReq "1" ..> "0..*" PayloadVariant : produces
+
+XRPOC "1" *-- "1" XRInfo : info
+XRPOC "1" *-- "1..*" XRRule : rules
+XRRule "1" *-- "1" XRRequest : request
+NucleiPOC "1" *-- "1" NucleiInfo : info
+NucleiPOC "1" *-- "1..*" NucleiRequest : requests
+NucleiRequest "1" *-- "0..*" NucleiMatcher : matchers
+
+ExpSpec "1" *-- "1..*" ExpStep : steps
+ExpStep "1" *-- "1" Validation : validate
+ExpStep "1" *-- "0..*" ExtractRule : extract
+Validation "1" *-- "1" StatusList : status
+ExpVerifyConfig "1" --> "1" ExpSpec : ExpSpec
+ExpVerifyConfig "1" ..> "1" ExpVerifyResult : result
+
+FingerprintData "1" *-- "0..*" FingerprintRule : fingerprint
+@enduml

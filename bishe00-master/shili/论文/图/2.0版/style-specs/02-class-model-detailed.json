@@ -1,0 +1,808 @@
+{
+  "metadata": {
+    "system_name": "NeonScan 2.0",
+    "diagram_family": "class_model",
+    "source_basis": [
+      "main.go",
+      "ai_analysis.go",
+      "ai_exp.go",
+      "ai_exp_batch.go",
+      "ai_exp_verify.go",
+      "exp_types.go",
+      "poc_types.go",
+      "waf.go",
+      "web_probe.go",
+      "internal/mcp/common.go",
+      "internal/mcp/ai.go",
+      "internal/mcp/ai_stream.go",
+      "internal/mcp/jadx.go",
+      "internal/mcp/jadx_stream.go"
+    ],
+    "visibility_mapping": {
+      "public": "+",
+      "private": "-"
+    },
+    "notes": [
+      "本JSON按Go代码中的导出/非导出标识区分 public 和 private。",
+      "当前代码中未确认任何稳定的双向字段关联；关系以单向依赖、组合、继承和实现为主。",
+      "当前运行时代码只确认了 JADX MCP 会话与连接实现，未确认可用于类图交付的 IDA MCP 运行时代码结构。"
+    ]
+  },
+  "diagrams": [
+    {
+      "id": "main",
+      "title": "NeonScan 2.0 主类图",
+      "scope": "任务管理、扫描请求、POC规则、EXP与AI-EXP、MCP/JADX核心",
+      "packages": [
+        {
+          "id": "pkg_task",
+          "name": "任务管理",
+          "classes": [
+            {
+              "id": "Task",
+              "kind": "class",
+              "source": "main.go",
+              "attributes": [
+                { "visibility": "-", "name": "m", "type": "sync.Mutex" },
+                { "visibility": "+", "name": "ID", "type": "string" },
+                { "visibility": "+", "name": "Total", "type": "int" },
+                { "visibility": "+", "name": "Done", "type": "int" },
+                { "visibility": "+", "name": "Created", "type": "time.Time" },
+                { "visibility": "-", "name": "ch", "type": "chan SSEMessage" },
+                { "visibility": "-", "name": "stop", "type": "chan struct{}" },
+                { "visibility": "-", "name": "stopped", "type": "bool" }
+              ],
+              "methods": [
+                { "visibility": "+", "name": "IncDone", "parameters": [], "returns": "(int, int)" },
+                { "visibility": "+", "name": "Send", "parameters": ["msg: SSEMessage"], "returns": "bool" },
+                { "visibility": "+", "name": "Close", "parameters": [], "returns": "void" }
+              ]
+            },
+            {
+              "id": "SSEMessage",
+              "kind": "class",
+              "source": "main.go",
+              "attributes": [
+                { "visibility": "+", "name": "Type", "type": "string" },
+                { "visibility": "+", "name": "TaskID", "type": "string" },
+                { "visibility": "+", "name": "Progress", "type": "string" },
+                { "visibility": "+", "name": "Percent", "type": "int" },
+                { "visibility": "+", "name": "Data", "type": "interface{}" }
+              ],
+              "methods": []
+            }
+          ]
+        },
+        {
+          "id": "pkg_requests",
+          "name": "扫描请求",
+          "classes": [
+            {
+              "id": "PortScanReq",
+              "kind": "class",
+              "source": "main.go / port_scan.go",
+              "attributes": [
+                { "visibility": "+", "name": "Host", "type": "string" },
+                { "visibility": "+", "name": "Ports", "type": "string" },
+                { "visibility": "+", "name": "Concurrency", "type": "int" },
+                { "visibility": "+", "name": "TimeoutMs", "type": "int" },
+                { "visibility": "+", "name": "ScanType", "type": "string" },
+                { "visibility": "+", "name": "GrabBanner", "type": "bool" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "DirScanReq",
+              "kind": "class",
+              "source": "dir_scan.go / main.go",
+              "attributes": [
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "DictPaths", "type": "[]string" },
+                { "visibility": "+", "name": "BuiltinDicts", "type": "[]string" },
+                { "visibility": "+", "name": "Concurrency", "type": "int" },
+                { "visibility": "+", "name": "TimeoutMs", "type": "int" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "WebProbeReq",
+              "kind": "class",
+              "source": "web_probe.go",
+              "attributes": [
+                { "visibility": "+", "name": "URLs", "type": "[]string" },
+                { "visibility": "+", "name": "Concurrency", "type": "int" },
+                { "visibility": "+", "name": "TimeoutMs", "type": "int" },
+                { "visibility": "+", "name": "Headers", "type": "map[string]string" },
+                { "visibility": "+", "name": "FollowRedirect", "type": "bool" },
+                { "visibility": "+", "name": "FetchFavicon", "type": "bool" },
+                { "visibility": "+", "name": "FetchRobots", "type": "bool" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "PocScanReq",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "PocDir", "type": "string" },
+                { "visibility": "+", "name": "PocPaths", "type": "[]string" },
+                { "visibility": "+", "name": "TimeoutMs", "type": "int" },
+                { "visibility": "+", "name": "Concurrency", "type": "int" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "ExpExecReq",
+              "kind": "class",
+              "source": "exp_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "ExpDir", "type": "string" },
+                { "visibility": "+", "name": "ExpPaths", "type": "[]string" },
+                { "visibility": "+", "name": "InlineExps", "type": "[]ExpSpec" },
+                { "visibility": "+", "name": "Concurrency", "type": "int" },
+                { "visibility": "+", "name": "TimeoutMs", "type": "int" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "AIAnalyzeReq",
+              "kind": "class",
+              "source": "ai_analysis.go",
+              "attributes": [
+                { "visibility": "+", "name": "Provider", "type": "string" },
+                { "visibility": "+", "name": "APIKey", "type": "string" },
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "Model", "type": "string" },
+                { "visibility": "+", "name": "ReportData", "type": "map[string]interface{}" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "AIGenPythonFromExpReq",
+              "kind": "class",
+              "source": "ai_exp.go",
+              "attributes": [
+                { "visibility": "+", "name": "Provider", "type": "string" },
+                { "visibility": "+", "name": "APIKey", "type": "string" },
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "Model", "type": "string" },
+                { "visibility": "+", "name": "TargetBaseURL", "type": "string" },
+                { "visibility": "+", "name": "TimeoutMs", "type": "int" },
+                { "visibility": "+", "name": "Exp", "type": "ExpSpec" },
+                { "visibility": "+", "name": "Verify", "type": "*ExpVerifyInfo" },
+                { "visibility": "+", "name": "AutoVerify", "type": "bool" },
+                { "visibility": "+", "name": "TargetURL", "type": "string" },
+                { "visibility": "+", "name": "MaxRetries", "type": "int" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "AIGenPythonFromExpBatchReq",
+              "kind": "class",
+              "source": "ai_exp_batch.go",
+              "attributes": [
+                { "visibility": "+", "name": "Provider", "type": "string" },
+                { "visibility": "+", "name": "APIKey", "type": "string" },
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "Model", "type": "string" },
+                { "visibility": "+", "name": "TargetBaseURL", "type": "string" },
+                { "visibility": "+", "name": "TimeoutMs", "type": "int" },
+                { "visibility": "+", "name": "ExpDir", "type": "string" },
+                { "visibility": "+", "name": "ExpPaths", "type": "[]string" },
+                { "visibility": "+", "name": "InlineExps", "type": "[]ExpSpec" },
+                { "visibility": "+", "name": "Concurrency", "type": "int" }
+              ],
+              "methods": []
+            }
+          ]
+        },
+        {
+          "id": "pkg_poc",
+          "name": "POC规则",
+          "classes": [
+            {
+              "id": "POC",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Name", "type": "string" },
+                { "visibility": "+", "name": "Method", "type": "string" },
+                { "visibility": "+", "name": "Path", "type": "string" },
+                { "visibility": "+", "name": "Body", "type": "string" },
+                { "visibility": "+", "name": "Headers", "type": "map[string]string" },
+                { "visibility": "+", "name": "Match", "type": "string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "XRPOC",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "ID", "type": "string" },
+                { "visibility": "+", "name": "Info", "type": "XRInfo" },
+                { "visibility": "+", "name": "Rules", "type": "map[string]XRRule" },
+                { "visibility": "+", "name": "Expression", "type": "string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "XRInfo",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Name", "type": "string" },
+                { "visibility": "+", "name": "Author", "type": "string" },
+                { "visibility": "+", "name": "Severity", "type": "string" },
+                { "visibility": "+", "name": "Reference", "type": "[]string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "XRRule",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Request", "type": "XRRequest" },
+                { "visibility": "+", "name": "Expression", "type": "string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "XRRequest",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Method", "type": "string" },
+                { "visibility": "+", "name": "Path", "type": "string" },
+                { "visibility": "+", "name": "Body", "type": "string" },
+                { "visibility": "+", "name": "Headers", "type": "map[string]string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "NucleiPOC",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "ID", "type": "string" },
+                { "visibility": "+", "name": "Info", "type": "NucleiInfo" },
+                { "visibility": "+", "name": "Requests", "type": "[]NucleiRequest" },
+                { "visibility": "+", "name": "Matchers", "type": "[]NucleiMatcher" },
+                { "visibility": "+", "name": "MatchersCondition", "type": "string" },
+                { "visibility": "+", "name": "MaxRedirects", "type": "int" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "NucleiInfo",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Name", "type": "string" },
+                { "visibility": "+", "name": "Author", "type": "string" },
+                { "visibility": "+", "name": "Severity", "type": "string" },
+                { "visibility": "+", "name": "Risk", "type": "string" },
+                { "visibility": "+", "name": "Reference", "type": "[]string" },
+                { "visibility": "+", "name": "Description", "type": "string" },
+                { "visibility": "+", "name": "Tags", "type": "[]string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "NucleiRequest",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Method", "type": "string" },
+                { "visibility": "+", "name": "Path", "type": "[]string" },
+                { "visibility": "+", "name": "Headers", "type": "interface{}" },
+                { "visibility": "+", "name": "Body", "type": "string" },
+                { "visibility": "+", "name": "Matchers", "type": "[]NucleiMatcher" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "NucleiMatcher",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Type", "type": "string" },
+                { "visibility": "+", "name": "Part", "type": "string" },
+                { "visibility": "+", "name": "Words", "type": "[]string" },
+                { "visibility": "+", "name": "Regex", "type": "[]string" },
+                { "visibility": "+", "name": "Condition", "type": "string" },
+                { "visibility": "+", "name": "Status", "type": "[]int" },
+                { "visibility": "+", "name": "Dsl", "type": "[]string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "NucleiHeaders",
+              "kind": "class",
+              "source": "poc_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "MapHeaders", "type": "map[string]string" },
+                { "visibility": "+", "name": "ArrayHeaders", "type": "[]interface{}" }
+              ],
+              "methods": [
+                { "visibility": "+", "name": "UnmarshalYAML", "parameters": ["unmarshal: func(interface{}) error"], "returns": "error" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pkg_exp",
+          "name": "EXP与AI-EXP",
+          "classes": [
+            {
+              "id": "ExpVerifyInfo",
+              "kind": "class",
+              "source": "ai_exp.go",
+              "attributes": [
+                { "visibility": "+", "name": "MatchedSteps", "type": "int" },
+                { "visibility": "+", "name": "LastStatus", "type": "int" },
+                { "visibility": "+", "name": "Usage", "type": "string" },
+                { "visibility": "+", "name": "Suggestion", "type": "string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "ExpSpec",
+              "kind": "class",
+              "source": "exp_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Name", "type": "string" },
+                { "visibility": "+", "name": "Steps", "type": "[]ExpStep" },
+                { "visibility": "+", "name": "ExploitSuggestion", "type": "string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "ExpStep",
+              "kind": "class",
+              "source": "exp_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Method", "type": "string" },
+                { "visibility": "+", "name": "Path", "type": "string" },
+                { "visibility": "+", "name": "Body", "type": "string" },
+                { "visibility": "+", "name": "Headers", "type": "map[string]string" },
+                { "visibility": "+", "name": "Validate", "type": "Validation" },
+                { "visibility": "+", "name": "Extract", "type": "map[string]ExtractRule" },
+                { "visibility": "+", "name": "Retry", "type": "int" },
+                { "visibility": "+", "name": "RetryDelayMs", "type": "int" },
+                { "visibility": "+", "name": "SleepMs", "type": "int" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "Validation",
+              "kind": "class",
+              "source": "exp_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "Status", "type": "StatusList" },
+                { "visibility": "+", "name": "BodyContains", "type": "[]string" },
+                { "visibility": "+", "name": "HeaderContains", "type": "map[string]string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "StatusList",
+              "kind": "class",
+              "source": "exp_types.go",
+              "attributes": [],
+              "methods": [
+                { "visibility": "+", "name": "UnmarshalJSON", "parameters": ["data: []byte"], "returns": "error" },
+                { "visibility": "+", "name": "UnmarshalYAML", "parameters": ["unmarshal: func(interface{}) error"], "returns": "error" }
+              ]
+            },
+            {
+              "id": "ExtractRule",
+              "kind": "class",
+              "source": "exp_types.go",
+              "attributes": [
+                { "visibility": "+", "name": "BodyRegex", "type": "[]string" },
+                { "visibility": "+", "name": "HeaderRegex", "type": "map[string]string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "ExpVerifyConfig",
+              "kind": "class",
+              "source": "ai_exp_verify.go",
+              "attributes": [
+                { "visibility": "+", "name": "TargetURL", "type": "string" },
+                { "visibility": "+", "name": "ExpSpec", "type": "ExpSpec" },
+                { "visibility": "+", "name": "PythonCode", "type": "string" },
+                { "visibility": "+", "name": "Category", "type": "VulnCategory" },
+                { "visibility": "+", "name": "MaxRetries", "type": "int" },
+                { "visibility": "+", "name": "TimeoutSec", "type": "int" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "ExpVerifyResult",
+              "kind": "class",
+              "source": "ai_exp_verify.go",
+              "attributes": [
+                { "visibility": "+", "name": "Success", "type": "bool" },
+                { "visibility": "+", "name": "Output", "type": "string" },
+                { "visibility": "+", "name": "Error", "type": "string" },
+                { "visibility": "+", "name": "Matched", "type": "bool" },
+                { "visibility": "+", "name": "CanExtract", "type": "bool" },
+                { "visibility": "+", "name": "ExtractDemo", "type": "string" }
+              ],
+              "methods": []
+            }
+          ]
+        },
+        {
+          "id": "pkg_mcp",
+          "name": "MCP接口 / JADX",
+          "classes": [
+            {
+              "id": "MCPConnection",
+              "kind": "interface",
+              "source": "internal/mcp/common.go",
+              "attributes": [],
+              "methods": [
+                { "visibility": "+", "name": "IsConnected", "parameters": [], "returns": "bool" },
+                { "visibility": "+", "name": "GetTools", "parameters": [], "returns": "[]AITool" },
+                { "visibility": "+", "name": "CallTool", "parameters": ["name: string", "arguments: map[string]interface{}"], "returns": "(interface{}, error)" }
+              ]
+            },
+            {
+              "id": "ChatSession",
+              "kind": "interface",
+              "source": "internal/mcp/common.go",
+              "attributes": [],
+              "methods": [
+                { "visibility": "+", "name": "GetID", "parameters": [], "returns": "string" },
+                { "visibility": "+", "name": "GetAPIKey", "parameters": [], "returns": "string" },
+                { "visibility": "+", "name": "GetAPIType", "parameters": [], "returns": "string" },
+                { "visibility": "+", "name": "GetMessages", "parameters": [], "returns": "[]ChatMessage" },
+                { "visibility": "+", "name": "GetMCPConnection", "parameters": [], "returns": "MCPConnection" },
+                { "visibility": "+", "name": "SetMessages", "parameters": ["messages: []ChatMessage"], "returns": "void" },
+                { "visibility": "+", "name": "AddMessage", "parameters": ["msg: ChatMessage"], "returns": "void" },
+                { "visibility": "+", "name": "GetLastActivity", "parameters": [], "returns": "time.Time" },
+                { "visibility": "+", "name": "UpdateLastActivity", "parameters": [], "returns": "void" }
+              ]
+            },
+            {
+              "id": "BaseChatSession",
+              "kind": "class",
+              "source": "internal/mcp/common.go",
+              "attributes": [
+                { "visibility": "-", "name": "mu", "type": "sync.RWMutex" },
+                { "visibility": "+", "name": "ID", "type": "string" },
+                { "visibility": "+", "name": "APIKey", "type": "string" },
+                { "visibility": "+", "name": "APIType", "type": "string" },
+                { "visibility": "+", "name": "Messages", "type": "[]ChatMessage" },
+                { "visibility": "+", "name": "MCPConnection", "type": "MCPConnection" },
+                { "visibility": "+", "name": "CreatedAt", "type": "time.Time" },
+                { "visibility": "+", "name": "LastActivity", "type": "time.Time" }
+              ],
+              "methods": [
+                { "visibility": "+", "name": "GetID", "parameters": [], "returns": "string" },
+                { "visibility": "+", "name": "GetAPIKey", "parameters": [], "returns": "string" },
+                { "visibility": "+", "name": "GetAPIType", "parameters": [], "returns": "string" },
+                { "visibility": "+", "name": "GetMessages", "parameters": [], "returns": "[]ChatMessage" },
+                { "visibility": "+", "name": "GetMCPConnection", "parameters": [], "returns": "MCPConnection" },
+                { "visibility": "+", "name": "SetMessages", "parameters": ["messages: []ChatMessage"], "returns": "void" },
+                { "visibility": "+", "name": "AddMessage", "parameters": ["msg: ChatMessage"], "returns": "void" },
+                { "visibility": "+", "name": "GetLastActivity", "parameters": [], "returns": "time.Time" },
+                { "visibility": "+", "name": "UpdateLastActivity", "parameters": [], "returns": "void" }
+              ]
+            },
+            {
+              "id": "JADXMCPConnection",
+              "kind": "class",
+              "source": "internal/mcp/jadx.go",
+              "attributes": [
+                { "visibility": "-", "name": "mu", "type": "sync.RWMutex" },
+                { "visibility": "-", "name": "baseURL", "type": "string" },
+                { "visibility": "-", "name": "client", "type": "*http.Client" },
+                { "visibility": "-", "name": "connected", "type": "bool" },
+                { "visibility": "-", "name": "tools", "type": "[]MCPTool" },
+                { "visibility": "-", "name": "lastRequestID", "type": "int64" },
+                { "visibility": "-", "name": "sessionID", "type": "string" }
+              ],
+              "methods": [
+                { "visibility": "-", "name": "initialize", "parameters": [], "returns": "error" },
+                { "visibility": "-", "name": "listTools", "parameters": [], "returns": "([]MCPTool, error)" },
+                { "visibility": "+", "name": "SendMCPRequest", "parameters": ["method: string", "params: map[string]interface{}"], "returns": "(map[string]interface{}, error)" },
+                { "visibility": "+", "name": "CallTool", "parameters": ["toolName: string", "arguments: map[string]interface{}"], "returns": "(interface{}, error)" },
+                { "visibility": "+", "name": "GetTools", "parameters": [], "returns": "[]AITool" },
+                { "visibility": "+", "name": "IsConnected", "parameters": [], "returns": "bool" },
+                { "visibility": "+", "name": "Close", "parameters": [], "returns": "error" }
+              ]
+            },
+            {
+              "id": "JADXChatSession",
+              "kind": "class",
+              "source": "internal/mcp/jadx.go",
+              "attributes": [],
+              "methods": [
+                { "visibility": "+", "name": "GetOrCreateJADXSession", "parameters": ["sessionID: string"], "returns": "*JADXChatSession" },
+                { "visibility": "+", "name": "CleanupOldJADXSessions", "parameters": ["maxAge: time.Duration"], "returns": "void" }
+              ]
+            },
+            {
+              "id": "MCPTool",
+              "kind": "class",
+              "source": "internal/mcp/jadx.go",
+              "attributes": [
+                { "visibility": "+", "name": "Name", "type": "string" },
+                { "visibility": "+", "name": "Description", "type": "string" },
+                { "visibility": "+", "name": "Parameters", "type": "map[string]interface{}" }
+              ],
+              "methods": []
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        { "id": "r1", "type": "association", "source": "Task", "target": "SSEMessage", "direction": "unidirectional", "label": "emits", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "Task.Send(msg SSEMessage)" },
+        { "id": "r2", "type": "dependency", "source": "ExpExecReq", "target": "ExpSpec", "direction": "unidirectional", "label": "InlineExps", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "ExpExecReq.InlineExps []ExpSpec" },
+        { "id": "r3", "type": "association", "source": "AIGenPythonFromExpReq", "target": "ExpSpec", "direction": "unidirectional", "label": "Exp", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "AIGenPythonFromExpReq.Exp ExpSpec" },
+        { "id": "r4", "type": "dependency", "source": "AIGenPythonFromExpReq", "target": "ExpVerifyInfo", "direction": "unidirectional", "label": "optional Verify", "source_multiplicity": "1", "target_multiplicity": "0..1", "evidence": "AIGenPythonFromExpReq.Verify *ExpVerifyInfo" },
+        { "id": "r5", "type": "dependency", "source": "AIGenPythonFromExpBatchReq", "target": "ExpSpec", "direction": "unidirectional", "label": "InlineExps", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "AIGenPythonFromExpBatchReq.InlineExps []ExpSpec" },
+        { "id": "r6", "type": "composition", "source": "XRPOC", "target": "XRInfo", "direction": "unidirectional", "label": "contains", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "XRPOC.Info XRInfo" },
+        { "id": "r7", "type": "composition", "source": "XRPOC", "target": "XRRule", "direction": "unidirectional", "label": "rules", "source_multiplicity": "1", "target_multiplicity": "1..*", "evidence": "XRPOC.Rules map[string]XRRule" },
+        { "id": "r8", "type": "composition", "source": "XRRule", "target": "XRRequest", "direction": "unidirectional", "label": "request", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "XRRule.Request XRRequest" },
+        { "id": "r9", "type": "composition", "source": "NucleiPOC", "target": "NucleiInfo", "direction": "unidirectional", "label": "info", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "NucleiPOC.Info NucleiInfo" },
+        { "id": "r10", "type": "composition", "source": "NucleiPOC", "target": "NucleiRequest", "direction": "unidirectional", "label": "requests", "source_multiplicity": "1", "target_multiplicity": "1..*", "evidence": "NucleiPOC.Requests []NucleiRequest" },
+        { "id": "r11", "type": "composition", "source": "NucleiPOC", "target": "NucleiMatcher", "direction": "unidirectional", "label": "top-level matchers", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "NucleiPOC.Matchers []NucleiMatcher" },
+        { "id": "r12", "type": "composition", "source": "NucleiRequest", "target": "NucleiMatcher", "direction": "unidirectional", "label": "request matchers", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "NucleiRequest.Matchers []NucleiMatcher" },
+        { "id": "r13", "type": "dependency", "source": "NucleiHeaders", "target": "NucleiRequest", "direction": "unidirectional", "label": "header parsing helper", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "NucleiRequest.Headers interface{}; NucleiHeaders provides YAML parsing bridge" },
+        { "id": "r14", "type": "composition", "source": "ExpSpec", "target": "ExpStep", "direction": "unidirectional", "label": "steps", "source_multiplicity": "1", "target_multiplicity": "1..*", "evidence": "ExpSpec.Steps []ExpStep" },
+        { "id": "r15", "type": "composition", "source": "ExpStep", "target": "Validation", "direction": "unidirectional", "label": "validate", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "ExpStep.Validate Validation" },
+        { "id": "r16", "type": "composition", "source": "ExpStep", "target": "ExtractRule", "direction": "unidirectional", "label": "extract rules", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "ExpStep.Extract map[string]ExtractRule" },
+        { "id": "r17", "type": "composition", "source": "Validation", "target": "StatusList", "direction": "unidirectional", "label": "status", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "Validation.Status StatusList" },
+        { "id": "r18", "type": "association", "source": "ExpVerifyConfig", "target": "ExpSpec", "direction": "unidirectional", "label": "ExpSpec", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "ExpVerifyConfig.ExpSpec ExpSpec" },
+        { "id": "r19", "type": "dependency", "source": "ExpVerifyConfig", "target": "ExpVerifyResult", "direction": "unidirectional", "label": "verifyExp returns", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "verifyExp(... ) ExpVerifyResult" },
+        { "id": "r20", "type": "implementation", "source": "BaseChatSession", "target": "ChatSession", "direction": "unidirectional", "label": "implements", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "BaseChatSession provides all ChatSession methods" },
+        { "id": "r21", "type": "inheritance", "source": "JADXChatSession", "target": "BaseChatSession", "direction": "unidirectional", "label": "embedding/generalization", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "type JADXChatSession struct { BaseChatSession }" },
+        { "id": "r22", "type": "implementation", "source": "JADXMCPConnection", "target": "MCPConnection", "direction": "unidirectional", "label": "implements", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "JADXMCPConnection defines IsConnected/GetTools/CallTool" },
+        { "id": "r23", "type": "composition", "source": "BaseChatSession", "target": "ChatMessage", "direction": "unidirectional", "label": "Messages", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "BaseChatSession.Messages []ChatMessage" },
+        { "id": "r24", "type": "association", "source": "BaseChatSession", "target": "MCPConnection", "direction": "unidirectional", "label": "MCPConnection", "source_multiplicity": "1", "target_multiplicity": "0..1", "evidence": "BaseChatSession.MCPConnection MCPConnection" },
+        { "id": "r25", "type": "composition", "source": "JADXMCPConnection", "target": "MCPTool", "direction": "unidirectional", "label": "tools cache", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "JADXMCPConnection.tools []MCPTool" }
+      ]
+    },
+    {
+      "id": "supplement",
+      "title": "NeonScan 2.0 补充类图",
+      "scope": "AI Provider、流式控制、WAF、指纹与辅助类型",
+      "packages": [
+        {
+          "id": "pkg_ai",
+          "name": "AI提供者",
+          "classes": [
+            {
+              "id": "ChatMessage",
+              "kind": "class",
+              "source": "internal/mcp/ai.go",
+              "attributes": [
+                { "visibility": "+", "name": "Role", "type": "string" },
+                { "visibility": "+", "name": "Content", "type": "string" },
+                { "visibility": "+", "name": "Time", "type": "string" },
+                { "visibility": "+", "name": "ToolCallID", "type": "string" },
+                { "visibility": "+", "name": "ToolCalls", "type": "[]AIToolCall" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "AIProvider",
+              "kind": "interface",
+              "source": "internal/mcp/ai.go",
+              "attributes": [],
+              "methods": [
+                { "visibility": "+", "name": "Chat", "parameters": ["messages: []ChatMessage", "tools: []AITool"], "returns": "(string, []AIToolCall, error)" }
+              ]
+            },
+            {
+              "id": "ChatStreamProvider",
+              "kind": "interface",
+              "source": "internal/mcp/ai_stream.go",
+              "attributes": [],
+              "methods": [
+                { "visibility": "+", "name": "ChatStream", "parameters": ["messages: []ChatMessage", "tools: []AITool", "controller: *StreamController"], "returns": "(string, []AIToolCall, error)" }
+              ]
+            },
+            {
+              "id": "AITool",
+              "kind": "class",
+              "source": "internal/mcp/ai.go",
+              "attributes": [
+                { "visibility": "+", "name": "Type", "type": "string" },
+                { "visibility": "+", "name": "Name", "type": "string" },
+                { "visibility": "+", "name": "Description", "type": "string" },
+                { "visibility": "+", "name": "Parameters", "type": "map[string]interface{}" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "AIToolCall",
+              "kind": "class",
+              "source": "internal/mcp/ai.go",
+              "attributes": [
+                { "visibility": "+", "name": "ID", "type": "string" },
+                { "visibility": "+", "name": "Name", "type": "string" },
+                { "visibility": "+", "name": "Arguments", "type": "map[string]interface{}" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "OpenAIProvider",
+              "kind": "class",
+              "source": "internal/mcp/ai.go + ai_stream.go",
+              "attributes": [
+                { "visibility": "+", "name": "APIKey", "type": "string" },
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "Model", "type": "string" },
+                { "visibility": "+", "name": "MaxTokens", "type": "int" },
+                { "visibility": "+", "name": "Timeout", "type": "time.Duration" }
+              ],
+              "methods": [
+                { "visibility": "+", "name": "SetTimeout", "parameters": ["timeout: time.Duration"], "returns": "void" },
+                { "visibility": "+", "name": "Chat", "parameters": ["messages: []ChatMessage", "tools: []AITool"], "returns": "(string, []AIToolCall, error)" },
+                { "visibility": "+", "name": "ChatStream", "parameters": ["messages: []ChatMessage", "tools: []AITool", "controller: *StreamController"], "returns": "(string, []AIToolCall, error)" }
+              ]
+            },
+            {
+              "id": "DeepSeekProvider",
+              "kind": "class",
+              "source": "internal/mcp/ai.go + ai_stream.go",
+              "attributes": [
+                { "visibility": "+", "name": "APIKey", "type": "string" },
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "Model", "type": "string" },
+                { "visibility": "+", "name": "MaxTokens", "type": "int" },
+                { "visibility": "+", "name": "Timeout", "type": "time.Duration" }
+              ],
+              "methods": [
+                { "visibility": "+", "name": "SetTimeout", "parameters": ["timeout: time.Duration"], "returns": "void" },
+                { "visibility": "+", "name": "Chat", "parameters": ["messages: []ChatMessage", "tools: []AITool"], "returns": "(string, []AIToolCall, error)" },
+                { "visibility": "+", "name": "ChatStream", "parameters": ["messages: []ChatMessage", "tools: []AITool", "controller: *StreamController"], "returns": "(string, []AIToolCall, error)" }
+              ]
+            },
+            {
+              "id": "AnthropicProvider",
+              "kind": "class",
+              "source": "internal/mcp/ai.go",
+              "attributes": [
+                { "visibility": "+", "name": "APIKey", "type": "string" },
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "Model", "type": "string" },
+                { "visibility": "+", "name": "MaxTokens", "type": "int" },
+                { "visibility": "+", "name": "Timeout", "type": "time.Duration" }
+              ],
+              "methods": [
+                { "visibility": "+", "name": "SetTimeout", "parameters": ["timeout: time.Duration"], "returns": "void" },
+                { "visibility": "+", "name": "Chat", "parameters": ["messages: []ChatMessage", "tools: []AITool"], "returns": "(string, []AIToolCall, error)" }
+              ]
+            },
+            {
+              "id": "OllamaProvider",
+              "kind": "class",
+              "source": "internal/mcp/ai.go + ai_stream.go",
+              "attributes": [
+                { "visibility": "+", "name": "APIKey", "type": "string" },
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "Model", "type": "string" },
+                { "visibility": "+", "name": "MaxTokens", "type": "int" },
+                { "visibility": "+", "name": "Timeout", "type": "time.Duration" }
+              ],
+              "methods": [
+                { "visibility": "+", "name": "SetTimeout", "parameters": ["timeout: time.Duration"], "returns": "void" },
+                { "visibility": "+", "name": "Chat", "parameters": ["messages: []ChatMessage", "tools: []AITool"], "returns": "(string, []AIToolCall, error)" },
+                { "visibility": "+", "name": "ChatStream", "parameters": ["messages: []ChatMessage", "tools: []AITool", "controller: *StreamController"], "returns": "(string, []AIToolCall, error)" }
+              ]
+            },
+            {
+              "id": "StreamController",
+              "kind": "class",
+              "source": "internal/mcp/jadx_stream.go",
+              "attributes": [
+                { "visibility": "-", "name": "mu", "type": "sync.RWMutex" },
+                { "visibility": "-", "name": "aborted", "type": "bool" },
+                { "visibility": "-", "name": "abortChan", "type": "chan struct{}" },
+                { "visibility": "-", "name": "messageChan", "type": "chan string" }
+              ],
+              "methods": [
+                { "visibility": "+", "name": "Abort", "parameters": [], "returns": "void" },
+                { "visibility": "+", "name": "IsAborted", "parameters": [], "returns": "bool" },
+                { "visibility": "+", "name": "Send", "parameters": ["message: string"], "returns": "bool" },
+                { "visibility": "+", "name": "GetMessageChan", "parameters": [], "returns": "<-chan string" },
+                { "visibility": "+", "name": "GetAbortChan", "parameters": [], "returns": "<-chan struct{}" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pkg_waf_other",
+          "name": "WAF与其他辅助类型",
+          "classes": [
+            {
+              "id": "WAFBypassReq",
+              "kind": "class",
+              "source": "waf.go",
+              "attributes": [
+                { "visibility": "+", "name": "BaseURL", "type": "string" },
+                { "visibility": "+", "name": "Path", "type": "string" },
+                { "visibility": "+", "name": "Payloads", "type": "[]string" },
+                { "visibility": "+", "name": "Methods", "type": "[]string" },
+                { "visibility": "+", "name": "Strategies", "type": "[]string" },
+                { "visibility": "+", "name": "Match", "type": "string" },
+                { "visibility": "+", "name": "Concurrency", "type": "int" },
+                { "visibility": "+", "name": "TimeoutMs", "type": "int" },
+                { "visibility": "+", "name": "PayloadType", "type": "PayloadType" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "PayloadVariant",
+              "kind": "class",
+              "source": "waf.go",
+              "attributes": [
+                { "visibility": "+", "name": "Variant", "type": "string" },
+                { "visibility": "+", "name": "Strategies", "type": "[]string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "FingerprintRule",
+              "kind": "class",
+              "source": "web_probe.go",
+              "attributes": [
+                { "visibility": "+", "name": "CMS", "type": "string" },
+                { "visibility": "+", "name": "Method", "type": "string" },
+                { "visibility": "+", "name": "Location", "type": "string" },
+                { "visibility": "+", "name": "Keyword", "type": "[]string" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "FingerprintData",
+              "kind": "class",
+              "source": "web_probe.go",
+              "attributes": [
+                { "visibility": "+", "name": "Fingerprint", "type": "[]FingerprintRule" }
+              ],
+              "methods": []
+            },
+            {
+              "id": "DictInfo",
+              "kind": "class",
+              "source": "dir_scan.go / main.go",
+              "attributes": [
+                { "visibility": "+", "name": "Name", "type": "string" },
+                { "visibility": "+", "name": "Path", "type": "string" },
+                { "visibility": "+", "name": "Category", "type": "string" }
+              ],
+              "methods": []
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        { "id": "s1", "type": "composition", "source": "ChatMessage", "target": "AIToolCall", "direction": "unidirectional", "label": "ToolCalls", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "ChatMessage.ToolCalls []AIToolCall" },
+        { "id": "s2", "type": "implementation", "source": "OpenAIProvider", "target": "AIProvider", "direction": "unidirectional", "label": "implements", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "OpenAIProvider.Chat(...)" },
+        { "id": "s3", "type": "implementation", "source": "DeepSeekProvider", "target": "AIProvider", "direction": "unidirectional", "label": "implements", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "DeepSeekProvider.Chat(...)" },
+        { "id": "s4", "type": "implementation", "source": "AnthropicProvider", "target": "AIProvider", "direction": "unidirectional", "label": "implements", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "AnthropicProvider.Chat(...)" },
+        { "id": "s5", "type": "implementation", "source": "OllamaProvider", "target": "AIProvider", "direction": "unidirectional", "label": "implements", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "OllamaProvider.Chat(...)" },
+        { "id": "s6", "type": "implementation", "source": "OpenAIProvider", "target": "ChatStreamProvider", "direction": "unidirectional", "label": "implements", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "OpenAIProvider.ChatStream(...)" },
+        { "id": "s7", "type": "implementation", "source": "DeepSeekProvider", "target": "ChatStreamProvider", "direction": "unidirectional", "label": "implements", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "DeepSeekProvider.ChatStream(...)" },
+        { "id": "s8", "type": "implementation", "source": "OllamaProvider", "target": "ChatStreamProvider", "direction": "unidirectional", "label": "implements", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "OllamaProvider.ChatStream(...)" },
+        { "id": "s9", "type": "dependency", "source": "ChatStreamProvider", "target": "StreamController", "direction": "unidirectional", "label": "ChatStream controller", "source_multiplicity": "1", "target_multiplicity": "1", "evidence": "ChatStream(... controller *StreamController)" },
+        { "id": "s10", "type": "dependency", "source": "AIProvider", "target": "ChatMessage", "direction": "unidirectional", "label": "input messages", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "AIProvider.Chat(messages []ChatMessage, ...)" },
+        { "id": "s11", "type": "dependency", "source": "AIProvider", "target": "AITool", "direction": "unidirectional", "label": "available tools", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "AIProvider.Chat(... tools []AITool)" },
+        { "id": "s12", "type": "dependency", "source": "AIProvider", "target": "AIToolCall", "direction": "unidirectional", "label": "returns tool calls", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "AIProvider.Chat returns []AIToolCall" },
+        { "id": "s13", "type": "dependency", "source": "WAFBypassReq", "target": "PayloadVariant", "direction": "unidirectional", "label": "produces variants during bypass generation", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "waf.go uses PayloadVariant as transformed payload result type" },
+        { "id": "s14", "type": "composition", "source": "FingerprintData", "target": "FingerprintRule", "direction": "unidirectional", "label": "Fingerprint", "source_multiplicity": "1", "target_multiplicity": "0..*", "evidence": "FingerprintData.Fingerprint []FingerprintRule" }
+      ]
+    }
+  ]
+}

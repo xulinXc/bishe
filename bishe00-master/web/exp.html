@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EXP 验证 - NeonScan</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a href="ports.html">端口扫描</a>
+      <a href="dirs.html">目录扫描</a>
+      <a href="poc.html">POC 扫描</a>
+      <a class="active" href="exp.html">EXP 验证</a>
+      <a href="probe.html">Web 探针</a>
+      <a href="shouji.html">解包与JS信息收集</a>
+      <a href="jadx_mcp.html">JADX MCP</a>
+      <a href="waf.html">绕 WAF</a>
+      <a href="ai_analysis.html">AI 分析</a>
+      <a href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+  <main class="content">
+    <section class="card">
+      <h2>EXP 验证</h2>
+      <div class="grid">
+        <label>基础URL<input id="ex-base" placeholder="https://target.com"/></label>
+        <label>EXP目录绝对路径<div class="input-row"><input id="ex-dir" placeholder="C:\\path\\to\\exploits (JSON/YAML)"/><button id="ex-pick" type="button" class="icon-btn">选择</button></div></label>
+        <label>并发<div class="number-input-wrapper"><input id="ex-conc" type="number" value="50"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('ex-conc', 5)">▲</div><div class="number-stepper" onclick="adjustNumber('ex-conc', -5)">▼</div></div></div></label>
+        <label>超时(毫秒)<div class="number-input-wrapper"><input id="ex-timeout" type="number" value="3000"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('ex-timeout', 500)">▲</div><div class="number-stepper" onclick="adjustNumber('ex-timeout', -500)">▼</div></div></div></label>
+      </div>
+      <div class="divider"></div>
+      <h3>AI 利用生成</h3>
+      <div class="grid">
+        <label>AI提供商
+          <select id="ex-ai-provider">
+            <option value="">不使用</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="ollama">Ollama</option>
+          </select>
+        </label>
+        <label>API Key<input id="ex-ai-api-key" type="password" value="sk-a16f6cb9003a42629d9584197e7f58c8" placeholder="留空则返回本地模板代码"/></label>
+        <label>BaseURL<input id="ex-ai-baseurl" placeholder="可选：自定义BaseURL或Ollama地址"/></label>
+        <label>模型<input id="ex-ai-model" placeholder="可选：留空使用默认模型"/></label>
+      </div>
+      <div class="file-selection-area" id="ex-file-area" style="display:none">
+        <h4>已选择的EXP文件</h4>
+        <div id="ex-dir-list" class="selected-list"></div>
+      </div>
+      <h3>待生成EXP</h3>
+      <div id="exp-pending" class="output"></div>
+      <div class="btn-row"><button id="ex-start" class="btn">开始生成</button> <button id="ex-stop" class="btn btn-ghost">停止</button> <button id="ex-clear" class="btn btn-ghost">清理</button></div>
+      <div class="progress"><div id="ex-bar" class="bar"></div><span id="ex-text">0%</span></div>
+      <div id="ex-out" class="output"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

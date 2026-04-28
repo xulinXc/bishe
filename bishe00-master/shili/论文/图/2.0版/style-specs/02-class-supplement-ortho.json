@@ -1,0 +1,404 @@
+{
+  "title": "NeonScan 2.0 补充类图（原版风格）",
+  "page_name": "02-补充类图-ortho",
+  "page_width": 22.0,
+  "page_height": 14.0,
+  "items": [
+    {
+      "id": "ref_box",
+      "kind": "rectangle",
+      "text": "",
+      "x": 2.3,
+      "y": 11.8,
+      "w": 4.0,
+      "h": 2.4,
+      "layer": 0,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "ref_title",
+      "kind": "rectangle",
+      "text": "主类图引用",
+      "x": 2.3,
+      "y": 12.65,
+      "w": 4.0,
+      "h": 0.45,
+      "layer": 1,
+      "char_size": "8 pt"
+    },
+    {
+      "id": "ai_box",
+      "kind": "rectangle",
+      "text": "",
+      "x": 8.0,
+      "y": 9.2,
+      "w": 10.0,
+      "h": 6.8,
+      "layer": 0,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "ai_title",
+      "kind": "rectangle",
+      "text": "AI提供者",
+      "x": 8.0,
+      "y": 12.25,
+      "w": 10.0,
+      "h": 0.45,
+      "layer": 1,
+      "char_size": "8 pt"
+    },
+    {
+      "id": "other_box",
+      "kind": "rectangle",
+      "text": "",
+      "x": 16.8,
+      "y": 4.0,
+      "w": 4.2,
+      "h": 4.8,
+      "layer": 0,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "other_title",
+      "kind": "rectangle",
+      "text": "其他",
+      "x": 16.8,
+      "y": 6.050000000000001,
+      "w": 4.2,
+      "h": 0.45,
+      "layer": 1,
+      "char_size": "8 pt"
+    },
+    {
+      "id": "waf_box",
+      "kind": "rectangle",
+      "text": "",
+      "x": 3.0,
+      "y": 4.0,
+      "w": 4.2,
+      "h": 2.8,
+      "layer": 0,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "waf_title",
+      "kind": "rectangle",
+      "text": "WAF绕过",
+      "x": 3.0,
+      "y": 5.050000000000001,
+      "w": 4.2,
+      "h": 0.45,
+      "layer": 1,
+      "char_size": "8 pt"
+    },
+    {
+      "id": "ref_basechat",
+      "kind": "rectangle",
+      "text": "基础聊天会话\n(主类图中)",
+      "x": 1.4,
+      "y": 11.5,
+      "w": 2.4,
+      "h": 0.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "ref_mcp",
+      "kind": "rectangle",
+      "text": "MCP连接\n(主类图中)",
+      "x": 3.8,
+      "y": 11.5,
+      "w": 2.0,
+      "h": 0.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "ref_wafreq",
+      "kind": "rectangle",
+      "text": "WAF绕过请求\n(主类图中)",
+      "x": 1.4,
+      "y": 10.2,
+      "w": 2.4,
+      "h": 0.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "ref_dirreq",
+      "kind": "rectangle",
+      "text": "目录扫描请求\n(主类图中)",
+      "x": 3.8,
+      "y": 10.2,
+      "w": 2.4,
+      "h": 0.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "ai_provider",
+      "kind": "rectangle",
+      "text": "<<interface>> AI提供者\n--\nChat()",
+      "x": 6.0,
+      "y": 11.8,
+      "w": 2.4,
+      "h": 1.0,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "stream_provider",
+      "kind": "rectangle",
+      "text": "<<interface>> 流式聊天提供者\n--\nChatStream()",
+      "x": 9.0,
+      "y": 11.8,
+      "w": 2.6,
+      "h": 1.0,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "chat_message",
+      "kind": "rectangle",
+      "text": "聊天消息\n--\nRole\nContent\nTime\nToolCallID\nToolCalls",
+      "x": 12.1,
+      "y": 11.8,
+      "w": 2.4,
+      "h": 1.5,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "ai_tool",
+      "kind": "rectangle",
+      "text": "AI工具\n--\nType\nName\nDescription\nParameters",
+      "x": 15.0,
+      "y": 11.8,
+      "w": 2.2,
+      "h": 1.4,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "ai_call",
+      "kind": "rectangle",
+      "text": "AI工具调用\n--\nID\nName\nArguments",
+      "x": 17.6,
+      "y": 11.8,
+      "w": 2.1,
+      "h": 1.2,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "openai",
+      "kind": "rectangle",
+      "text": "OpenAI提供者\n--\nAPIKey\nBaseURL\nModel\nTimeout\n--\nSetTimeout()\nChat()\nChatStream()",
+      "x": 6.0,
+      "y": 8.7,
+      "w": 2.6,
+      "h": 2.0,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "deepseek",
+      "kind": "rectangle",
+      "text": "DeepSeek提供者\n--\nAPIKey\nBaseURL\nModel\nTimeout\n--\nSetTimeout()\nChat()\nChatStream()",
+      "x": 9.1,
+      "y": 8.7,
+      "w": 2.6,
+      "h": 2.0,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "anthropic",
+      "kind": "rectangle",
+      "text": "Anthropic提供者\n--\nAPIKey\nBaseURL\nModel\nTimeout\n--\nSetTimeout()\nChat()",
+      "x": 12.2,
+      "y": 8.7,
+      "w": 2.6,
+      "h": 1.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "ollama",
+      "kind": "rectangle",
+      "text": "Ollama提供者\n--\nBaseURL\nModel\nTimeout\n--\nSetTimeout()\nChat()\nChatStream()",
+      "x": 15.3,
+      "y": 8.7,
+      "w": 2.6,
+      "h": 1.9,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "stream_ctrl",
+      "kind": "rectangle",
+      "text": "流控制器\n--\naborted\nabortChan\nmessageChan\n--\nAbort()\nIsAborted()\nSend()",
+      "x": 9.0,
+      "y": 5.8,
+      "w": 2.8,
+      "h": 1.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "finger_rule",
+      "kind": "rectangle",
+      "text": "指纹规则\n--\nCMS\nMethod\nLocation\nKeyword",
+      "x": 16.0,
+      "y": 4.7,
+      "w": 2.2,
+      "h": 1.4,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "finger_data",
+      "kind": "rectangle",
+      "text": "指纹数据\n--\nFingerprint",
+      "x": 19.0,
+      "y": 4.7,
+      "w": 2.0,
+      "h": 1.1,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "dict_info",
+      "kind": "rectangle",
+      "text": "字典信息\n--\nName\nPath\nCategory",
+      "x": 16.0,
+      "y": 2.7,
+      "w": 2.2,
+      "h": 1.2,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "payload_variant",
+      "kind": "rectangle",
+      "text": "载荷变体\n--\nVariant\nStrategies",
+      "x": 3.0,
+      "y": 4.0,
+      "w": 2.2,
+      "h": 1.1,
+      "layer": 2,
+      "char_size": "6 pt"
+    }
+  ],
+  "routes": [
+    {
+      "from": "ref_basechat",
+      "to": "ai_provider",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "ref_basechat",
+      "to": "chat_message",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "ref_mcp",
+      "to": "ai_tool",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "ref_wafreq",
+      "to": "payload_variant",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "ref_dirreq",
+      "to": "dict_info",
+      "from_side": "bottom",
+      "to_side": "left"
+    },
+    {
+      "from": "openai",
+      "to": "ai_provider",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "deepseek",
+      "to": "ai_provider",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "anthropic",
+      "to": "ai_provider",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "ollama",
+      "to": "ai_provider",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "openai",
+      "to": "stream_provider",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "deepseek",
+      "to": "stream_provider",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "ollama",
+      "to": "stream_provider",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "chat_message",
+      "to": "ai_call",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "chat_message",
+      "to": "ai_tool",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "stream_ctrl",
+      "to": "openai",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "stream_ctrl",
+      "to": "deepseek",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "stream_ctrl",
+      "to": "ollama",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "finger_data",
+      "to": "finger_rule",
+      "from_side": "left",
+      "to_side": "right"
+    }
+  ]
+}

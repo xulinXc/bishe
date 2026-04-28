@@ -1,0 +1,188 @@
+{
+  "diagram_type": "er",
+  "title": "NeonScan 2.0 逻辑数据模型图",
+  "page_name": "05-逻辑数据模型",
+  "metadata": {
+    "system_name": "NeonScan 2.0",
+    "chapter": "数据设计",
+    "evidence_basis": [
+      "source_code",
+      "runtime_storage"
+    ],
+    "status": "mixed"
+  },
+  "items": [
+    {
+      "id": "task_entity",
+      "kind": "entity",
+      "title": "task_runtime",
+      "fields": [
+        "task_id PK",
+        "total",
+        "done",
+        "created",
+        "stopped"
+      ]
+    },
+    {
+      "id": "sse_entity",
+      "kind": "entity",
+      "title": "sse_message",
+      "fields": [
+        "message_id PK*",
+        "task_id FK",
+        "type",
+        "progress",
+        "percent",
+        "data"
+      ]
+    },
+    {
+      "id": "upload_batch_entity",
+      "kind": "entity",
+      "title": "upload_batch",
+      "fields": [
+        "batch_id PK",
+        "base_dir",
+        "created_at"
+      ]
+    },
+    {
+      "id": "uploaded_file_entity",
+      "kind": "entity",
+      "title": "uploaded_file",
+      "fields": [
+        "file_path PK",
+        "batch_id FK",
+        "file_name",
+        "file_size"
+      ]
+    },
+    {
+      "id": "exp_spec_entity",
+      "kind": "entity",
+      "title": "exp_spec",
+      "fields": [
+        "exp_name PK",
+        "exploit_suggestion"
+      ]
+    },
+    {
+      "id": "exp_step_entity",
+      "kind": "entity",
+      "title": "exp_step",
+      "fields": [
+        "step_no PK",
+        "exp_name FK",
+        "method",
+        "path",
+        "body",
+        "retry",
+        "sleep_ms"
+      ]
+    },
+    {
+      "id": "jadx_session_entity",
+      "kind": "entity",
+      "title": "jadx_session",
+      "fields": [
+        "session_id PK",
+        "api_type",
+        "created_at",
+        "last_activity",
+        "mcp_connected"
+      ]
+    },
+    {
+      "id": "chat_message_entity",
+      "kind": "entity",
+      "title": "chat_message",
+      "fields": [
+        "message_id PK*",
+        "session_id FK",
+        "role",
+        "content",
+        "time",
+        "tool_call_id"
+      ]
+    },
+    {
+      "id": "task_message_rel",
+      "kind": "relationship",
+      "text": "emits"
+    },
+    {
+      "id": "batch_file_rel",
+      "kind": "relationship",
+      "text": "contains"
+    },
+    {
+      "id": "exp_step_rel",
+      "kind": "relationship",
+      "text": "contains"
+    },
+    {
+      "id": "session_message_rel",
+      "kind": "relationship",
+      "text": "contains"
+    }
+  ],
+  "connectors": [
+    {
+      "from": "task_entity",
+      "to": "task_message_rel",
+      "kind": "association",
+      "cardinality_from": "1",
+      "cardinality_to": "N"
+    },
+    {
+      "from": "task_message_rel",
+      "to": "sse_entity",
+      "kind": "association",
+      "cardinality_from": "N",
+      "cardinality_to": "1"
+    },
+    {
+      "from": "upload_batch_entity",
+      "to": "batch_file_rel",
+      "kind": "association",
+      "cardinality_from": "1",
+      "cardinality_to": "N"
+    },
+    {
+      "from": "batch_file_rel",
+      "to": "uploaded_file_entity",
+      "kind": "association",
+      "cardinality_from": "N",
+      "cardinality_to": "1"
+    },
+    {
+      "from": "exp_spec_entity",
+      "to": "exp_step_rel",
+      "kind": "association",
+      "cardinality_from": "1",
+      "cardinality_to": "N"
+    },
+    {
+      "from": "exp_step_rel",
+      "to": "exp_step_entity",
+      "kind": "association",
+      "cardinality_from": "N",
+      "cardinality_to": "1"
+    },
+    {
+      "from": "jadx_session_entity",
+      "to": "session_message_rel",
+      "kind": "association",
+      "cardinality_from": "1",
+      "cardinality_to": "N"
+    },
+    {
+      "from": "session_message_rel",
+      "to": "chat_message_entity",
+      "kind": "association",
+      "cardinality_from": "N",
+      "cardinality_to": "1"
+    }
+  ]
+}

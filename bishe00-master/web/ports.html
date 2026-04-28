@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>端口扫描 - NeonScan</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a class="active" href="ports.html">端口扫描</a>
+      <a href="dirs.html">目录扫描</a>
+      <a href="poc.html">POC 扫描</a>
+      <a href="exp.html">EXP 验证</a>
+      <a href="probe.html">Web 探针</a>
+      <a href="shouji.html">解包与JS信息收集</a>
+      <a href="jadx_mcp.html">JADX MCP</a>
+      <a href="waf.html">绕 WAF</a>
+      <a href="ai_analysis.html">AI 分析</a>
+      <a href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+  <main class="content">
+    <section class="card">
+      <h2>端口扫描</h2>
+      <div class="grid">
+        <label>目标主机/IP<input id="ps-host" placeholder="example.com 或 192.168.1.1"/></label>
+        <label>端口范围/列表<input id="ps-ports" placeholder="1-1024,80,443,3306"/></label>
+        <label>并发<div class="number-input-wrapper"><input id="ps-conc" type="number" value="500"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('ps-conc', 1)">▲</div><div class="number-stepper" onclick="adjustNumber('ps-conc', -1)">▼</div></div></div></label>
+        <label>超时(毫秒)<div class="number-input-wrapper"><input id="ps-timeout" type="number" value="300"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('ps-timeout', 50)">▲</div><div class="number-stepper" onclick="adjustNumber('ps-timeout', -50)">▼</div></div></div></label>
+        <label>扫描类型<div class="multi-checkbox"><label><input type="checkbox" id="ps-tcp" checked/> TCP</label><label><input type="checkbox" id="ps-udp"/> UDP</label></div></label>
+        <label>抓取 Banner<div class="checkline"><input id="ps-banner" type="checkbox"/> <span>仅 TCP 尝试读取服务欢迎信息</span></div></label>
+      </div>
+      <div class="btn-row"><button id="ps-start" class="btn">开始扫描</button> <button id="ps-stop" class="btn btn-ghost">停止</button> <button id="ps-clear" class="btn btn-ghost">清理</button></div>
+      <div class="progress"><div id="ps-bar" class="bar"></div><span id="ps-text">0%</span></div>
+      <div id="ps-out" class="output"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

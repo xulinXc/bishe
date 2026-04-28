@@ -1,0 +1,463 @@
+@startuml 类图
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+package "任务管理" {
+  class 任务 {
+    - mu: sync.Mutex
+    - ID: string
+    - Total: int
+    - Done: int
+    - Created: time.Time
+    - ch: chan SSE消息
+    - stop: chan struct{}
+    - stopped: bool
+    --
+    + 增加已完成数(): (int, int)
+    + 发送消息(消息: SSE消息): bool
+    + 关闭(): void
+  }
+  
+  class SSE消息 {
+    + Type: string
+    + TaskID: string
+    + Progress: string
+    + Percent: int
+    + Data: interface{}
+  }
+}
+
+package "扫描请求" {
+  class 端口扫描请求 {
+    + Host: string
+    + Ports: string
+    + Concurrency: int
+    + TimeoutMs: int
+    + ScanType: string
+    + GrabBanner: bool
+  }
+  
+  class 目录扫描请求 {
+    + BaseURL: string
+    + DictPaths: []string
+    + BuiltinDicts: []string
+    + Concurrency: int
+    + TimeoutMs: int
+  }
+  
+  class POC扫描请求 {
+    + BaseURL: string
+    + PocDir: string
+    + PocPaths: []string
+    + TimeoutMs: int
+    + Concurrency: int
+  }
+  
+  class WAF绕过请求 {
+    + BaseURL: string
+    + Path: string
+    + Payloads: []string
+    + Methods: []string
+    + Strategies: []string
+    + Match: string
+    + Concurrency: int
+    + TimeoutMs: int
+  }
+  
+  class EXP执行请求 {
+    + BaseURL: string
+    + ExpDir: string
+    + ExpPaths: []string
+    + InlineExps: []EXP规范
+    + Concurrency: int
+    + TimeoutMs: int
+  }
+  
+  class Web探测请求 {
+    + URLs: []string
+    + Concurrency: int
+    + TimeoutMs: int
+    + Headers: map[string]string
+    + FollowRedirect: bool
+    + FetchFavicon: bool
+    + FetchRobots: bool
+  }
+  
+  class AI分析请求 {
+    + SessionID: string
+    + Message: string
+    + Provider: string
+    + APIKey: string
+    + Model: string
+  }
+}
+
+package "POC规则" {
+  class POC规则 {
+    + Name: string
+    + Method: string
+    + Path: string
+    + Body: string
+    + Headers: map[string]string
+    + MatchHeaders: map[string]string
+    + MatchBodyAny: []string
+    + MatchBodyAll: []string
+    + Match: string
+    + Retry: int
+    + RetryDelayMs: int
+  }
+  
+  class X射线POC规则 {
+    + ID: string
+    + Info: X射线POC信息
+    + Rules: map[string]X射线规则
+    + Expression: string
+  }
+  
+  class X射线POC信息 {
+    + Name: string
+    + Author: string
+    + Severity: string
+    + Reference: []string
+  }
+  
+  class X射线规则 {
+    + Request: X射线请求
+    + Expression: string
+  }
+  
+  class X射线请求 {
+    + Method: string
+    + Path: string
+    + Body: string
+    + Headers: map[string]string
+  }
+  
+  class 核素POC规则 {
+    + ID: string
+    + Info: 核素POC信息
+    + Requests: []核素请求
+    + Matchers: []核素匹配器
+    + MatchersCondition: string
+    + MaxRedirects: int
+  }
+  
+  class 核素POC信息 {
+    + Name: string
+    + Author: string
+    + Severity: string
+    + Risk: string
+    + Reference: []string
+    + Description: string
+    + Tags: []string
+  }
+  
+  class 核素请求 {
+    + Raw: []string
+    + Method: string
+    + Path: []string
+    + URL: string
+    + Redirect: bool
+    + Headers: interface{}
+    + Body: string
+    + FollowRedirects: bool
+    + Matchers: []核素匹配器
+  }
+  
+  class 核素匹配器 {
+    + Type: string
+    + Part: string
+    + Words: []string
+    + Regex: []string
+    + Condition: string
+    + Status: []int
+    + Dsl: []string
+  }
+  
+  class 核素请求头 {
+    + MapHeaders: map[string]string
+    + ArrayHeaders: []interface{}
+    --
+    + 解析YAML(): error
+  }
+  
+  X射线POC规则 "1" *-- "1" X射线POC信息
+  X射线POC规则 "1" *-- "N" X射线规则
+  X射线规则 "1" *-- "1" X射线请求
+  核素POC规则 "1" *-- "1" 核素POC信息
+  核素POC规则 "1" *-- "N" 核素请求
+  核素POC规则 "1" *-- "N" 核素匹配器
+  核素请求 "1" *-- "N" 核素匹配器
+  核素请求 "1" *-- "0..1" 核素请求头
+}
+
+package "EXP验证" {
+  class EXP规范 {
+    + Name: string
+    + Steps: []EXP步骤
+  }
+  
+  class EXP步骤 {
+    + Method: string
+    + Path: string
+    + Body: string
+    + Headers: map[string]string
+    + Validate: 验证规则
+    + Extract: map[string]提取规则
+    + Retry: int
+    + RetryDelayMs: int
+    + SleepMs: int
+  }
+  
+  class 验证规则 {
+    + Status: 状态码列表
+    + BodyContains: []string
+    + HeaderContains: map[string]string
+  }
+  
+  class 状态码列表 {
+    + []int
+    --
+    + 解析JSON(): error
+    + 解析YAML(): error
+  }
+  
+  class 提取规则 {
+    + BodyRegex: []string
+    + HeaderRegex: map[string]string
+  }
+  
+  EXP规范 "1" *-- "N" EXP步骤
+  EXP步骤 "1" *-- "1" 验证规则
+  EXP步骤 "1" *-- "N" 提取规则
+  验证规则 "1" *-- "1" 状态码列表
+}
+
+package "WAF绕过" {
+  class 载荷变体 {
+    + Variant: string
+    + Strategies: []string
+  }
+}
+
+package "MCP接口" {
+  interface MCP连接 {
+    + 是否已连接(): bool
+    + 获取工具列表(): []AI工具
+    + 调用工具(工具名: string, 参数: map[string]interface{}): (interface{}, error)
+  }
+  
+  interface 聊天会话 {
+    + 获取会话标识(): string
+    + 获取API密钥(): string
+    + 获取API类型(): string
+    + 获取消息列表(): []聊天消息
+    + 获取MCP连接(): MCP连接
+    + 设置消息列表(消息列表: []聊天消息): void
+    + 添加消息(消息: 聊天消息): void
+    + 获取最后活动时间(): time.Time
+    + 更新最后活动时间(): void
+  }
+  
+  class 基础聊天会话 {
+    # mu: sync.RWMutex
+    # ID: string
+    # APIKey: string
+    # APIType: string
+    # Messages: []聊天消息
+    # MCPConnection: MCP连接
+    # CreatedAt: time.Time
+    # LastActivity: time.Time
+    --
+    + 获取会话标识(): string
+    + 获取API密钥(): string
+    + 获取API类型(): string
+    + 获取消息列表(): []聊天消息
+    + 获取MCP连接(): MCP连接
+    + 设置消息列表(消息列表: []聊天消息): void
+    + 添加消息(消息: 聊天消息): void
+    + 获取最后活动时间(): time.Time
+    + 更新最后活动时间(): void
+  }
+  
+  class IDA聊天会话 {
+    --
+    + 获取或创建IDA会话(会话标识: string): IDA聊天会话
+    + 清理旧会话(最大年龄: time.Duration): void
+  }
+  
+  class JADX聊天会话 {
+    --
+    + 获取或创建JADX会话(会话标识: string): JADX聊天会话
+    + 清理旧会话(最大年龄: time.Duration): void
+  }
+  
+  class IDA的MCP连接 {
+    - mu: sync.RWMutex
+    - baseURL: string
+    - client: *http.Client
+    - connected: bool
+    - tools: []MCP工具
+    - lastRequestID: int64
+    --
+    + 连接IDAMCP(基础URL: string): (*IDA的MCP连接, error)
+    + 是否已连接(): bool
+    + 获取工具列表(): []AI工具
+    + 调用工具(工具名: string, 参数: map[string]interface{}): (interface{}, error)
+    + 发送MCP请求(方法: string, 参数: map[string]interface{}): (map[string]interface{}, error)
+    + 关闭(): error
+  }
+  
+  class JADX的MCP连接 {
+    - mu: sync.RWMutex
+    - baseURL: string
+    - client: *http.Client
+    - connected: bool
+    - tools: []MCP工具
+    - lastRequestID: int64
+    - sessionID: string
+    --
+    + 连接JADXMCP(基础URL: string): (*JADX的MCP连接, error)
+    + 是否已连接(): bool
+    + 获取工具列表(): []AI工具
+    + 调用工具(工具名: string, 参数: map[string]interface{}): (interface{}, error)
+    + 发送MCP请求(方法: string, 参数: map[string]interface{}): (map[string]interface{}, error)
+    + 关闭(): error
+  }
+  
+  class MCP工具 {
+    + Name: string
+    + Description: string
+    + Parameters: map[string]interface{}
+  }
+  
+  聊天会话 <|.. 基础聊天会话
+  基础聊天会话 <|-- IDA聊天会话
+  基础聊天会话 <|-- JADX聊天会话
+  MCP连接 <|.. IDA的MCP连接
+  MCP连接 <|.. JADX的MCP连接
+  基础聊天会话 "1" *-- "0..1" MCP连接
+  IDA的MCP连接 "1" *-- "N" MCP工具
+  JADX的MCP连接 "1" *-- "N" MCP工具
+}
+
+package "AI提供者" {
+  interface AI提供者 {
+    + 聊天(消息列表: []聊天消息, 工具列表: []AI工具): (string, []AI工具调用, error)
+  }
+  
+  interface 聊天流提供者 {
+    + 流式聊天(消息列表: []聊天消息, 工具列表: []AI工具, 控制器: *流控制器): (string, []AI工具调用, error)
+  }
+  
+  class 聊天消息 {
+    + Role: string
+    + Content: string
+    + Time: string
+    + ToolCallID: string
+    + ToolCalls: []AI工具调用
+  }
+  
+  class AI工具 {
+    + Type: string
+    + Name: string
+    + Description: string
+    + Parameters: map[string]interface{}
+  }
+  
+  class AI工具调用 {
+    + ID: string
+    + Name: string
+    + Arguments: map[string]interface{}
+  }
+  
+  class DeepSeek提供者 {
+    - APIKey: string
+    - BaseURL: string
+    - Model: string
+    - MaxTokens: int
+    - Timeout: time.Duration
+    --
+    + 新建DeepSeek提供者(API密钥: string): *DeepSeek提供者
+    + 设置超时(超时时间: time.Duration): void
+    + 聊天(消息列表: []聊天消息, 工具列表: []AI工具): (string, []AI工具调用, error)
+    + 流式聊天(消息列表: []聊天消息, 工具列表: []AI工具, 控制器: *流控制器): (string, []AI工具调用, error)
+  }
+  
+  class Ollama提供者 {
+    - APIKey: string
+    - BaseURL: string
+    - Model: string
+    - MaxTokens: int
+    - Timeout: time.Duration
+    --
+    + 新建Ollama提供者(基础URL: string, 模型名称: string): *Ollama提供者
+    + 设置超时(超时时间: time.Duration): void
+    + 聊天(消息列表: []聊天消息, 工具列表: []AI工具): (string, []AI工具调用, error)
+    + 流式聊天(消息列表: []聊天消息, 工具列表: []AI工具, 控制器: *流控制器): (string, []AI工具调用, error)
+  }
+  
+  class 流控制器 {
+    - aborted: bool
+    - stream: chan string
+    --
+    + 发送数据(数据: string): bool
+    + 是否已中止(): bool
+    + 中止(): void
+  }
+  
+  AI提供者 <|.. OpenAI提供者
+  AI提供者 <|.. DeepSeek提供者
+  AI提供者 <|.. Anthropic提供者
+  AI提供者 <|.. Ollama提供者
+  聊天流提供者 <|.. OpenAI提供者
+  聊天流提供者 <|.. DeepSeek提供者
+  聊天流提供者 <|.. Ollama提供者
+  基础聊天会话 "1" *-- "N" 聊天消息
+  聊天消息 "1" *-- "N" AI工具调用
+}
+
+package "其他" {
+  class 指纹规则 {
+    + Location: string
+    + Method: string
+    + Keyword: []string
+    + Regular: string
+    + Tech: string
+  }
+  
+  class 指纹数据 {
+    + Rules: []指纹规则
+  }
+  
+  class 字典信息 {
+    + Name: string
+    + Path: string
+    + Count: int
+  }
+  
+  指纹数据 "1" *-- "N" 指纹规则
+}
+
+' 关系定义
+任务 "1" *-- "N" SSE消息 : 发送
+端口扫描请求 ..> 任务 : 使用
+目录扫描请求 ..> 任务 : 使用
+POC扫描请求 ..> 任务 : 使用
+WAF绕过请求 ..> 任务 : 使用
+EXP执行请求 ..> 任务 : 使用
+Web探测请求 ..> 任务 : 使用
+AI分析请求 ..> 基础聊天会话 : 使用
+
+POC扫描请求 "1" --> "N" POC规则 : 加载
+POC扫描请求 "1" --> "N" X射线POC规则 : 加载
+POC扫描请求 "1" --> "N" 核素POC规则 : 加载
+
+EXP执行请求 "1" --> "N" EXP规范 : 加载
+
+基础聊天会话 "1" --> "0..1" AI提供者 : 使用
+基础聊天会话 "1" --> "0..1" MCP连接 : 关联
+
+@enduml
+

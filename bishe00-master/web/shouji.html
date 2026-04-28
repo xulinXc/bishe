@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>解包与JS信息收集 - NeonScan</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a href="ports.html">端口扫描</a>
+      <a href="dirs.html">目录扫描</a>
+      <a href="poc.html">POC 扫描</a>
+      <a href="exp.html">EXP 验证</a>
+      <a href="probe.html">Web 探针</a>
+      <a href="shouji.html" class="active">解包与JS信息收集</a>
+      <a href="jadx_mcp.html">JADX MCP</a>
+      <a href="waf.html">绕 WAF</a>
+      <a href="ai_analysis.html">AI 分析</a>
+      <a href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+
+  <main class="content">
+    <section class="card">
+      <h2>解包与JS信息收集</h2>
+      <div class="grid">
+        <label>目标URL<input id="target" placeholder="https://target.com"/></label>
+        <label>ffuf字典<div class="input-row"><input id="wordlist" placeholder="uploads/jsbaopo.txt;uploads/phpbaopo.txt"/><button id="pick" type="button" class="icon-btn">选择</button></div><div id="wl-list" class="hint" style="margin-top:4px; opacity:.9"></div></label>
+        <label>并发<div class="number-input-wrapper"><input id="threads" type="number" value="100"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('threads', 10)">▲</div><div class="number-stepper" onclick="adjustNumber('threads', -10)">▼</div></div></div></label>
+        <label>快速模式<div class="checkline"><input id="sj-fast" type="checkbox" checked/> <span>仅收集 JS/API，不进行漏洞检测（推荐）</span></div></label>
+      </div>
+      <div class="btn-row">
+        <button id="run-all" class="btn">一键执行（判定→ffuf→urlfinder→合并）</button>
+        <button id="only-pack" class="btn btn-ghost">仅判定解包</button>
+        <button id="only-ffuf" class="btn btn-ghost">仅执行 ffuf</button>
+        <button id="only-urlfinder" class="btn btn-ghost">仅执行 urlfinder</button>
+        <button id="clear" class="btn btn-ghost">清空</button>
+      </div>
+
+      <div class="btn-row" style="margin-top:8px">
+        <button id="sj-adv-toggle" class="btn btn-ghost">高级设置</button>
+      </div>
+      <div id="sj-adv" class="grid" style="display:none; margin-top:6px">
+        <label>ffuf 最长时间（秒）<input id="sj-maxsec" type="number" value="60"/></label>
+        <label>ffuf 请求超时（秒）<input id="sj-reqtimeout" type="number" value="5"/></label>
+        <label>ffuf 速率限制（req/s，可空）<input id="sj-rate" type="number" placeholder="空=不限制"/></label>
+      </div>
+
+      <div class="progress" style="margin-top:10px">
+        <div id="bar" class="bar"></div>
+        <span id="text">0%</span>
+      </div>
+
+      <div id="out" class="output" style="margin-top:12px"></div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>合并结果</h2>
+        <div class="btn-row" style="margin-bottom:8px">
+          <span style="flex:1"></span>
+          <input id="sj-report-path" class="input" placeholder="报告文件路径，例如 C:\\...\\1.94.237.167.html" style="min-width:280px" />
+          <button class="btn" id="sj-parse-report">解析本地报告</button>
+        </div>
+        <div class="btn-row" style="margin-bottom:8px">
+          <span style="opacity:.8;margin-right:6px">筛选:</span>
+          <button class="btn btn-ghost" id="sj-filter-all">全部</button>
+          <button class="btn btn-ghost" id="sj-filter-js">JS</button>
+          <button class="btn btn-ghost" id="sj-filter-url">URL</button>
+          <button class="btn btn-ghost" id="sj-filter-fuzz">Fuzz</button>
+          <span style="flex:1"></span>
+          <button class="btn" id="sj-copy">复制当前列表</button>
+          <button class="btn btn-ghost" id="sj-download">下载当前列表</button>
+          <button class="btn btn-ghost" id="sj-clear">清空列表</button>
+        </div>
+        <div id="sj-merge-list" class="output" style="height:280px"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- 先加载 app.js，确保 api 和其他函数可用 -->
+  <script src="app.js"></script>
+
+  <script>
+  // api 函数由 app.js 提供，不在此处重复声明
+
+  function adjustNumber(id, d){ const el=document.getElementById(id); if(!el) return; const v=parseInt(el.value)||0; el.value=Math.max(0, v+d) }
+
+  // 进度条平滑更新
+  let currentProgress = 0, progressTarget = 0, progressAnimationId = null, progressStartTime = 0, progressDuration = 800
+  function setProgress(p){ const bar=document.getElementById('bar'), txt=document.getElementById('text'); if(!bar||!txt) return; const newTarget=Math.max(0,Math.min(100,p)); const diff=Math.abs(newTarget-currentProgress); if(diff<1){ currentProgress=newTarget; progressTarget=newTarget; bar.style.width=currentProgress+'%'; txt.textContent=Math.round(currentProgress)+'%'; return } progressTarget=newTarget; if(progressAnimationId){ cancelAnimationFrame(progressAnimationId) } const targetDuration=Math.min(progressDuration, diff*10); progressStartTime=performance.now(); (function animate(){ const now=performance.now(); const elapsed=now-progressStartTime; const ratio=Math.min(1, elapsed/targetDuration); const ease=1-Math.pow(1-ratio,3); currentProgress=currentProgress+(progressTarget-currentProgress)*ease; bar.style.width=currentProgress+'%'; txt.textContent=Math.round(currentProgress)+'%'; if(ratio<1){ progressAnimationId=requestAnimationFrame(animate) } else { currentProgress=progressTarget; bar.style.width=currentProgress+'%'; txt.textContent=Math.round(currentProgress)+'%' } })() }
+
+  // 输出队列与过滤（保持之前的输出风格与位置）
+  const outputQueue = []; let isOutputting = false
+  function shouldFilter(text){ text=text.replace(/\x1b\[[0-9;]*m/g,'').replace(/\[[0-9;]*m/g,''); const trimmed=text.trim(); if(!trimmed) return true; if(/^REPORT_FILE:/i.test(trimmed)) return false; const filters=[/https?:\/\/github\.com\//i,/repository/i,/repo url/i,/git clone/i,/cloning/i,/\.git$/i,/license/i,/version \d+\.\d+\.\d+/i,/^By:\s*[\w\s]+$/i,/^\[其余\]\s*By:/i,/^\[其余\]\s*Spider/i,/^\[其余\]\s*$/, /^[\s\/\\\|_\-\=\[\]\d\.\:]+$/]; if(filters.some(f=>f.test(text))) return true; const special=(text.match(/[\/\\\|_\-\=]/g)||[]).length; const total=text.replace(/\s/g,'').length; if(total>0 && special/total>0.6 && special>5) return true; if(/^[\d\.\s]+$/.test(trimmed) && trimmed.length>3) return true; return false }
+  async function logLine(t){ t=t.replace(/\x1b\[[0-9;]*m/g,'').replace(/\[[0-9;]*m/g,''); if(shouldFilter(t)||!t.trim()) return; outputQueue.push(t); if(!isOutputting){ processOutputQueue() } }
+  async function processOutputQueue(){ if(isOutputting||outputQueue.length===0) return; isOutputting=true; const out=document.getElementById('out'); while(outputQueue.length>0){ const text=outputQueue.shift(); if(!out) continue; const div=document.createElement('div'); div.style.whiteSpace='pre-wrap'; div.style.wordBreak='break-all'; div.style.opacity='0'; div.style.transform='translateY(-10px)'; div.style.transition='opacity .3s ease, transform .3s ease'; div.textContent=text; out.prepend(div); requestAnimationFrame(()=>{ div.style.opacity='1'; div.style.transform='translateY(0)' }); try{ const logs=JSON.parse(localStorage.getItem('shouji-logs')||'[]'); logs.unshift(text); if(logs.length>100) logs.pop(); localStorage.setItem('shouji-logs', JSON.stringify(logs)) }catch{} if(outputQueue.length>0){ const delay=outputQueue.length>10?30:50; await new Promise(r=>setTimeout(r, delay)) } } isOutputting=false }
+
+  async function pickWordlist(){ const inp=document.createElement('input'); inp.type='file'; /* 不限制扩展名，避免系统对话框过滤 */ inp.multiple=true; inp.onchange=async()=>{ if(!inp.files||!inp.files.length) return; logLine(`[字典] 选择了 ${inp.files.length} 个文件，开始上传...`); const form=new FormData(); for(const f of inp.files){ form.append('files', f) } try{ const res=await fetch('/upload',{method:'POST', body:form}).then(r=>r.json()); const list=(res.paths||[]).filter(Boolean); if(!list.length){ logLine(`[字典] 上传返回为空，请检查文件大小或服务器限制`) } const el=document.getElementById('wordlist'); const cur=el.value? el.value.split(';').map(s=>s.trim()).filter(Boolean):[]; const merged=uniq(cur.concat(list)); el.value=merged.join(';'); // 渲染下方已选字典列表
+      try{ const box=document.getElementById('wl-list'); if(box){ box.innerHTML=''; merged.forEach(p=>{ const div=document.createElement('div'); div.className='row info'; div.innerHTML=`<div class=\"left\"><span class=\"badge\">词典</span> <span class=\"badge url\">${p}</span></div>`; box.appendChild(div) }) } }catch(e){}
+      logLine(`[字典] 当前已选：${merged.length} 个`) }catch(err){ logLine(`[字典] 上传失败：${err?.message||err}`) } }; inp.click() }
+
+  function uniq(arr){ return Array.from(new Set(arr)) }
+  function getOrigins(urls){ const set=new Set(); urls.forEach(u=>{ try{ const o=new URL(u).origin; set.add(o) }catch{} }); return Array.from(set) }
+  function saveForms(upd){ try{ const raw=localStorage.getItem('neonscan-forms'); const obj=raw? JSON.parse(raw): {}; Object.assign(obj, upd); localStorage.setItem('neonscan-forms', JSON.stringify(obj)) }catch{} }
+
+  // 高级设置开关
+  document.addEventListener('click', (e)=>{ const t=e.target; if(t && t.id==='sj-adv-toggle'){ const p=document.getElementById('sj-adv'); if(p){ p.style.display = p.style.display==='none'?'grid':'none' } } })
+
+  // 以下核心流程 API 路径改为内联后的 /scan/shouji/*
+  async function runAnalyze(){ 
+    const url=document.getElementById('target')?.value.trim(); 
+    if(!url){ alert('请输入目标URL'); return } 
+    const fastMode = document.getElementById('sj-fast')?.checked;
+    setProgress(5); 
+    logLine(`[分析] 正在分析目标URL: ${url}`); 
+    try{ 
+      const res=await api('/scan/shouji/packable',{url}); 
+      if(res.protocolMsg){ logLine(`[URL处理] ${res.protocolMsg}`) } 
+      else if(res.finalURL){ logLine(`[URL处理] 最终使用的URL: ${res.finalURL}`) } 
+      const packableText=res.packable?'需要解包':'不需要解包'; 
+      logLine(`[打包分析] 得分: ${res.score} | 判定: ${packableText}`); 
+      
+      let packerFiles = []; // 存储解包得到的文件路径，用于合并
+      
+      if(res && res.packable){ 
+        logLine(`[解包工具] 启动 Packer-Fuzzer 进行解包...`); 
+        if(fastMode) logLine(`[解包工具] ⚡ 快速模式已启用（仅收集 JS/API，不检测漏洞）`);
+        logLine(`[解包工具] 正在执行，请查看后端控制台获取详细进度信息...`); 
+        const p=await api('/scan/shouji/packer',{target:url, outDir:'uploads/shouji', fastMode}); 
+        
+        // 显示解包工具的命令信息
+        if(p && p.used){ 
+          logLine(`[解包工具] 执行命令: ${p.used}`); 
+        }
+        
+        // 显示标准输出（如果有）
+        if(p && p.stdout && p.stdout.trim()){ 
+          logLine(`[解包工具] 标准输出:`); 
+          const stdoutLines = p.stdout.split('\n').filter(l => l.trim());
+          for(let i=0; i<Math.min(stdoutLines.length, 100); i++){ 
+            // 过滤掉一些无用的输出
+            const line = stdoutLines[i].trim();
+            if(line && !line.includes('FutureWarning') && !line.includes('node_vm2 is deprecated')){
+              await new Promise(r=>setTimeout(r,20)); 
+              logLine(`  ${line}`); 
+            }
+          }
+          if(stdoutLines.length > 100){
+            logLine(`  ... 还有 ${stdoutLines.length - 100} 行输出`);
+          }
+        }
+        
+        // 显示标准错误（如果有，且不是警告信息）
+        if(p && p.stderr && p.stderr.trim()){ 
+          const stderrClean = p.stderr.replace(/FutureWarning:.*?node_vm2.*?deno_vm.*?\n/g, '');
+          if(stderrClean.trim()){
+            logLine(`[解包工具] 错误输出:`); 
+            const stderrLines = stderrClean.split('\n').filter(l => l.trim());
+            for(let i=0; i<Math.min(stderrLines.length, 50); i++){ 
+              const line = stderrLines[i].trim();
+              if(line){
+                await new Promise(r=>setTimeout(r,20)); 
+                logLine(`  ${line}`); 
+              }
+            }
+            if(stderrLines.length > 50){
+              logLine(`  ... 还有 ${stderrLines.length - 50} 行错误输出`);
+            }
+          }
+        }
+        
+        // 显示解包结果
+        if(p && p.files && Array.isArray(p.files) && p.files.length > 0){ 
+          logLine(`[解包工具] ✅ 成功解包，生成 ${p.files.length} 个文件`); 
+          if(p.outDir){
+            logLine(`[解包工具] 输出目录: ${p.outDir}`); 
+          }
+          logLine(`[解包工具] 文件列表:`); 
+          const displayFiles=p.files.slice(0,20); 
+          for(let i=0;i<displayFiles.length;i++){ 
+            await new Promise(r=>setTimeout(r,30)); 
+            logLine(`  ${i+1}. ${displayFiles[i]}`) 
+          } 
+          if(p.files.length>20) logLine(`  ... 还有 ${p.files.length-20} 个文件`);
+          
+          // 保存解包文件路径用于合并（只保留.js文件）
+          packerFiles = p.files.filter(f => f && typeof f === 'string' && f.toLowerCase().endsWith('.js'));
+          if(packerFiles.length > 0){
+            logLine(`[解包工具] 准备合并 ${packerFiles.length} 个JS文件到合并结果`);
+            // 实时处理解包文件：逐条转换并添加到合并结果
+            logLine(`[结果合并] 开始实时处理解包文件...`);
+            await processPackerFilesRealtime(packerFiles);
+          }
+        } else {
+          if(p && (p.stdout || p.stderr)){
+            logLine(`[解包工具] ⚠️ 解包完成，但未发现生成的文件`);
+          } else {
+            logLine(`[解包工具] ⚠️ 解包工具执行完成，但未获取到输出信息`);
+          }
+        }
+      } 
+      setProgress(15);
+      
+      // 返回分析结果和解包文件列表
+      return { ...res, packerFiles: packerFiles };
+    }catch(e){ 
+      logLine(`[分析] ❌ 错误: ${e.message||e}`); 
+      throw e 
+    } 
+  }
+
+  async function runFfufOnly(){ 
+    const baseUrl=document.getElementById('target')?.value.trim(); 
+    const wordlist=document.getElementById('wordlist')?.value.trim(); 
+    if(!baseUrl||!wordlist){ 
+      alert('请输入URL与字典'); 
+      return 
+    } 
+    setProgress(25); 
+    logLine(`[路径爆破] 正在使用 ffuf 进行路径爆破...`);
+    logLine(`[路径爆破] 提示: 请查看后端控制台获取详细进度信息（可能耗时较长）`);
+    
+    const threads=parseInt(document.getElementById('threads')?.value)||100; 
+    const maxSeconds=parseInt(document.getElementById('sj-maxsec')?.value)||60; 
+    const reqTimeout=parseInt(document.getElementById('sj-reqtimeout')?.value)||5; 
+    const rateVal=parseInt(document.getElementById('sj-rate')?.value)||0; 
+    const params={baseUrl, wordlist, threads, mc:'200,301,302,401,403', maxSeconds, reqTimeout}; 
+    if(rateVal>0) params.rate=rateVal; 
+    if(params.wordlist){ 
+      params.wordlist = params.wordlist.split(/[;\n,]+/).map(s=>s.trim()).filter(Boolean).join(';') 
+    } 
+    
+    logLine(`[路径爆破] 参数: 线程数=${threads}, 最大时间=${maxSeconds}秒, 超时=${reqTimeout}秒`);
+    logLine(`[路径爆破] 字典: ${params.wordlist.split(';').length} 个文件`);
+    
+    // 添加超时处理
+    const timeoutMs = (maxSeconds + 30) * 1000; // 比maxSeconds多30秒的缓冲
+    const res = await Promise.race([
+      api('/scan/shouji/ffuf', params),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error(`ffuf 请求超时（${timeoutMs/1000}秒），请检查后端控制台或增加最大时间设置`)), timeoutMs)
+      )
+    ]); 
+    
+    try {
+      // 调试：输出原始响应
+      console.log('[路径爆破] 原始响应类型:', typeof res);
+      console.log('[路径爆破] 原始响应预览:', typeof res === 'string' ? res.substring(0, 500) : JSON.stringify(res).substring(0, 500));
+      
+      // 如果响应是字符串，先尝试解析为 JSON；如果失败，保留原始字符串用于逐行解析
+      let parsed;
+      let rawString = '';
+      if(typeof res === 'string') {
+        rawString = res;
+        try {
+          parsed = JSON.parse(res);
+        } catch(e) {
+          // JSON 解析失败，可能是逐行 JSON 格式，保留原始字符串
+          parsed = null;
+          console.log('[路径爆破] JSON 解析失败，可能是逐行格式，将使用原始字符串');
+        }
+      } else {
+        parsed = res;
+      }
+      console.log('[路径爆破] 解析后类型:', typeof parsed);
+      console.log('[路径爆破] 解析后键:', parsed && typeof parsed === 'object' ? Object.keys(parsed) : 'N/A');
+      
+      // 检查是否是诊断信息（空输出或错误）
+      if(parsed && parsed.note === 'empty output') {
+        logLine(`[路径爆破] ⚠️ ffuf 执行完成但未找到匹配结果`);
+        if(parsed.stderr) {
+          logLine(`[路径爆破] 错误输出: ${parsed.stderr.substring(0, 500)}`);
+        }
+        if(parsed.usedUrl) {
+          logLine(`[路径爆破] 实际扫描URL: ${parsed.usedUrl}`);
+        }
+        if(parsed.args) {
+          logLine(`[路径爆破] 命令参数: ${parsed.args}`);
+        }
+        logLine(`[路径爆破] 提示: 请检查目标是否可达，或调整匹配状态码/字典`);
+        return res; // 提前返回，不处理结果
+      }
+      
+      // ffuf 返回格式可能是：
+      // 1. 逐行 JSON: 每行一个结果对象 {"status":200,"url":"...",...}
+      // 2. 完整对象: { results: [...], commandline: "...", time: "..." }
+      let results = [];
+      if(Array.isArray(parsed)) {
+        results = parsed;
+      } else if(parsed && parsed.results && Array.isArray(parsed.results)) {
+        results = parsed.results;
+      } else if(parsed && parsed.result && Array.isArray(parsed.result)) {
+        results = parsed.result;
+      } else if(rawString && rawString.trim()) {
+        // 尝试逐行解析 JSON（ffuf 的 JSON 输出模式是每行一个 JSON 对象）
+        const lines = rawString.trim().split('\n').filter(l => l.trim());
+        logLine(`[路径爆破] 检测到 ${lines.length} 行输出，尝试逐行解析...`);
+        for(const line of lines) {
+          try {
+            const obj = JSON.parse(line);
+            if(obj && typeof obj === 'object') {
+              results.push(obj);
+            }
+          } catch(e) {
+            // 忽略解析失败的行（可能是进度信息或错误消息）
+            if(line.length < 200) { // 只记录短行，避免日志过多
+              console.debug('[路径爆破] 跳过无效JSON行:', line);
+            }
+          }
+        }
+        logLine(`[路径爆破] 逐行解析完成，提取到 ${results.length} 个结果`);
+      } else {
+        logLine(`[路径爆破] 警告: 无法解析结果格式`);
+        console.log('[路径爆破] parsed:', parsed);
+      }
+      
+      logLine(`[路径爆破] 完成！找到 ${results.length} 个有效路径`);
+      console.log('[路径爆破] results 长度:', results.length);
+      if(results.length > 0) {
+        console.log('[路径爆破] 第一个结果示例:', results[0]);
+      }
+      
+      // 将 ffuf 结果添加到合并结果中（标记为 fuzz 类型，不会在"全部"中显示）
+      if(results.length > 0) {
+        logLine(`[路径爆破] 正在将 ${results.length} 个路径添加到合并结果...`);
+        if(!window.__sjAll) window.__sjAll = [];
+        
+        let addedCount = 0;
+        let skippedCount = 0;
+        for(const r of results) {
+          // 调试：检查结果对象结构
+          if(addedCount === 0 && skippedCount === 0) {
+            console.log('[路径爆破] 结果对象结构:', r);
+            console.log('[路径爆破] 结果对象键:', Object.keys(r || {}));
+          }
+          
+          // ffuf JSON 格式: { url: "...", status: 200, length: 1234, ... }
+          let url = '';
+          if(r && typeof r === 'object') {
+            url = r.url || r.Url || (r.input && typeof r.input === 'object' && r.input.url) || '';
+          } else if(typeof r === 'string') {
+            url = r;
+          }
+          
+          if(!url || typeof url !== 'string' || url.trim() === '') {
+            skippedCount++;
+            if(skippedCount <= 3) {
+              logLine(`[路径爆破] 跳过无效结果: ${JSON.stringify(r).substring(0, 100)}`);
+            }
+            continue;
+          }
+          
+          url = url.trim();
+          
+          // 检查是否已存在（避免重复）
+          const exists = window.__sjAll.some(it => (it.url || '').trim() === url.trim());
+          if(exists) continue;
+          
+          // 创建 fuzz 类型的 item
+          // ffuf 字段: status (int), length (int), redirectlocation (string), url (string)
+          const item = {
+            url: url,
+            kind: 'fuzz',
+            status: (r.status || r.statuscode || r.StatusCode || '').toString(),
+            size: (r.length || r.size || r.ContentLength || '').toString(),
+            title: r.title || r.Title || '',
+            redirect: r.redirectlocation || r.redirect || r.RedirectLocation || '',
+            source: 'ffuf'
+          };
+          
+          // 添加到合并结果（但不会在"全部"中显示，只在"Fuzz"按钮中显示）
+          window.__sjAll.push(item);
+          addedCount++;
+          
+          // 每100个输出一次进度
+          if(addedCount % 100 === 0) {
+            logLine(`[路径爆破] 已添加 ${addedCount}/${results.length} 个路径到合并结果...`);
+          }
+        }
+        
+        logLine(`[路径爆破] ✅ 已将 ${addedCount} 个路径添加到合并结果（跳过 ${skippedCount} 个无效结果）`);
+        logLine(`[路径爆破] 提示: 可在"Fuzz"按钮中查看所有 ffuf 结果`);
+        
+        // 立即触发 UI 更新（自动切换到 Fuzz 筛选模式以显示结果）
+        const btnFz = document.getElementById('sj-filter-fuzz');
+        if(btnFz && window.renderList && addedCount > 0) {
+          // 筛选出所有 fuzz 类型的结果
+          const fuzzItems = window.__sjAll.filter(it => (it.kind||'other') === 'fuzz');
+          // 更新 UI
+          window.renderList(fuzzItems);
+          window.__sjItems = fuzzItems;
+          
+          // 高亮 Fuzz 按钮（模拟点击效果）
+          document.querySelectorAll('#sj-filter-all, #sj-filter-js, #sj-filter-url, #sj-filter-fuzz').forEach(btn => {
+            btn?.classList.remove('active');
+          });
+          btnFz.classList.add('active');
+          
+          logLine(`[路径爆破] ✅ UI已自动切换到"Fuzz"视图，显示 ${fuzzItems.length} 个 ffuf 结果`);
+        } else if(addedCount > 0) {
+          logLine(`[路径爆破] ⚠️ 已添加结果，请手动点击"Fuzz"按钮查看`);
+        }
+        
+        // 保存到 localStorage
+        try {
+          localStorage.setItem('shouji-merged-all', JSON.stringify(window.__sjAll));
+        } catch(e) {
+          console.warn('保存 ffuf 结果失败', e);
+        }
+        
+        // 显示发现的路径列表（前20个）
+        logLine(`[路径爆破] 发现的路径列表:`);
+        const displayResults = results.slice(0, 20);
+        for(let i = 0; i < displayResults.length; i++) {
+          await new Promise(r => setTimeout(r, 30));
+          const r = displayResults[i];
+          const url = r.url || r.input?.url || (typeof r === 'string' ? r : JSON.stringify(r));
+          logLine(`  ${i+1}. ${url}`);
+        }
+        if(results.length > 20) {
+          logLine(`  ... 还有 ${results.length - 20} 个路径`);
+        }
+      } else {
+        if(parsed && (parsed.stderr || parsed.note || parsed.cmd)) {
+          if(parsed.usedUrl) logLine(`[诊断] 实际扫描URL: ${parsed.usedUrl}`);
+          if(parsed.cmd) logLine(`[诊断] 可执行路径: ${parsed.cmd}`);
+          if(parsed.args) logLine(`[诊断] 命令参数: ${parsed.args}`);
+          if(parsed.cwd) logLine(`[诊断] 工作目录: ${parsed.cwd}`);
+          if(parsed.stderr) logLine(`[诊断] 标准错误: ${parsed.stderr}`);
+        }
+      }
+    } catch(e) {
+      logLine(`[路径爆破] 完成（${(typeof res === 'string' ? res.length : JSON.stringify(res).length)} 字节）`);
+      if(e && e.message) {
+        logLine(`[路径爆破] 警告: ${e.message}`);
+      }
+    }
+    
+    setProgress(50);
+    return res;
+  }
+
+  async function runURLFinderOnly(){ 
+    const target=document.getElementById('target')?.value.trim(); 
+    if(!target){ alert('请输入目标URL'); return } 
+    setProgress(55); 
+    logLine(`[URL发现] 正在使用 URLFinder 提取URL...`); 
+    
+    // URLFinder 返回的是 text/plain，不是 JSON，需要直接获取文本响应
+    let clean = '';
+    try {
+      const response = await fetch('/scan/shouji/urlfinder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({target, depth: 1})
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const raw = await response.text();
+      clean = raw.replace(/\x1b\[[0-9;]*m/g,''); // 去ANSI
+    } catch(e) {
+      logLine(`[URL发现] ❌ 错误: ${e?.message || e}`);
+      throw e;
+    }
+    
+    // 提取报告中的关键信息
+    const mTarget = clean.match(/Target URL:\s*(\S+)/i); 
+    let finalTarget = mTarget? mTarget[1]: target;
+    
+    // 验证和规范化 URL
+    try{
+      if(!finalTarget.match(/^https?:\/\//i)){
+        finalTarget = 'http://' + finalTarget;
+      }
+      new URL(finalTarget); // 验证 URL 是否有效
+    }catch(e){
+      logLine(`[URL发现] 警告：目标URL格式无效，使用默认值`);
+      finalTarget = target.startsWith('http://') || target.startsWith('https://') ? target : 'http://' + target;
+      try{
+        new URL(finalTarget); // 再次验证
+      }catch(e2){
+        logLine(`[URL发现] ❌ 错误：无法解析目标URL`);
+        throw new Error('Invalid URL format');
+      }
+    }
+    
+    if(mTarget){ logLine(`[URL发现] 目标: ${finalTarget}`) }
+    
+    // 定义 getHost 辅助函数
+    const getHost = (u)=>{ 
+      if(!u || typeof u !== 'string') return '';
+      try{ 
+        let urlStr = u;
+        if(!urlStr.match(/^https?:\/\//i)){
+          urlStr = 'http://' + urlStr;
+        }
+        return new URL(urlStr).host;
+      }catch{ return '' } 
+    };
+    
+    // 计算目标主机名
+    const selfHost = getHost(finalTarget);
+    const targetHost = selfHost || (finalTarget.match(/^https?:\/\/([^\/]+)/i)?.[1] || 'Unknown');
+    
+    const mUpdate = clean.match(/Update:\s*([^|\n\r]+)(?:\s*\|\s*已是最新版本)?/i); 
+    if(mUpdate){ logLine(`[URL发现] 版本: ${mUpdate[1].trim()}`) }
+    const mStart = clean.match(/Start\s+(\d+)\s+Spider/i); 
+    if(mStart){ logLine(`[URL发现] 线程: ${mStart[1]}`) }
+    if(/Spider OK/i.test(clean)){ logLine(`[URL发现] 状态: Spider OK`) }
+    if(/未获取到数据|No data/i.test(clean)){ logLine(`[URL发现] 提示: 未获取到数据`) }
+    
+    // 若后端生成了报告，优先从报告中提取数据
+    // 匹配 REPORT_FILE: 开头的行（可能包含 (fallback) 或 (no-data) 等标记）
+    const mRep = clean.match(/REPORT_FILE:\s*(.+?)(?:\s*\([^)]+\))?\s*$/m); 
+    let reportUrls = [];
+    if(mRep && mRep[1]){ 
+      const reportPath=(mRep[1]||'').trim(); 
+      logLine(`[报告] 检测到报告文件: ${reportPath}`); 
+      try{ 
+        const ipt=document.getElementById('sj-report-path'); 
+        if(ipt) {
+          ipt.value = reportPath;
+          logLine(`[报告] 已自动填充报告路径到输入框`);
+        }
+        if(reportPath && window.parseLocalReport){ 
+          logLine(`[报告] 开始自动解析报告...`);
+          await window.parseLocalReport(reportPath);
+          // 解析完成后，从 window.__sjItems 获取 URL 列表
+          if(Array.isArray(window.__sjItems) && window.__sjItems.length > 0){
+            reportUrls = window.__sjItems.map(it => it.url);
+            logLine(`[报告] 已从报告中提取 ${reportUrls.length} 条URL`);
+          } else {
+            logLine(`[报告] 警告: 报告解析完成，但未提取到URL（可能是报告为空或格式不正确）`);
+          }
+        }else if(!window.parseLocalReport){ 
+          logLine('[报告] 警告：parseLocalReport 函数未加载，请刷新页面后重试') 
+        } 
+      }catch(e){ 
+        logLine(`[报告] 自动解析失败：${e?.message||e}`) 
+        console.error('parseLocalReport error:', e);
+      } 
+    } else {
+      logLine(`[报告] 未检测到 REPORT_FILE 标记，尝试从输出中查找...`);
+      // 备用：尝试从输出的最后几行查找报告路径
+      const lines = clean.split('\n').filter(l => l.trim());
+      for(let i = lines.length - 1; i >= Math.max(0, lines.length - 10); i--) {
+        const line = lines[i].trim();
+        if(line.includes('REPORT_FILE:') || line.includes('.html') && (line.includes('urlfinder') || line.includes('report'))) {
+          const pathMatch = line.match(/REPORT_FILE:\s*(.+?)(?:\s*\([^)]+\))?\s*$/) || line.match(/([^\s]+\/urlfinder[^\s]*\.html)/);
+          if(pathMatch && pathMatch[1]) {
+            const reportPath = pathMatch[1].trim();
+            logLine(`[报告] 从输出中找到报告路径: ${reportPath}`);
+            const ipt = document.getElementById('sj-report-path');
+            if(ipt) ipt.value = reportPath;
+            if(window.parseLocalReport) {
+              await window.parseLocalReport(reportPath);
+              if(Array.isArray(window.__sjItems) && window.__sjItems.length > 0){
+                reportUrls = window.__sjItems.map(it => it.url);
+                logLine(`[报告] 已从报告中提取 ${reportUrls.length} 条URL`);
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+    
+    // 解析分区：JS to X / JS to Other / URL to X / URL to Other / Fuzz / Domains / Info
+    function parseSections(txt){
+      const lines = txt.split(/\r?\n/);
+      const sections = { jsSelf:[], jsOther:[], urlSelf:[], urlOther:[], fuzz:[], domains:[], info:[] };
+      let cur = '';
+      const isHeader = (s)=>/^(JS to |URL to |Fuzz$|Domains$|Info$)/i.test(s.trim());
+      for(let i=0;i<lines.length;i++){
+        const line = lines[i].trim(); 
+        if(!line) continue;
+        if(isHeader(line)) { cur = line; continue }
+        // 每行可能是"<url>\t\t<origin>"，取第一列 URL
+        const m = line.match(/(https?:\/\/[^\s"'<>]+)/i); 
+        if(!m) { 
+          if(/^Spider OK|Start \d+ Spider|Update:|Target URL:/i.test(line)) sections.info.push(line); 
+          continue 
+        }
+        const url = m[1]; 
+        const host = getHost(url);
+        if(/^JS to /i.test(cur)){
+          if(host === selfHost) sections.jsSelf.push(url); 
+          else sections.jsOther.push(url);
+        } else if(/^URL to /i.test(cur)){
+          if(host === selfHost) sections.urlSelf.push(url); 
+          else sections.urlOther.push(url);
+        } else if(/^Fuzz$/i.test(cur)){
+          sections.fuzz.push(url);
+        } else if(/^Domains$/i.test(cur)){
+          // 有些实现里 Domains 行是非URL，这里保留原行
+          sections.domains.push(line);
+        } else if(/^Info$/i.test(cur)){
+          sections.info.push(line);
+        }
+      }
+      // 去重
+      const uniq = (arr)=> Array.from(new Set(arr));
+      sections.jsSelf = uniq(sections.jsSelf);
+      sections.jsOther = uniq(sections.jsOther);
+      sections.urlSelf = uniq(sections.urlSelf);
+      sections.urlOther = uniq(sections.urlOther);
+      sections.fuzz = uniq(sections.fuzz);
+      sections.domains = uniq(sections.domains);
+      sections.info = uniq(sections.info);
+      return sections;
+    }
+    
+    const sec = parseSections(clean);
+    
+    // 输出各分区摘要
+    const sum = (name, arr)=> logLine(`[URL发现] ${name}: ${arr.length} 条`);
+    sum(`JS to ${targetHost}`, sec.jsSelf);
+    sum(`JS to Other`, sec.jsOther);
+    sum(`URL to ${targetHost}`, sec.urlSelf);
+    sum(`URL to Other`, sec.urlOther);
+    if(sec.fuzz.length) logLine(`[URL发现] Fuzz: ${sec.fuzz.length} 条`);
+    if(sec.domains.length) logLine(`[URL发现] Domains: ${sec.domains.join(', ')}`);
+    if(sec.info.length) logLine(`[URL发现] Info: ${sec.info.slice(0,3).join(' | ')}${sec.info.length>3? ' ...':''}`);
+    
+    // 预览：优先展示 JS，再展示 URL 到本域名
+    const preview = [...sec.jsSelf, ...sec.jsOther, ...sec.urlSelf].slice(0,30);
+    if(preview.length>0){ 
+      logLine(`[URL发现] 示例列表:`); 
+      for(let i=0;i<preview.length;i++){ 
+        await new Promise(r=>setTimeout(r,20)); 
+        logLine(`  ${i+1}. ${preview[i]}`) 
+      } 
+    }
+    
+    // 参与合并的 URL：优先使用报告解析的结果，否则使用 stdout 解析
+    let urls = [];
+    if(reportUrls.length > 0){
+      // 已从报告中解析到 URL，直接使用
+      urls = reportUrls;
+      logLine(`[URL发现] 使用报告数据：${urls.length} 条URL`);
+    } else {
+      // 从 stdout 解析（作为兜底）
+      urls = Array.from(new Set([...sec.jsSelf, ...sec.jsOther, ...sec.urlSelf, ...sec.urlOther, ...sec.fuzz].filter(Boolean)));
+    // Fallback：若分区解析为空，则直接从全文粗提取所有 URL（容忍格式差异）
+    if(urls.length===0){
+        const rough=[]; 
+        const re=/(https?:\/\/[^\s"'<>]+)/gi; 
+        let m2; 
+        while((m2=re.exec(clean))){ rough.push(m2[1]) }
+      urls = Array.from(new Set(rough));
+      if(urls.length>0){ logLine(`[URL发现] Fallback: 直接从全文提取到 ${urls.length} 条URL`) }
+    }
+    }
+    
+    // 保存原始分区，便于筛选
+    window.__sjSections = sec; 
+    window.__sjTargetHost = targetHost;
+    logLine(`[URL发现] 完成！提取 ${urls.length} 条可用URL`);
+    setProgress(70);
+    // 返回 URL 列表（用于合并）
+    return urls.join('\n') 
+  }
+
+  async function merge(ffufJson, urlList, packerFilesList){ 
+    logLine(`[结果合并] 正在合并 ffuf、URLFinder 和解包的结果...`); 
+    
+    // 先获取现有的合并结果，避免覆盖已有数据
+    const existingAll = window.__sjAll || [];
+    const existingItems = window.__sjItems || [];
+    if(existingAll.length > 0) {
+      logLine(`[结果合并] 检测到已有 ${existingAll.length} 条合并结果，将一起合并`);
+      // 将现有结果转换为 URL 列表，添加到 urlList 中
+      const existingUrls = existingAll.map(it => it.url || '').filter(Boolean);
+      if(existingUrls.length > 0) {
+        const existingUrlsStr = existingUrls.join('\n');
+        urlList = urlList ? (urlList + '\n' + existingUrlsStr) : existingUrlsStr;
+        logLine(`[结果合并] 已将 ${existingUrls.length} 条现有URL添加到合并列表`);
+      }
+    }
+    
+    // 预处理：确保 urlList 是字符串格式（如果是空或undefined，使用空字符串）
+    const urlListStr = (urlList && typeof urlList === 'string') ? urlList.trim() : '';
+    
+      // 预处理：确保 packerFilesList 是字符串格式
+      const packerFilesStr = (packerFilesList && typeof packerFilesList === 'string') ? packerFilesList.trim() : '';
+      
+      // 预处理：确保 ffufJson 是有效的 JSON 字符串
+      let ffufJsonStr = '';
+      try {
+        if(typeof ffufJson === 'string') {
+          // 尝试解析验证
+          JSON.parse(ffufJson);
+          ffufJsonStr = ffufJson;
+        } else if(ffufJson) {
+          ffufJsonStr = JSON.stringify(ffufJson);
+        }
+      } catch(e) {
+        logLine(`[结果合并] 警告: ffuf 数据格式异常，将使用空数据`);
+        ffufJsonStr = '[]';
+      }
+      
+      // 调试信息：显示数据大小
+      const packerFileLines = packerFilesStr ? packerFilesStr.split('\n').length : 0;
+      logLine(`[结果合并] 准备发送: ffuf=${ffufJsonStr.length}字节, URLFinder=${urlListStr.length}字节, 解包文件=${packerFileLines}行`);
+      
+      try {
+      logLine(`[结果合并] 正在请求后端合并接口...`);
+      const merged = await Promise.race([
+        api('/scan/shouji/merge', {
+          ffufJson: ffufJsonStr,
+          urlList: urlListStr,
+          packerFiles: packerFilesStr
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('合并请求超时（30秒）')), 30000))
+      ]);
+      logLine(`[结果合并] 后端返回成功`);
+      
+      // 调试：输出返回的数据结构
+      console.log('[结果合并] 后端返回数据:', merged);
+      console.log('[结果合并] merged.items 类型:', typeof merged?.items, Array.isArray(merged?.items));
+      
+      if(!merged || typeof merged !== 'object') {
+        logLine(`[结果合并] 警告: 服务器返回格式异常，保留现有数据`);
+        return {items: window.__sjAll || [], total: window.__sjAll?.length || 0};
+      }
+      
+      logLine(`[结果合并] 完成！共合并 ${merged.total || 0} 个唯一URL`); 
+      
+      // 处理 items 可能是对象而不是数组的情况（JSON解析问题）
+      let itemsArray = [];
+      if(merged.items) {
+        if(Array.isArray(merged.items)) {
+          itemsArray = merged.items;
+        } else if(typeof merged.items === 'object') {
+          // 如果是对象，尝试转换为数组
+          logLine(`[结果合并] 警告: items 是对象，尝试转换为数组`);
+          itemsArray = Object.values(merged.items);
+          if(!Array.isArray(itemsArray)) {
+            // 如果 Object.values 也不行，尝试其他方式
+            itemsArray = [];
+            for(const key in merged.items) {
+              if(merged.items.hasOwnProperty(key)) {
+                const item = merged.items[key];
+                if(item && typeof item === 'object') {
+                  itemsArray.push(item);
+                }
+              }
+            }
+          }
+          logLine(`[结果合并] 转换后数组长度: ${itemsArray.length}`);
+        }
+      }
+      
+      if(itemsArray.length === 0 && (!merged.items || !Array.isArray(merged.items))) {
+        logLine(`[结果合并] 警告: 无法获取有效的合并结果，保留现有数据`);
+        logLine(`[结果合并] 调试: merged 类型=${typeof merged}, merged.items 类型=${typeof merged.items}`);
+        if(merged && typeof merged === 'object') {
+          logLine(`[结果合并] 调试: merged 的键=${Object.keys(merged).join(', ')}`);
+        }
+        // 格式异常时，保留现有数据，不清空
+        logLine(`[结果合并] 保留现有 ${window.__sjAll?.length || 0} 条结果，不进行清空操作`);
+        return {items: window.__sjAll || [], total: window.__sjAll?.length || 0}; 
+      }
+      
+      // 使用转换后的数组
+      merged.items = itemsArray;
+      
+      const stats={js:0, api:0, other:0}; 
+      merged.items.forEach(it=>{ 
+        const k=it.kind||'other'; 
+        stats[k]=(stats[k]||0)+1 
+      }); 
+      logLine(`[结果合并] 分类统计: JS文件 ${stats.js} 个, API接口 ${stats.api} 个, 其他 ${stats.other} 个`); 
+      
+      // 优先展示 JS；若无JS则展示全部（但排除 fuzz 类型，因为 ffuf 结果太多会干扰显示）
+      const jsItems = merged.items.filter(it=> (it.kind||'other')==='js'); 
+      const nonFuzzItems = merged.items.filter(it=> (it.kind||'other') !== 'fuzz');
+      const renderItems = jsItems.length? jsItems: nonFuzzItems; 
+      logLine(`[结果合并] 展示 ${jsItems.length? 'JS 文件': '全部结果（已排除 ffuf 结果）'}：共 ${renderItems.length} 条`);
+      const fuzzCount = merged.items.filter(it => (it.kind||'other') === 'fuzz').length;
+      if(fuzzCount > 0) {
+        logLine(`[结果合并] 提示：另有 ${fuzzCount} 个 ffuf 结果，可通过"Fuzz"按钮查看`);
+      } 
+      
+      const displayItems=renderItems.slice(0,10); 
+      for(let i=0;i<displayItems.length;i++){ 
+        await new Promise(r=>setTimeout(r,30)); 
+        const it=displayItems[i]; 
+        const tag=(it.kind||'other'); 
+        logLine(`  ${i+1}. [${tag}] ${it.url}`) 
+      } 
+      if(renderItems.length>10) logLine(`  ... 还有 ${renderItems.length-10} 条`); 
+      setProgress(100); 
+      
+      // 渲染到合并列表面板（优先JS，兜底全部）
+      try{ 
+        if(window.renderList) {
+          window.renderList(renderItems);
+        } else {
+          const list=document.getElementById('sj-merge-list'); 
+          if(list){ 
+            list.innerHTML=''; 
+            const rows=renderItems.slice(0,500).map(it=>{ 
+              const row=document.createElement('div'); 
+              row.className='row info'; 
+              const tag=(it.kind||'other'); 
+              row.innerHTML = `<div class=\"left\"><span class=\"badge\">${tag}</span> <span class=\"badge url\">${it.url}</span></div><div class=\"right\"></div>`; 
+              return row 
+            }); 
+            rows.forEach(r=>list.appendChild(r)) 
+          } 
+        }
+      }catch(e){
+        console.error('渲染合并列表失败:', e);
+      }
+      
+    // 合并新数据到现有数据（去重），保留现有的 fuzz 数据
+    if(!window.__sjAll) window.__sjAll = [];
+    const existingUrls = new Set(window.__sjAll.map(it => (it.url || '').trim()));
+    
+    // 将新合并的结果添加到 __sjAll（排除 fuzz，因为 ffuf 单独运行时已经添加）
+    const nonFuzzNewItems = merged.items.filter(it => (it.kind||'other') !== 'fuzz');
+    for(const item of nonFuzzNewItems) {
+      const url = (item.url || '').trim();
+      if(url && !existingUrls.has(url)) {
+        window.__sjAll.push(item);
+        existingUrls.add(url);
+      }
+    }
+    
+    // __sjItems 保存当前显示的内容（默认排除 fuzz）
+    window.__sjItems = renderItems || []
+      
+      // 保存合并结果到 localStorage
+      try{
+        localStorage.setItem('shouji-merged-items', JSON.stringify(window.__sjItems));
+        localStorage.setItem('shouji-merged-all', JSON.stringify(window.__sjAll));
+        localStorage.setItem('shouji-target', document.getElementById('target')?.value.trim() || '');
+      }catch(e){
+        console.warn('保存合并结果失败', e);
+      }
+      
+      // 发送到报告系统（等待 app.js 加载）
+      const sendToReport = () => {
+        try{
+          const target = document.getElementById('target')?.value.trim() || localStorage.getItem('shouji-target') || '';
+          if(target && typeof addShoujiScanResult === 'function'){
+            const allItems = window.__sjAll || [];
+            const jsCount = allItems.filter(it => (it.kind||'other') === 'js').length;
+            const urlCount = allItems.length;
+            addShoujiScanResult({
+              target: target,
+              jsCount: jsCount,
+              urlCount: urlCount,
+              results: allItems.map(it => ({
+                url: it.url || '',
+                status: it.status || '',
+                size: it.size || '',
+                title: it.title || '',
+                redirect: it.redirect || '',
+                source: it.source || '',
+                kind: it.kind || 'other'
+              }))
+            });
+            logLine(`[报告] 已将 ${urlCount} 条结果发送到报告系统`);
+            return true;
+          }
+        }catch(e){
+          logLine(`[报告] 发送到报告系统失败：${e?.message||e}`);
+        }
+        return false;
+      };
+      
+      // 如果函数已存在，立即调用；否则等待加载
+      if(typeof addShoujiScanResult === 'function'){
+        sendToReport();
+      } else {
+        // 等待 app.js 加载
+        let retryCount = 0;
+        const checkAndSend = setInterval(() => {
+          if(typeof addShoujiScanResult === 'function'){
+            clearInterval(checkAndSend);
+            sendToReport();
+          } else if(retryCount++ > 50){ // 最多等待5秒
+            clearInterval(checkAndSend);
+            logLine('[报告] 警告：无法发送到报告系统，请刷新页面后查看报告页面');
+          }
+        }, 100);
+      }
+      
+      return merged;
+    } catch(e) {
+      logLine(`[结果合并] ❌ 错误: ${e?.message || e}`);
+      console.error('merge error:', e);
+      return {items: [], total: 0};
+    }
+  }
+
+  async function runAll(){ 
+    try{ 
+      document.getElementById('out').innerHTML=''; 
+      localStorage.removeItem('shouji-logs'); 
+      outputQueue.length=0; 
+      isOutputting=false; 
+      currentProgress=0; 
+      setProgress(0); 
+      logLine('='.repeat(50)); 
+      logLine('开始执行一键扫描流程...'); 
+      logLine('='.repeat(50)); 
+      const pack=await runAnalyze(); 
+      logLine(''); 
+      // FFUF 单独运行，不参与合并（避免合并失败问题）
+      await runFfufOnly(); 
+      logLine('[路径爆破] 提示：ffuf 结果仅显示在日志中，不添加到合并结果');
+      logLine(''); 
+      const uf=await runURLFinderOnly(); 
+      logLine(''); 
+      // 只合并解包和 URLFinder 的结果，不包含 ffuf
+      const packerFilesList = (pack && pack.packerFiles && Array.isArray(pack.packerFiles)) 
+        ? pack.packerFiles.join('\n') 
+        : '';
+      if(packerFilesList){
+        logLine(`[结果合并] 解包文件列表: ${pack.packerFiles.length} 个文件`);
+      }
+      // 合并时只传入 URLFinder 和解包结果，ffuf 设为空
+      const merged=await merge('', uf, packerFilesList); 
+      logLine(''); 
+      logLine('='.repeat(50)); 
+      logLine('✅ 所有任务完成！'); 
+      logLine('='.repeat(50)) 
+    }catch(e){ 
+      logLine(''); 
+      const errMsg=e?.message||String(e); 
+      if(errMsg.includes('无法访问')||errMsg.includes('执行失败')||errMsg.includes('错误')){ 
+        logLine(`❌ ${errMsg}`) 
+      } else { 
+        logLine(`❌ 错误：${errMsg}`); 
+        logLine('请检查网络连接或服务器状态') 
+      } 
+    } 
+  }
+
+  // 实时添加单个项目到合并结果列表（不覆盖现有内容）
+  function addItemToMergeList(item) {
+    const list = document.getElementById('sj-merge-list');
+    if(!list) return;
+    
+    // 检查是否已存在（避免重复）
+    const existing = Array.from(list.children).find(row => {
+      const urlEl = row.querySelector('.badge.url');
+      return urlEl && urlEl.textContent.trim() === (item.url || '').trim();
+    });
+    if(existing) return; // 已存在，跳过
+    
+    // 创建新行
+    const row = document.createElement('div');
+    row.className = 'row info';
+    const tag = (item.kind || 'other');
+    
+    // 构建右侧信息：Status, Size, Title等
+    const rightParts = [];
+    if(item.status && item.status !== '') rightParts.push(`<span class="badge">${item.status}</span>`);
+    if(item.size && item.size !== '') {
+      const sizeNum = parseInt(item.size);
+      let sizeStr = item.size;
+      if(!isNaN(sizeNum)) {
+        if(sizeNum >= 1024*1024) sizeStr = (sizeNum/(1024*1024)).toFixed(2) + 'MB';
+        else if(sizeNum >= 1024) sizeStr = (sizeNum/1024).toFixed(2) + 'KB';
+        else sizeStr = sizeNum + 'B';
+      }
+      rightParts.push(`<span class="badge">${sizeStr}</span>`);
+    }
+    if(item.title && item.title !== '') rightParts.push(`<span title="${item.title.replace(/"/g, '&quot;')}" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;">${item.title.length > 30 ? item.title.substring(0, 30) + '...' : item.title}</span>`);
+    const rightContent = rightParts.length > 0 ? `<div class="right">${rightParts.join(' ')}</div>` : '<div class="right"></div>';
+    row.innerHTML = `<div class="left"><span class="badge">${tag}</span> <span class="badge url" title="${(item.url||'').replace(/"/g, '&quot;')}">${item.url||''}</span>${item.redirect && item.redirect !== '' && item.redirect !== item.url ? ` <span class="badge" title="跳转: ${item.redirect.replace(/"/g, '&quot;')}">→</span>` : ''}${item.source && item.source !== '' ? ` <span class="badge" title="来源: ${item.source.replace(/"/g, '&quot;')}">📄</span>` : ''}</div>${rightContent}`;
+    
+    list.appendChild(row);
+    
+    // 更新全局数据
+    if(!window.__sjItems) window.__sjItems = [];
+    if(!window.__sjAll) window.__sjAll = [];
+    
+    // 检查是否已存在（基于URL）
+    const existsInAll = window.__sjAll.some(it => (it.url || '').trim() === (item.url || '').trim());
+    if(!existsInAll) {
+      window.__sjAll.push(item);
+      if(item.kind === 'js') {
+        const existsInJs = window.__sjItems.some(it => (it.url || '').trim() === (item.url || '').trim());
+        if(!existsInJs) {
+          window.__sjItems.push(item);
+        }
+      }
+    }
+  }
+
+  // 实时处理解包文件列表
+  async function processPackerFilesRealtime(packerFiles) {
+    if(!packerFiles || !Array.isArray(packerFiles) || packerFiles.length === 0) return;
+    
+    let processedCount = 0;
+    let addedCount = 0;
+    
+    for(let i = 0; i < packerFiles.length; i++) {
+      const filePath = packerFiles[i];
+      if(!filePath || typeof filePath !== 'string') continue;
+      
+      processedCount++;
+      
+      // 转换文件路径为URL（与后端逻辑一致）
+      const normalizedPath = filePath.replace(/\\/g, '/');
+      let urlPath = '';
+      
+      // 如果路径包含 uploads/，转换为相对URL
+      if(normalizedPath.includes('uploads/')) {
+        const parts = normalizedPath.split('uploads/');
+        if(parts.length > 1) {
+          urlPath = '/uploads/' + parts[1].replace(/^\/+/, '');
+        }
+      }
+      // 检查是否是 Packer-Fuzzer 的 tmp 或 reports 目录下的文件
+      else if(normalizedPath.includes('Packer-Fuzzer/tmp/') || normalizedPath.includes('Packer-Fuzzer/reports/')) {
+        const fileName = normalizedPath.split('/').pop();
+        if(fileName && fileName.toLowerCase().endsWith('.js')) {
+          urlPath = '/uploads/shouji/' + fileName;
+        }
+      }
+      // 如果是相对路径且以 .js 结尾
+      else if(normalizedPath.toLowerCase().endsWith('.js') && !normalizedPath.startsWith('http://') && !normalizedPath.startsWith('https://')) {
+        const fileName = normalizedPath.split('/').pop();
+        urlPath = '/uploads/shouji/' + fileName;
+      }
+      
+      // 如果是有效的JS文件URL，立即添加到合并结果
+      if(urlPath && urlPath.toLowerCase().endsWith('.js')) {
+        const item = {
+          url: urlPath,
+          kind: 'js',
+          status: '',
+          size: '',
+          title: '',
+          redirect: '',
+          source: '解包工具'
+        };
+        
+        // 实时添加到UI
+        addItemToMergeList(item);
+        addedCount++;
+        
+        // 每10个输出一次进度（避免日志过多）
+        if(addedCount % 10 === 0 || addedCount === 1) {
+          logLine(`[结果合并] 实时处理: ${processedCount}/${packerFiles.length} 个文件，已添加 ${addedCount} 个到合并结果`);
+        }
+        
+        // 稍微延迟，避免UI卡顿
+        if(i % 5 === 0) {
+          await new Promise(r => setTimeout(r, 10));
+        }
+      }
+    }
+    
+    logLine(`[结果合并] 解包文件实时处理完成: 共处理 ${processedCount} 个文件，添加 ${addedCount} 个JS文件到合并结果`);
+    
+    // 保存到localStorage
+    try {
+      if(window.__sjItems) localStorage.setItem('shouji-merged-items', JSON.stringify(window.__sjItems));
+      if(window.__sjAll) localStorage.setItem('shouji-merged-all', JSON.stringify(window.__sjAll));
+    } catch(e) {
+      console.warn('保存实时合并结果失败', e);
+    }
+  }
+
+  // renderList 函数（需要在全局作用域定义，供 parseLocalReport 调用）
+  // 支持显示所有列：URL, Status, Size, Title, Redirect, Source
+  window.renderList = function(items){ const list=document.getElementById('sj-merge-list'); if(!list) return; list.innerHTML=''; (items||[]).slice(0,500).forEach(it=>{ const row=document.createElement('div'); row.className='row info'; const tag=(it.kind||'other'); 
+      // 构建右侧信息：Status, Size, Title等
+      const rightParts = [];
+      if(it.status && it.status !== '') rightParts.push(`<span class="badge">${it.status}</span>`);
+      if(it.size && it.size !== '') {
+        // 格式化文件大小显示
+        const sizeNum = parseInt(it.size);
+        let sizeStr = it.size;
+        if(!isNaN(sizeNum)) {
+          if(sizeNum >= 1024*1024) sizeStr = (sizeNum/(1024*1024)).toFixed(2) + 'MB';
+          else if(sizeNum >= 1024) sizeStr = (sizeNum/1024).toFixed(2) + 'KB';
+          else sizeStr = sizeNum + 'B';
+        }
+        rightParts.push(`<span class="badge">${sizeStr}</span>`);
+      }
+      if(it.title && it.title !== '') rightParts.push(`<span title="${it.title.replace(/"/g, '&quot;')}" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;">${it.title.length > 30 ? it.title.substring(0, 30) + '...' : it.title}</span>`);
+      const rightContent = rightParts.length > 0 ? `<div class="right">${rightParts.join(' ')}</div>` : '<div class="right"></div>';
+      row.innerHTML = `<div class="left"><span class="badge">${tag}</span> <span class="badge url" title="${(it.url||'').replace(/"/g, '&quot;')}">${it.url||''}</span>${it.redirect && it.redirect !== '' && it.redirect !== it.url ? ` <span class="badge" title="跳转: ${it.redirect.replace(/"/g, '&quot;')}">→</span>` : ''}${it.source && it.source !== '' ? ` <span class="badge" title="来源: ${it.source.replace(/"/g, '&quot;')}">📄</span>` : ''}</div>${rightContent}`;
+      list.appendChild(row) }); }
+
+  // 本地报告解析（需要在 runURLFinderOnly 之前定义，以便被调用）
+  window.parseLocalReport = async function(path){ const p=path||(document.getElementById('sj-report-path')?.value||'').trim(); if(!p){ if(!path) alert('请输入报告文件路径'); return } logLine(`[报告] 正在解析本地报告: ${p}`); try{ const res=await api('/scan/shouji/parse_report',{path:p}); 
+      // 优先使用 items 数组（包含所有列信息），否则使用 urls 数组（向后兼容）
+      let items = [];
+      if(res.items && Array.isArray(res.items) && res.items.length > 0){
+        // 使用 items，包含所有列：url, status, size, title, redirect, source
+        items = res.items.map(it=>({
+          url: it.url || '',
+          status: it.status || '',
+          size: it.size || '',
+          title: it.title || '',
+          redirect: it.redirect || '',
+          source: it.source || '',
+          kind: (/\.js(\?|$)/i.test(it.url||'')?'js': ((/\/api\/|\?/i.test(it.url||''))?'api':'other'))
+        }));
+        logLine(`[报告] 使用完整数据：${items.length} 条记录（包含所有列）`);
+      } else if(res.urls && Array.isArray(res.urls)){
+        // 向后兼容：只有URL列表
+        items = res.urls.map(u=>({url:u, kind: (/\.js(\?|$)/i.test(u)?'js': ((/\/api\/|\?/i.test(u))?'api':'other')) }));
+        logLine(`[报告] 使用URL列表：${items.length} 条URL`);
+      }
+      window.__sjAll = items; window.__sjItems = items; 
+      // 保存解析结果到 localStorage
+      try{
+        localStorage.setItem('shouji-merged-items', JSON.stringify(items));
+        localStorage.setItem('shouji-merged-all', JSON.stringify(items));
+        localStorage.setItem('shouji-target', document.getElementById('target')?.value.trim() || '');
+      }catch(e){
+        console.warn('保存解析结果失败', e);
+      }
+      if(window.renderList){ window.renderList(items); }else{ logLine('[报告] 警告：renderList 函数未定义') } 
+      logLine(`[报告] 解析完成：提取 ${items.length} 条记录`); 
+      // 发送到报告系统（如果解析到数据）
+      if(items.length > 0){
+        const sendToReport = () => {
+          try{
+            const target = document.getElementById('target')?.value.trim() || localStorage.getItem('shouji-target') || '';
+            if(target && typeof addShoujiScanResult === 'function'){
+              const jsCount = items.filter(it => (it.kind||'other') === 'js').length;
+              const urlCount = items.length;
+              addShoujiScanResult({
+                target: target,
+                jsCount: jsCount,
+                urlCount: urlCount,
+                results: items.map(it => ({
+                  url: it.url || '',
+                  status: it.status || '',
+                  size: it.size || '',
+                  title: it.title || '',
+                  redirect: it.redirect || '',
+                  source: it.source || '',
+                  kind: it.kind || 'other'
+                }))
+              });
+              logLine(`[报告] 已将 ${urlCount} 条结果发送到报告系统`);
+              return true;
+            }
+          }catch(e){
+            logLine(`[报告] 发送到报告系统失败：${e?.message||e}`);
+          }
+          return false;
+        };
+        // 如果函数已存在，立即调用；否则等待加载
+        if(typeof addShoujiScanResult === 'function'){
+          sendToReport();
+        } else {
+          let retryCount = 0;
+          const checkAndSend = setInterval(() => {
+            if(typeof addShoujiScanResult === 'function'){
+              clearInterval(checkAndSend);
+              sendToReport();
+            } else if(retryCount++ > 50){
+              clearInterval(checkAndSend);
+              logLine('[报告] 警告：无法发送到报告系统，请刷新页面后查看报告页面');
+            }
+          }, 100);
+        }
+      }
+      }catch(e){ logLine(`[报告] 解析失败：${e.message||e}`) } }
+
+
+  // 事件绑定与日志恢复（保持之前体验）
+  ;(function(){ function restoreLogs(){ const out=document.getElementById('out'); if(!out){ setTimeout(restoreLogs,100); return } try{ const logs=JSON.parse(localStorage.getItem('shouji-logs')||'[]'); if(logs.length>0){ out.innerHTML=''; logs.reverse().forEach(log=>{ const div=document.createElement('div'); div.style.whiteSpace='pre-wrap'; div.style.wordBreak='break-all'; div.textContent=log; out.appendChild(div) }) } }catch{} }
+    function restoreMergedData(){ try{ const savedItems = localStorage.getItem('shouji-merged-items'); const savedAll = localStorage.getItem('shouji-merged-all'); const savedTarget = localStorage.getItem('shouji-target'); if(savedItems){ const items = JSON.parse(savedItems); window.__sjItems = items; window.__sjAll = savedAll ? JSON.parse(savedAll) : items; if(window.renderList){ window.renderList(items) } if(savedTarget && document.getElementById('target')){ document.getElementById('target').value = savedTarget } 
+        // 尝试发送到报告系统（等待 app.js 加载）
+        if(items.length > 0){
+          const trySendToReport = () => {
+            if(typeof addShoujiScanResult === 'function'){
+              const allItems = window.__sjAll || items;
+              const jsCount = allItems.filter(it => (it.kind||'other') === 'js').length;
+              const urlCount = allItems.length;
+              try{
+                addShoujiScanResult({
+                  target: savedTarget || '',
+                  jsCount: jsCount,
+                  urlCount: urlCount,
+                  results: allItems.map(it => ({
+                    url: it.url || '',
+                    status: it.status || '',
+                    size: it.size || '',
+                    title: it.title || '',
+                    redirect: it.redirect || '',
+                    source: it.source || '',
+                    kind: it.kind || 'other'
+                  }))
+                });
+              }catch(e){ console.warn('发送到报告系统失败', e) }
+              return true;
+            }
+            return false;
+          };
+          if(typeof addShoujiScanResult === 'function'){
+            trySendToReport();
+          } else {
+            let retryCount = 0;
+            const checkAndSend = setInterval(() => {
+              if(trySendToReport()){
+                clearInterval(checkAndSend);
+              } else if(retryCount++ > 30){
+                clearInterval(checkAndSend);
+              }
+            }, 100);
+          }
+        }
+      } }catch(e){ console.warn('恢复合并结果失败', e) } }
+    function bind(id, fn){ const el=document.getElementById(id); if(el){ el.onclick=fn } }
+    if(location.pathname.endsWith('shouji.html')){ restoreLogs(); restoreMergedData() }
+    bind('pick', pickWordlist); (function initWlList(){ const el=document.getElementById('wordlist'); const box=document.getElementById('wl-list'); if(!el||!box) return; const cur=el.value? el.value.split(';').map(s=>s.trim()).filter(Boolean):[]; if(cur.length){ box.innerHTML=''; cur.forEach(p=>{ const div=document.createElement('div'); div.className='row info'; div.innerHTML=`<div class="left"><span class=\"badge\">词典</span> <span class=\"badge url\">${p}</span></div>`; box.appendChild(div) }) } })()
+    bind('only-pack', async()=>{ document.getElementById('out').innerHTML=''; localStorage.removeItem('shouji-logs'); outputQueue.length=0; isOutputting=false; currentProgress=0; setProgress(0); await runAnalyze() })
+    bind('only-ffuf', async()=>{ 
+      document.getElementById('out').innerHTML=''; 
+      localStorage.removeItem('shouji-logs'); 
+      outputQueue.length=0; 
+      isOutputting=false; 
+      currentProgress=0; 
+      setProgress(0); 
+      try {
+        await runFfufOnly();
+        // ffuf 单独运行，不合并到总结果中，只显示在日志中
+        logLine('[路径爆破] 提示：单独运行的结果不会添加到合并结果中');
+      } catch(e) {
+        logLine(`[FFUF] 错误: ${e?.message || e}`);
+      }
+      setProgress(100);
+    })
+    bind('only-urlfinder', async()=>{ 
+      document.getElementById('out').innerHTML=''; 
+      localStorage.removeItem('shouji-logs'); 
+      outputQueue.length=0; 
+      isOutputting=false; 
+      currentProgress=0; 
+      setProgress(0); 
+      try {
+        const uf = await runURLFinderOnly();
+        // URLFinder 完成后，将结果合并到现有结果中
+        if(uf) {
+          logLine('');
+          await merge('', uf, ''); // 只传入 URLFinder 结果，保留现有的解包和 ffuf 结果
+        }
+      } catch(e) {
+        logLine(`[URL发现] 错误: ${e?.message || e}`);
+      }
+      setProgress(100);
+    })
+    bind('run-all', runAll)
+    bind('clear', ()=>{ document.getElementById('out').innerHTML=''; localStorage.removeItem('shouji-logs'); outputQueue.length=0; isOutputting=false; setProgress(0) })
+    const btnParse = document.getElementById('sj-parse-report'); if(btnParse) btnParse.onclick=()=>window.parseLocalReport()
+
+    // 合并结果筛选与导出（使用全局的 renderList）
+    function currentFiltered(kind){ 
+      const all=Array.isArray(window.__sjAll)? window.__sjAll: []; 
+      if(!kind||kind==='all') {
+        // "全部"按钮：排除 fuzz 类型（因为 ffuf 结果太多，会干扰显示）
+        return all.filter(it => (it.kind||'other') !== 'fuzz');
+      }
+      if(kind==='url') {
+        // "URL"按钮：排除 js 和 fuzz
+        return all.filter(it => {
+          const k = it.kind||'other';
+          return k !== 'js' && k !== 'fuzz';
+        });
+      }
+      if(kind==='fuzz') {
+        // "Fuzz"按钮：只显示 fuzz 类型
+        return all.filter(it => (it.kind||'other') === 'fuzz');
+      }
+      // "JS"按钮：只显示 js 类型
+      return all.filter(it => (it.kind||'other')===kind);
+    }
+    function getListText(items){ return (items||[]).map(it=>it.url).join('\n') }
+    function copyText(t){ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta) }
+    function downloadText(filename, text){ const blob=new Blob([text], {type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href) }
+
+    const btnAll=document.getElementById('sj-filter-all');
+    const btnJs=document.getElementById('sj-filter-js');
+    const btnUrl=document.getElementById('sj-filter-url');
+    const btnFz=document.getElementById('sj-filter-fuzz');
+    const btnCopy=document.getElementById('sj-copy');
+    const btnDown=document.getElementById('sj-download');
+
+    if(btnAll) btnAll.onclick=()=>{ const items=currentFiltered('all'); if(window.renderList) window.renderList(items); window.__sjItems=items }
+    if(btnJs) btnJs.onclick=()=>{ const items=currentFiltered('js'); if(window.renderList) window.renderList(items); window.__sjItems=items }
+    if(btnUrl) btnUrl.onclick=()=>{ const items=currentFiltered('url'); if(window.renderList) window.renderList(items); window.__sjItems=items }
+    if(btnFz) btnFz.onclick=()=>{ const all=Array.isArray(window.__sjAll)? window.__sjAll: []; const items=all.filter(it=> (it.kind||'other')==='fuzz'); if(window.renderList) window.renderList(items); window.__sjItems=items }
+    if(btnCopy) btnCopy.onclick=()=>{ const text=getListText(window.__sjItems||[]); if(!text){ alert('列表为空'); return } copyText(text); alert('已复制当前列表') }
+    if(btnDown) btnDown.onclick=()=>{ const text=getListText(window.__sjItems||[]); if(!text){ alert('列表为空'); return } const name=`shouji-list-${Date.now()}.txt`; downloadText(name, text) }
+    const btnClear=document.getElementById('sj-clear');
+    if(btnClear) btnClear.onclick=()=>{ 
+      if(confirm('确定要清空合并结果列表吗？')){ 
+        window.__sjItems = [];
+        window.__sjAll = [];
+        const list=document.getElementById('sj-merge-list');
+        if(list) list.innerHTML='';
+        try{
+          localStorage.removeItem('shouji-merged-items');
+          localStorage.removeItem('shouji-merged-all');
+          localStorage.removeItem('shouji-target');
+        }catch(e){}
+        logLine('[合并结果] 列表已清空');
+      }
+    }
+  })()
+  </script>
+</body>
+</html>

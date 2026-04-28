@@ -1,0 +1,165 @@
+{
+  "diagram_type": "system_flowchart",
+  "title": "NeonScan 2.0 总体运行流程图",
+  "page_name": "03-总体运行流程图",
+  "metadata": {
+    "system_name": "NeonScan 2.0",
+    "chapter": "系统设计",
+    "evidence_basis": [
+      "source_code",
+      "frontend_pages"
+    ],
+    "status": "confirmed"
+  },
+  "items": [
+    {
+      "id": "start",
+      "kind": "terminator",
+      "text": "开始"
+    },
+    {
+      "id": "open_ui",
+      "kind": "process",
+      "text": "打开多页面前端并选择功能模块"
+    },
+    {
+      "id": "need_upload",
+      "kind": "decision",
+      "text": "是否需要上传字典/POC/报告/样本?"
+    },
+    {
+      "id": "upload",
+      "kind": "process",
+      "text": "调用 /upload\n保存到 uploads/u-*"
+    },
+    {
+      "id": "submit_http",
+      "kind": "process",
+      "text": "向对应 HTTP 接口提交请求"
+    },
+    {
+      "id": "request_type",
+      "kind": "decision",
+      "text": "请求属于哪类能力?"
+    },
+    {
+      "id": "standard_task",
+      "kind": "process",
+      "text": "创建 Task + goroutine\n执行端口/目录/POC/EXP/WebProbe/WAF/Shouji"
+    },
+    {
+      "id": "ai_auto_task",
+      "kind": "process",
+      "text": "创建 Task\n初始化 AI Provider\n执行 AI 自动扫描编排"
+    },
+    {
+      "id": "stream_session",
+      "kind": "process",
+      "text": "建立流式会话\nAI 分析或 JADX MCP Chat"
+    },
+    {
+      "id": "sse_push",
+      "kind": "process",
+      "text": "实时推送进度与结果\nSSE / stream"
+    },
+    {
+      "id": "report_store",
+      "kind": "data_store",
+      "text": "前端 localStorage\nneonscan-report"
+    },
+    {
+      "id": "view_export",
+      "kind": "process",
+      "text": "查看报告 / 导出 Markdown\n下载 Python EXP"
+    },
+    {
+      "id": "end",
+      "kind": "terminator",
+      "text": "结束"
+    }
+  ],
+  "connectors": [
+    {
+      "from": "start",
+      "to": "open_ui",
+      "kind": "data_flow"
+    },
+    {
+      "from": "open_ui",
+      "to": "need_upload",
+      "kind": "data_flow"
+    },
+    {
+      "from": "need_upload",
+      "to": "upload",
+      "kind": "data_flow",
+      "label": "是"
+    },
+    {
+      "from": "need_upload",
+      "to": "submit_http",
+      "kind": "data_flow",
+      "label": "否"
+    },
+    {
+      "from": "upload",
+      "to": "submit_http",
+      "kind": "data_flow"
+    },
+    {
+      "from": "submit_http",
+      "to": "request_type",
+      "kind": "data_flow"
+    },
+    {
+      "from": "request_type",
+      "to": "standard_task",
+      "kind": "data_flow",
+      "label": "常规扫描 / 批量生成"
+    },
+    {
+      "from": "request_type",
+      "to": "ai_auto_task",
+      "kind": "data_flow",
+      "label": "AI 自动扫描"
+    },
+    {
+      "from": "request_type",
+      "to": "stream_session",
+      "kind": "data_flow",
+      "label": "AI 分析 / JADX MCP"
+    },
+    {
+      "from": "standard_task",
+      "to": "sse_push",
+      "kind": "data_flow"
+    },
+    {
+      "from": "ai_auto_task",
+      "to": "sse_push",
+      "kind": "data_flow"
+    },
+    {
+      "from": "stream_session",
+      "to": "sse_push",
+      "kind": "data_flow"
+    },
+    {
+      "from": "sse_push",
+      "to": "report_store",
+      "kind": "data_flow",
+      "label": "结果汇总 / 本地保存"
+    },
+    {
+      "from": "report_store",
+      "to": "view_export",
+      "kind": "data_flow"
+    },
+    {
+      "from": "view_export",
+      "to": "end",
+      "kind": "data_flow"
+    }
+  ]
+}
+

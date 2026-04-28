@@ -1,0 +1,136 @@
+@startuml
+title NeonScan 2.0 补充类图
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+package "AI提供者" {
+class "ChatMessage" as ChatMessage {
+  + Role: string
+  + Content: string
+  + Time: string
+  + ToolCallID: string
+  + ToolCalls: List<AIToolCall>
+}
+interface "AIProvider" as AIProvider {
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+}
+interface "ChatStreamProvider" as ChatStreamProvider {
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: *StreamController): tuple<string, List<AIToolCall>, error>
+}
+class "AITool" as AITool {
+  + Type: string
+  + Name: string
+  + Description: string
+  + Parameters: map<string, any>
+}
+class "AIToolCall" as AIToolCall {
+  + ID: string
+  + Name: string
+  + Arguments: map<string, any>
+}
+class "OpenAIProvider" as OpenAIProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + MaxTokens: int
+  + Timeout: time.Duration
+  --
+  + SetTimeout(timeout: time.Duration): void
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: *StreamController): tuple<string, List<AIToolCall>, error>
+}
+class "DeepSeekProvider" as DeepSeekProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + MaxTokens: int
+  + Timeout: time.Duration
+  --
+  + SetTimeout(timeout: time.Duration): void
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: *StreamController): tuple<string, List<AIToolCall>, error>
+}
+class "AnthropicProvider" as AnthropicProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + MaxTokens: int
+  + Timeout: time.Duration
+  --
+  + SetTimeout(timeout: time.Duration): void
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+}
+class "OllamaProvider" as OllamaProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + MaxTokens: int
+  + Timeout: time.Duration
+  --
+  + SetTimeout(timeout: time.Duration): void
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: *StreamController): tuple<string, List<AIToolCall>, error>
+}
+class "StreamController" as StreamController {
+  - mu: sync.RWMutex
+  - aborted: bool
+  - abortChan: chan struct
+  - messageChan: chan string
+  --
+  + Abort(): void
+  + IsAborted(): bool
+  + Send(message: string): bool
+  + GetMessageChan(): recv-chan string
+  + GetAbortChan(): recv-chan struct
+}
+}
+package "WAF与其他辅助类型" {
+class "WAFBypassReq" as WAFBypassReq {
+  + BaseURL: string
+  + Path: string
+  + Payloads: List<string>
+  + Methods: List<string>
+  + Strategies: List<string>
+  + Match: string
+  + Concurrency: int
+  + TimeoutMs: int
+  + PayloadType: PayloadType
+}
+class "PayloadVariant" as PayloadVariant {
+  + Variant: string
+  + Strategies: List<string>
+}
+class "FingerprintRule" as FingerprintRule {
+  + CMS: string
+  + Method: string
+  + Location: string
+  + Keyword: List<string>
+}
+class "FingerprintData" as FingerprintData {
+  + Fingerprint: List<FingerprintRule>
+}
+class "DictInfo" as DictInfo {
+  + Name: string
+  + Path: string
+  + Category: string
+}
+}
+
+ChatMessage "1" *-- "0..*" AIToolCall : ToolCalls
+OpenAIProvider <|.. AIProvider : implements
+DeepSeekProvider <|.. AIProvider : implements
+AnthropicProvider <|.. AIProvider : implements
+OllamaProvider <|.. AIProvider : implements
+OpenAIProvider <|.. ChatStreamProvider : implements
+DeepSeekProvider <|.. ChatStreamProvider : implements
+OllamaProvider <|.. ChatStreamProvider : implements
+ChatStreamProvider "1" ..> "1" StreamController : ChatStream controller
+AIProvider "1" ..> "0..*" ChatMessage : input messages
+AIProvider "1" ..> "0..*" AITool : available tools
+AIProvider "1" ..> "0..*" AIToolCall : returns tool calls
+WAFBypassReq "1" ..> "0..*" PayloadVariant : produces variants during bypass generation
+FingerprintData "1" *-- "0..*" FingerprintRule : Fingerprint
+@enduml

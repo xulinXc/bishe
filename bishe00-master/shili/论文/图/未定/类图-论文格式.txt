@@ -1,0 +1,271 @@
+类图说明
+
+NeonScan系统的类图展示了系统的核心类结构和它们之间的关系。系统采用模块化设计，主要包括以下几个模块：
+
+一、任务管理模块
+
+1. Task类
+   - 功能：管理异步扫描任务的执行状态和进度
+   - 主要属性：
+     * ID: 任务唯一标识符
+     * Total: 任务总数
+     * Done: 已完成数量
+     * Created: 任务创建时间
+     * ch: SSE消息通道
+     * stop: 停止信号通道
+   - 主要方法：
+     * IncDone(): 增加已完成计数（线程安全）
+     * Send(): 发送SSE消息到任务通道
+     * Close(): 关闭任务，停止所有操作
+
+2. SSEMessage类
+   - 功能：Server-Sent Events消息结构体，用于向前端实时推送扫描进度和结果
+   - 主要属性：
+     * Type: 消息类型（start, progress, find, end等）
+     * TaskID: 任务ID
+     * Progress: 进度文本（如 "10/100"）
+     * Percent: 进度百分比（0-100）
+     * Data: 消息数据
+
+二、扫描请求模块
+
+包含各种扫描功能的请求结构体：
+
+1. PortScanReq：端口扫描请求
+   - 属性：Host（目标主机）、Ports（端口范围）、Concurrency（并发数）、TimeoutMs（超时时间）、ScanType（扫描类型）、GrabBanner（是否抓取Banner）
+
+2. DirScanReq：目录扫描请求
+   - 属性：BaseURL（目标URL）、DictPaths（字典文件路径）、BuiltinDicts（内置字典）、Concurrency（并发数）、TimeoutMs（超时时间）
+
+3. PocScanReq：POC扫描请求
+   - 属性：BaseURL（目标URL）、PocDir（POC文件目录）、PocPaths（POC文件路径列表）、TimeoutMs（超时时间）、Concurrency（并发数）
+
+4. WAFBypassReq：WAF绕过测试请求
+   - 属性：BaseURL（目标URL）、Path（请求路径）、Payloads（测试Payload列表）、Methods（HTTP方法列表）、Strategies（绕过策略列表）、Match（成功标识字符串）、Concurrency（并发数）、TimeoutMs（超时时间）
+
+5. ExpExecReq：EXP验证请求
+   - 属性：BaseURL（目标URL）、ExpDir（EXP文件目录）、ExpPaths（EXP文件路径列表）、InlineExps（内联EXP列表）、Concurrency（并发数）、TimeoutMs（超时时间）
+
+6. WebProbeReq：Web探测请求
+   - 属性：URLs（目标URL列表）、Concurrency（并发数）、TimeoutMs（超时时间）、Headers（请求头）、FollowRedirect（是否跟随重定向）、FetchFavicon（是否获取Favicon）、FetchRobots（是否获取Robots.txt）
+
+7. AIAnalyzeReq：AI分析请求
+   - 属性：SessionID（会话ID）、Message（消息内容）、Provider（AI提供商）、APIKey（API密钥）、Model（模型名称）
+
+三、POC规则模块
+
+支持多种POC格式：
+
+1. POC类：传统POC格式
+   - 属性：Name（POC名称）、Method（HTTP方法）、Path（请求路径）、Body（请求体）、Headers（请求头）、MatchHeaders（响应头匹配规则）、MatchBodyAny（响应体匹配规则：包含任意一个即可）、MatchBodyAll（响应体匹配规则：必须包含所有）、Match（传统匹配方式）、Retry（重试次数）、RetryDelayMs（重试延迟）
+
+2. XRPOC类：X-Ray风格的POC格式
+   - 属性：ID（POC ID）、Info（POC信息）、Rules（规则映射）、Expression（表达式）
+   - 关联类：
+     * XRInfo：POC信息（名称、作者、严重程度、参考链接）
+     * XRRule：规则（请求、表达式）
+     * XRRequest：请求（方法、路径、请求体、请求头）
+
+3. NucleiPOC类：Nuclei格式的POC
+   - 属性：ID（POC ID）、Info（POC信息）、Requests（请求列表）、Matchers（匹配器列表）、MatchersCondition（匹配器条件）、MaxRedirects（最大重定向次数）
+   - 关联类：
+     * NucleiInfo：POC信息（名称、作者、严重程度、风险、参考链接、描述、标签）
+     * NucleiRequest：请求（原始请求、方法、路径、URL、重定向标志、请求头、请求体、跟随重定向、匹配器）
+     * NucleiMatcher：匹配器（类型、部分、关键词、正则表达式、条件、状态码、DSL）
+     * NucleiHeaders：请求头（支持map和数组两种格式）
+
+四、EXP验证模块
+
+1. ExpSpec类：EXP规范
+   - 功能：定义一个完整的EXP
+   - 属性：Name（EXP名称）、Steps（执行步骤列表）
+
+2. ExpStep类：EXP执行步骤
+   - 功能：定义单个HTTP请求的所有参数和验证规则
+   - 属性：
+     * Method：HTTP方法
+     * Path：请求路径
+     * Body：请求体内容
+     * Headers：请求头
+     * Validate：响应验证规则
+     * Extract：变量提取规则
+     * Retry：重试次数
+     * RetryDelayMs：重试延迟
+     * SleepMs：请求后休眠时间
+
+3. Validation类：响应验证规则
+   - 功能：定义如何判断HTTP响应是否符合预期
+   - 属性：
+     * Status：期望的HTTP状态码列表
+     * BodyContains：响应体必须包含的字符串列表
+     * HeaderContains：响应头必须包含的键值对
+
+4. ExtractRule类：变量提取规则
+   - 功能：用于从HTTP响应中提取变量，供后续步骤使用
+   - 属性：
+     * BodyRegex：从响应体中提取的正则表达式列表
+     * HeaderRegex：从响应头中提取的正则表达式
+
+5. StatusList类：状态码列表
+   - 功能：支持字符串和整数两种格式的状态码列表
+   - 方法：UnmarshalJSON()、UnmarshalYAML()
+
+五、WAF绕过模块
+
+1. PayloadVariant类：Payload变体
+   - 功能：Payload变体及其使用的策略
+   - 属性：Variant（变体内容）、Strategies（使用的策略列表）
+
+六、MCP接口模块
+
+1. MCPConnection接口：MCP连接接口（通用接口）
+   - 方法：
+     * IsConnected()：检查连接状态
+     * GetTools()：获取可用的工具列表
+     * CallTool()：调用指定的工具
+   - 实现类：
+     * IDAMCPConnection：IDA Pro MCP连接实现
+     * JADXMCPConnection：JADX MCP连接实现
+
+2. ChatSession接口：聊天会话接口（通用接口）
+   - 方法：
+     * GetID()：获取会话ID
+     * GetAPIKey()：获取API密钥
+     * GetAPIType()：获取API类型
+     * GetMessages()：获取消息列表
+     * GetMCPConnection()：获取MCP连接对象
+     * SetMessages()：设置消息列表
+     * AddMessage()：添加消息
+     * GetLastActivity()：获取最后活动时间
+     * UpdateLastActivity()：更新最后活动时间
+
+3. BaseChatSession类：基础聊天会话实现
+   - 功能：提供了ChatSession接口的基础实现，包含线程安全的消息管理
+   - 属性：
+     * ID：会话唯一标识符
+     * APIKey：API密钥
+     * APIType：API类型
+     * Messages：消息列表
+     * MCPConnection：MCP连接对象
+     * CreatedAt：会话创建时间
+     * LastActivity：最后活动时间
+
+4. IDAChatSession类：IDA聊天会话
+   - 功能：继承BaseChatSession，用于IDA Pro的AI分析会话
+   - 方法：
+     * GetOrCreateIDASession()：获取或创建IDA会话
+     * CleanupOldIDASessions()：清理旧的会话
+
+5. JADXChatSession类：JADX聊天会话
+   - 功能：继承BaseChatSession，用于JADX的AI分析会话
+   - 方法：
+     * GetOrCreateJADXSession()：获取或创建JADX会话
+     * CleanupOldJADXSessions()：清理旧的会话
+
+6. MCPTool类：MCP工具定义
+   - 属性：Name（工具名称）、Description（工具描述）、Parameters（工具参数的JSON Schema）
+
+七、AI Provider模块
+
+1. AIProvider接口：AI提供商接口
+   - 方法：Chat()（发送聊天消息并获取AI响应）
+   - 实现类：
+     * OpenAIProvider：OpenAI API实现
+     * DeepSeekProvider：DeepSeek API实现
+     * AnthropicProvider：Anthropic (Claude) API实现
+     * OllamaProvider：Ollama本地AI API实现
+
+2. ChatStreamProvider接口：流式聊天接口
+   - 方法：ChatStream()（流式聊天，实时返回AI响应）
+   - 实现类：
+     * OpenAIProvider
+     * DeepSeekProvider
+     * OllamaProvider
+
+3. ChatMessage类：聊天消息结构体
+   - 属性：
+     * Role：消息角色（user、assistant、tool）
+     * Content：消息内容
+     * Time：RFC3339格式的时间戳
+     * ToolCallID：tool消息必须的字段
+     * ToolCalls：assistant消息的tool_calls
+
+4. AITool类：AI工具定义
+   - 功能：定义AI可以调用的工具/函数
+   - 属性：
+     * Type：工具类型（通常为"function"）
+     * Name：工具名称
+     * Description：工具描述
+     * Parameters：工具参数的JSON Schema
+
+5. AIToolCall类：AI工具调用
+   - 功能：表示AI决定调用某个工具时的调用信息
+   - 属性：
+     * ID：工具调用ID
+     * Name：要调用的工具名称
+     * Arguments：工具调用的参数
+
+6. StreamController类：流控制器
+   - 功能：用于控制流式输出的中止和消息传递
+   - 方法：
+     * Send()：发送数据
+     * IsAborted()：检查是否已中止
+     * Abort()：中止流式输出
+
+八、其他模块
+
+1. FingerprintRule类：指纹识别规则
+   - 属性：Location（位置）、Method（方法）、Keyword（关键词列表）、Regular（正则表达式）、Tech（技术名称）
+
+2. FingerprintData类：指纹数据集合
+   - 属性：Rules（指纹规则列表）
+
+3. DictInfo类：字典信息
+   - 属性：Name（字典名称）、Path（字典路径）、Count（条目数量）
+
+类之间的关系说明
+
+一、组合关系
+
+1. ExpSpec包含多个ExpStep
+2. ExpStep包含一个Validation和多个ExtractRule
+3. XRPOC包含一个XRInfo和多个XRRule
+4. XRRule包含一个XRRequest
+5. NucleiPOC包含一个NucleiInfo、多个NucleiRequest和多个NucleiMatcher
+6. NucleiRequest可以包含多个NucleiMatcher和一个NucleiHeaders
+7. FingerprintData包含多个FingerprintRule
+
+二、继承关系
+
+1. BaseChatSession实现ChatSession接口
+2. IDAChatSession和JADXChatSession继承BaseChatSession
+3. IDAMCPConnection和JADXMCPConnection实现MCPConnection接口
+4. OpenAIProvider、DeepSeekProvider、AnthropicProvider、OllamaProvider实现AIProvider接口
+5. OpenAIProvider、DeepSeekProvider、OllamaProvider实现ChatStreamProvider接口
+
+三、使用关系
+
+1. 所有扫描请求（PortScanReq、DirScanReq、PocScanReq等）都使用Task类来管理任务进度
+2. BaseChatSession使用AIProvider进行AI对话
+3. BaseChatSession关联MCPConnection进行工具调用
+4. BaseChatSession包含多个ChatMessage
+5. ChatMessage可以包含多个AIToolCall
+6. PocScanReq加载POC、XRPOC和NucleiPOC规则
+7. ExpExecReq加载ExpSpec规范
+
+设计特点
+
+1. 模块化设计：系统采用模块化设计，各模块职责清晰，便于维护和扩展
+
+2. 接口抽象：使用接口抽象（MCPConnection、ChatSession、AIProvider）实现多态，支持不同的实现类
+
+3. 统一任务管理：所有扫描功能都使用Task类统一管理任务进度，通过SSE机制实时向前端推送结果
+
+4. 多格式支持：POC规则模块支持传统POC、X-Ray风格POC和Nuclei格式POC，提高了系统的兼容性
+
+5. 灵活的AI集成：AI Provider模块支持多种AI服务提供商，实现了统一的AI分析接口
+
+6. 线程安全：关键类（如BaseChatSession、Task）使用互斥锁保证并发安全
+
+7. 可扩展性：通过接口和抽象类设计，系统具有良好的可扩展性，可以方便地添加新的功能模块
+

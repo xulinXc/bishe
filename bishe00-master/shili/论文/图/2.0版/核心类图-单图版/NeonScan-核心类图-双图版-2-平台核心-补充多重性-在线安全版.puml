@@ -1,0 +1,122 @@
+@startuml
+title NeonScan 2.0 核心类图（双图版-平台核心）
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam nodesep 18
+skinparam ranksep 22
+
+package "来自业务核心图的引用" {
+class AIGenPythonFromExpReq_Ref {
+  + Provider: string
+  + Exp: ExpSpec
+}
+
+class AIGenPythonFromExpBatchReq_Ref {
+  + Provider: string
+  + InlineExps: List(ExpSpec)
+}
+
+class ExpVerifyConfig_Ref {
+  + TargetURL: string
+  + ExpSpec: ExpSpec
+}
+}
+
+package "MCP / 会话" {
+interface MCPConnection {
+  + IsConnected(): bool
+  + GetTools(): AIToolList
+}
+
+interface ChatSession {
+  + GetID(): string
+  + GetMessages(): ChatMessageList
+}
+
+class BaseChatSession {
+  + ID: string
+  + APIType: string
+  + Messages: ChatMessageList
+}
+
+class JADXMCPConnection {
+  + baseURL: string
+  + GetTools(): AIToolList
+  + CallTool(): result
+}
+
+class JADXChatSession {
+  + GetOrCreateJADXSession(): JADXChatSession
+}
+
+class MCPTool {
+  + Name: string
+}
+}
+
+package "AI核心" {
+class ChatMessage {
+  + Role: string
+  + Content: string
+}
+
+interface AIProvider {
+  + Chat(): result
+}
+
+class AITool {
+  + Name: string
+}
+
+class AIToolCall {
+  + Name: string
+}
+
+class OpenAIProvider {
+  + APIKey: string
+  + Model: string
+}
+
+class DeepSeekProvider {
+  + APIKey: string
+  + Model: string
+}
+
+class AnthropicProvider {
+  + APIKey: string
+  + Model: string
+}
+
+class OllamaProvider {
+  + BaseURL: string
+  + Model: string
+}
+}
+
+BaseChatSession <|-- JADXChatSession
+ChatSession <|.. BaseChatSession
+MCPConnection <|.. JADXMCPConnection
+JADXMCPConnection "1" *-- "0..*" MCPTool : tools
+BaseChatSession "1" *-- "0..*" ChatMessage : messages
+BaseChatSession "1" --> "0..1" MCPConnection : uses
+
+ChatMessage "1" *-- "0..*" AIToolCall : calls
+AIProvider "1" ..> "0..*" ChatMessage : input
+AIProvider "1" ..> "0..*" AITool : tools
+BaseChatSession ..> AIProvider : ai
+MCPConnection "1" ..> "0..*" AITool : exports
+
+AIProvider <|.. OpenAIProvider
+AIProvider <|.. DeepSeekProvider
+AIProvider <|.. AnthropicProvider
+AIProvider <|.. OllamaProvider
+
+' 真实跨图连接示例
+AIGenPythonFromExpReq_Ref "1" ..> "0..1" AIProvider : provider
+AIGenPythonFromExpBatchReq_Ref "1" ..> "0..1" AIProvider : provider
+ExpVerifyConfig_Ref "1" ..> "0..1" AIProvider : verify with provider
+@enduml

@@ -1,0 +1,140 @@
+@startuml
+title NeonScan 2.0 核心类图（业务核心-紧凑版）
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam nodesep 16
+skinparam ranksep 18
+
+package "任务与请求" {
+class Task {
+  + ID: string
+  + Total: int
+  + Done: int
+  + Send(msg: SSEMessage): bool
+}
+
+class SSEMessage {
+  + Type: string
+  + TaskID: string
+  + Percent: int
+}
+
+class DirScanReq {
+  + BaseURL: string
+  + DictPaths: List(string)
+}
+
+class WebProbeReq {
+  + URLs: List(string)
+}
+
+class PocScanReq {
+  + BaseURL: string
+  + PocDir: string
+}
+
+class ExpExecReq {
+  + BaseURL: string
+  + InlineExps: List(ExpSpec)
+}
+
+class AIGenPythonFromExpReq {
+  + Provider: string
+  + Exp: ExpSpec
+  + AutoVerify: bool
+}
+}
+
+package "POC规则" {
+class POC {
+  + Name: string
+  + Match: string
+}
+
+class XRPOC {
+  + ID: string
+  + Info: XRInfo
+}
+
+class XRInfo {
+  + Name: string
+  + Severity: string
+}
+
+class NucleiPOC {
+  + ID: string
+  + Info: NucleiInfo
+}
+
+class NucleiInfo {
+  + Name: string
+  + Severity: string
+}
+}
+
+package "EXP与AI-EXP" {
+class ExpVerifyInfo {
+  + MatchedSteps: int
+  + LastStatus: int
+}
+
+class ExpSpec {
+  + Name: string
+  + Steps: ExpStepList
+}
+
+class ExpStep {
+  + Method: string
+  + Path: string
+  + Validate: Validation
+}
+
+class Validation {
+  + Status: StatusList
+}
+
+class ExpVerifyConfig {
+  + TargetURL: string
+  + ExpSpec: ExpSpec
+}
+
+class ExpVerifyResult {
+  + Success: bool
+  + Matched: bool
+}
+}
+
+package "辅助数据" {
+class FingerprintData {
+  + Fingerprint: FingerprintRuleList
+}
+
+class DictInfo {
+  + Name: string
+  + Path: string
+}
+}
+
+Task --> SSEMessage : emits
+DirScanReq ..> DictInfo : uses
+WebProbeReq ..> FingerprintData : uses
+PocScanReq ..> POC : scans
+PocScanReq ..> XRPOC : scans
+PocScanReq ..> NucleiPOC : scans
+ExpExecReq ..> ExpSpec : InlineExps
+AIGenPythonFromExpReq --> ExpSpec : Exp
+AIGenPythonFromExpReq ..> ExpVerifyInfo : Verify
+
+XRPOC *-- XRInfo : info
+NucleiPOC *-- NucleiInfo : info
+
+ExpSpec *-- ExpStep : steps
+ExpStep *-- Validation : validate
+ExpVerifyConfig --> ExpSpec : ExpSpec
+ExpVerifyConfig ..> ExpVerifyResult : result
+@enduml
+

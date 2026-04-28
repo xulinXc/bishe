@@ -1,0 +1,283 @@
+@startuml
+title NeonScan 2.0 核心类图（合并版）
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam nodesep 18
+skinparam ranksep 20
+
+package "任务与请求" {
+class Task {
+  + ID: string
+  + Total: int
+  + Done: int
+  + Send(msg: SSEMessage): bool
+}
+
+class SSEMessage {
+  + Type: string
+  + TaskID: string
+  + Percent: int
+}
+
+class DirScanReq {
+  + BaseURL: string
+  + DictPaths: List(string)
+}
+
+class WebProbeReq {
+  + URLs: List(string)
+}
+
+class PocScanReq {
+  + BaseURL: string
+  + PocDir: string
+}
+
+class ExpExecReq {
+  + BaseURL: string
+  + InlineExps: List(ExpSpec)
+}
+
+class AIGenPythonFromExpReq {
+  + Provider: string
+  + Exp: ExpSpec
+  + Verify: ExpVerifyInfo
+  + AutoVerify: bool
+}
+
+class WAFBypassReq {
+  + BaseURL: string
+  + Payloads: List(string)
+  + Strategies: List(string)
+}
+}
+
+package "POC规则" {
+class POC {
+  + Name: string
+  + Match: string
+}
+
+class XRPOC {
+  + ID: string
+  + Info: XRInfo
+}
+
+class XRInfo {
+  + Name: string
+  + Severity: string
+}
+
+class XRRule {
+  + Request: XRRequest
+  + Expression: string
+}
+
+class XRRequest {
+  + Method: string
+  + Path: string
+}
+
+class NucleiPOC {
+  + ID: string
+  + Info: NucleiInfo
+}
+
+class NucleiInfo {
+  + Name: string
+  + Severity: string
+}
+
+class NucleiRequest {
+  + Method: string
+  + Path: StringList
+}
+
+class NucleiMatcher {
+  + Type: string
+  + Words: StringList
+}
+}
+
+package "EXP与AI-EXP" {
+class ExpVerifyInfo {
+  + MatchedSteps: int
+  + LastStatus: int
+}
+
+class ExpSpec {
+  + Name: string
+  + Steps: ExpStepList
+}
+
+class ExpStep {
+  + Method: string
+  + Path: string
+  + Validate: Validation
+}
+
+class Validation {
+  + Status: StatusList
+}
+
+class StatusList {
+  + UnmarshalJSON(): error
+}
+
+class ExtractRule {
+  + BodyRegex: StringList
+}
+
+class ExpVerifyConfig {
+  + TargetURL: string
+  + ExpSpec: ExpSpec
+}
+
+class ExpVerifyResult {
+  + Success: bool
+  + Matched: bool
+}
+}
+
+package "MCP / 平台核心" {
+interface MCPConnection {
+  + IsConnected(): bool
+  + GetTools(): AIToolList
+}
+
+interface ChatSession {
+  + GetID(): string
+  + GetMessages(): ChatMessageList
+}
+
+class BaseChatSession {
+  + ID: string
+  + APIType: string
+  + Messages: ChatMessageList
+}
+
+class JADXMCPConnection {
+  + baseURL: string
+  + GetTools(): AIToolList
+}
+
+class JADXChatSession {
+  + GetOrCreateJADXSession(): JADXChatSession
+}
+}
+
+package "AI核心" {
+class ChatMessage {
+  + Role: string
+  + Content: string
+}
+
+interface AIProvider {
+  + Chat(): result
+}
+
+class AITool {
+  + Name: string
+}
+
+class AIToolCall {
+  + Name: string
+}
+
+class OpenAIProvider {
+  + APIKey: string
+  + Model: string
+}
+
+class DeepSeekProvider {
+  + APIKey: string
+  + Model: string
+}
+
+class AnthropicProvider {
+  + APIKey: string
+  + Model: string
+}
+
+class OllamaProvider {
+  + BaseURL: string
+  + Model: string
+}
+}
+
+package "辅助数据" {
+class FingerprintRule {
+  + CMS: string
+  + Keyword: StringList
+}
+
+class FingerprintData {
+  + Fingerprint: FingerprintRuleList
+}
+
+class DictInfo {
+  + Name: string
+  + Path: string
+}
+
+class PayloadVariant {
+  + Variant: string
+}
+}
+
+' 任务与请求
+Task --> SSEMessage : emits
+DirScanReq ..> DictInfo : uses
+WebProbeReq ..> FingerprintData : uses
+PocScanReq ..> POC : scans
+PocScanReq ..> XRPOC : scans
+PocScanReq ..> NucleiPOC : scans
+ExpExecReq ..> ExpSpec : InlineExps
+AIGenPythonFromExpReq --> ExpSpec : Exp
+AIGenPythonFromExpReq ..> ExpVerifyInfo : Verify
+WAFBypassReq ..> PayloadVariant : produces
+
+' POC 规则
+XRPOC *-- XRInfo : info
+XRPOC ..> XRRule : rules
+XRRule *-- XRRequest : request
+NucleiPOC *-- NucleiInfo : info
+NucleiPOC ..> NucleiRequest : requests
+NucleiRequest ..> NucleiMatcher : matchers
+
+' EXP 与 AI-EXP
+ExpSpec *-- ExpStep : steps
+ExpStep *-- Validation : validate
+Validation *-- StatusList : status
+ExpStep ..> ExtractRule : extract
+ExpVerifyConfig --> ExpSpec : ExpSpec
+ExpVerifyConfig ..> ExpVerifyResult : result
+
+' 平台核心
+BaseChatSession <|-- JADXChatSession
+ChatSession <|.. BaseChatSession
+MCPConnection <|.. JADXMCPConnection
+BaseChatSession *-- ChatMessage : messages
+BaseChatSession ..> MCPConnection : uses
+MCPConnection ..> AITool : exports
+
+' AI 核心
+ChatMessage *-- AIToolCall : calls
+AIProvider ..> ChatMessage : input
+AIProvider ..> AITool : tools
+BaseChatSession ..> AIProvider : ai
+AIGenPythonFromExpReq ..> AIProvider : provider
+ExpVerifyConfig ..> AIProvider : verify with provider
+AIProvider <|.. OpenAIProvider
+AIProvider <|.. DeepSeekProvider
+AIProvider <|.. AnthropicProvider
+AIProvider <|.. OllamaProvider
+
+' 辅助数据
+FingerprintData *-- FingerprintRule : fingerprint
+@enduml
+

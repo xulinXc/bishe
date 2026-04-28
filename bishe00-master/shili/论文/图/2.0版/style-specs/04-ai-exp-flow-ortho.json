@@ -1,0 +1,61 @@
+{
+  "title": "AI Python EXP 自动验证闭环流程图（原版风格）",
+  "page_name": "04-AI_EXP闭环2",
+  "page_width": 16.0,
+  "page_height": 15.0,
+  "items": [
+    { "id": "start", "kind": "terminator", "text": "开始", "x": 8.0, "y": 14.0, "w": 1.8, "h": 0.7 },
+    { "id": "input", "kind": "process", "text": "接收 ExpSpec / POC结果 / TargetURL", "x": 8.0, "y": 12.8, "w": 3.8, "h": 0.8 },
+    { "id": "detect", "kind": "process", "text": "DetectVulnCategory\n构造分类提示词", "x": 8.0, "y": 11.4, "w": 3.0, "h": 0.9 },
+    { "id": "gen", "kind": "process", "text": "调用 AIProvider\n生成初始 Python EXP", "x": 8.0, "y": 9.9, "w": 3.0, "h": 0.9 },
+    { "id": "need_verify", "kind": "decision", "text": "启用\nautoVerify?", "x": 8.0, "y": 8.4, "w": 1.5, "h": 1.0 },
+    { "id": "return_plain", "kind": "process", "text": "直接返回脚本", "x": 12.7, "y": 8.4, "w": 2.6, "h": 0.7 },
+    { "id": "build_cfg", "kind": "process", "text": "构建 ExpVerifyConfig", "x": 8.0, "y": 6.9, "w": 3.0, "h": 0.8 },
+    { "id": "save_run", "kind": "process", "text": "保存 exp_attempt_n.py\n执行 python --target --cmd", "x": 8.0, "y": 5.2, "w": 3.4, "h": 0.9 },
+    { "id": "verify_ok", "kind": "decision", "text": "检测到 VULNERABLE\n且成功提取输出?", "x": 8.0, "y": 3.5, "w": 1.8, "h": 1.2 },
+    { "id": "verified", "kind": "process", "text": "返回已验证脚本\n记录 verifyLogs", "x": 12.7, "y": 3.5, "w": 2.8, "h": 0.9 },
+    { "id": "max_retry", "kind": "decision", "text": "达到最大\n重试次数?", "x": 8.0, "y": 1.7, "w": 1.6, "h": 1.0 },
+    { "id": "failure", "kind": "process", "text": "返回失败结果\n保留最后脚本与日志", "x": 12.7, "y": 1.7, "w": 2.8, "h": 0.9 },
+    { "id": "analyze", "kind": "process", "text": "analyzeFailure\n构造 correctionPrompt", "x": 3.5, "y": 1.9, "w": 3.1, "h": 0.9 },
+    { "id": "ai_fix", "kind": "decision", "text": "AI返回\n修正版本?", "x": 3.5, "y": 4.0, "w": 1.5, "h": 1.0 },
+    { "id": "apply_fix", "kind": "process", "text": "requestExpCorrection\n替换 currentCode", "x": 3.5, "y": 5.9, "w": 3.0, "h": 0.9 },
+    { "id": "fallback", "kind": "process", "text": "tryAlternativeFix\n语法修复/提取增强/补齐标记", "x": 1.4, "y": 4.0, "w": 2.7, "h": 0.9 },
+    { "id": "end", "kind": "terminator", "text": "结束", "x": 8.0, "y": 0.5, "w": 1.8, "h": 0.7 },
+
+    { "id": "lbl_yes1", "kind": "rectangle", "text": "是", "x": 9.8, "y": 8.8, "w": 0.5, "h": 0.3 },
+    { "id": "lbl_no1", "kind": "rectangle", "text": "否", "x": 10.1, "y": 8.4, "w": 0.5, "h": 0.3 },
+    { "id": "lbl_yes2", "kind": "rectangle", "text": "是", "x": 10.0, "y": 3.9, "w": 0.5, "h": 0.3 },
+    { "id": "lbl_no2", "kind": "rectangle", "text": "否", "x": 6.7, "y": 2.5, "w": 0.5, "h": 0.3 },
+    { "id": "lbl_yes3", "kind": "rectangle", "text": "是", "x": 10.0, "y": 1.7, "w": 0.5, "h": 0.3 },
+    { "id": "lbl_no3", "kind": "rectangle", "text": "否", "x": 4.8, "y": 4.8, "w": 0.5, "h": 0.3 }
+  ],
+  "lines": [
+    { "points": [[8.0, 13.65], [8.0, 13.2]] },
+    { "points": [[8.0, 12.4], [8.0, 11.85]] },
+    { "points": [[8.0, 10.95], [8.0, 10.35]] },
+    { "points": [[8.0, 9.45], [8.0, 8.9]] },
+
+    { "points": [[8.8, 8.4], [11.3, 8.4]] },
+    { "points": [[14.0, 8.4], [15.0, 8.4], [15.0, 0.95], [8.9, 0.95]] },
+
+    { "points": [[8.0, 7.9], [8.0, 7.3]] },
+    { "points": [[8.0, 6.5], [8.0, 5.75]] },
+    { "points": [[8.0, 4.75], [8.0, 4.2]] },
+    { "points": [[8.9, 3.5], [11.2, 3.5]] },
+    { "points": [[14.1, 3.5], [15.0, 3.5], [15.0, 0.95], [8.9, 0.95]] },
+
+    { "points": [[8.0, 2.8], [8.0, 2.2]] },
+    { "points": [[8.8, 1.7], [11.2, 1.7]] },
+    { "points": [[14.1, 1.7], [15.0, 1.7], [15.0, 0.95], [8.9, 0.95]] },
+
+    { "points": [[7.2, 1.7], [5.2, 1.7]] },
+    { "points": [[3.5, 2.35], [3.5, 3.35]] },
+    { "points": [[4.3, 4.0], [4.9, 4.0]] },
+    { "points": [[2.75, 4.0], [1.1, 4.0]] },
+    { "points": [[3.5, 4.65], [3.5, 5.45]] },
+    { "points": [[5.0, 5.9], [6.0, 5.9], [6.0, 6.6], [8.0, 6.6]] },
+    { "points": [[2.75, 4.0], [0.6, 4.0], [0.6, 6.6], [8.0, 6.6]] },
+
+    { "points": [[8.0, 1.05], [8.0, 0.85]] }
+  ]
+}

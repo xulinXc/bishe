@@ -1,0 +1,109 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+left to right direction
+
+title NeonScan 安全测试工具 - 用例图
+
+' ========== 核心系统 ==========
+package "NeonScan 系统" {
+    
+    package "基础扫描" {
+        usecase "端口扫描" as PORT
+        usecase "目录扫描" as DIR
+        usecase "Web探针" as WEB
+    }
+    
+    package "漏洞检测" {
+        usecase "POC扫描" as POC
+        usecase "EXP验证" as EXP
+        usecase "WAF绕过" as WAF
+    }
+    
+    package "资产收集" {
+        usecase "URL收集" as URL
+        usecase "目录爆破" as FFUF
+        usecase "文件解包" as PACK
+    }
+    
+    package "AI分析" {
+        usecase "AI对话" as AI
+        usecase "AI自动扫描" as AUTO
+    }
+    
+    package "工具集成" {
+        usecase "IDA分析" as IDA
+        usecase "APK分析" as JADX
+    }
+    
+    package "任务管理" {
+        usecase "实时推送" as SSE
+        usecase "文件上传" as UPLOAD
+    }
+}
+
+' ========== 外部系统 ==========
+rectangle "外部服务" {
+    actor "AI服务" as AI_SVC <<external>>
+    actor "MCP服务" as MCP_SVC <<external>>
+    actor "安全工具" as TOOLS <<external>>
+}
+
+' ========== 用户 ==========
+actor "安全测试人员" as USER
+
+' ========== 用户使用功能 ==========
+USER --> PORT
+USER --> DIR
+USER --> WEB
+USER --> POC
+USER --> EXP
+USER --> WAF
+USER --> URL
+USER --> FFUF
+USER --> PACK
+USER --> AI
+USER --> AUTO
+USER --> IDA
+USER --> JADX
+USER --> SSE
+USER --> UPLOAD
+
+' ========== 外部依赖 ==========
+AI --> AI_SVC
+AUTO --> AI_SVC
+IDA --> MCP_SVC
+JADX --> MCP_SVC
+URL --> TOOLS
+FFUF --> TOOLS
+PACK --> TOOLS
+
+' ========== 关键说明 ==========
+note right of POC
+  支持3种格式：
+  - 传统POC
+  - X-Ray
+  - Nuclei
+end note
+
+note right of SSE
+  实时推送技术：
+  - Server-Sent Events
+  - 毫秒级反馈
+  - 贯穿所有扫描
+end note
+
+note right of AI
+  AI功能：
+  - 漏洞分析
+  - 代码审计
+  - 报告生成
+end note
+
+note left of USER
+  本地工具特点：
+  单一用户角色
+  权限完全相同
+end note
+
+@enduml

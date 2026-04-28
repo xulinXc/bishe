@@ -1,0 +1,142 @@
+{
+  "diagram_type": "system_flowchart",
+  "title": "NeonScan 2.0 功能模块框图",
+  "page_name": "00-功能模块框图",
+  "metadata": {
+    "system_name": "NeonScan 2.0",
+    "chapter": "总体设计",
+    "evidence_basis": [
+      "source_code",
+      "frontend_pages"
+    ],
+    "status": "confirmed"
+  },
+  "items": [
+    {
+      "id": "frontend",
+      "kind": "rectangle",
+      "text": "Web 前端\nHTML 页面 + app.js"
+    },
+    {
+      "id": "core_api",
+      "kind": "rectangle",
+      "text": "Go 单体服务\nHTTP Router"
+    },
+    {
+      "id": "task_sse",
+      "kind": "rectangle",
+      "text": "Task 管理 + SSE 推送"
+    },
+    {
+      "id": "scan_modules",
+      "kind": "rectangle",
+      "text": "扫描与利用模块\nPort / Dir / POC / EXP / WebProbe / WAF"
+    },
+    {
+      "id": "ai_modules",
+      "kind": "rectangle",
+      "text": "AI 能力\nAI 分析 / AI 自动扫描 / Python EXP 生成"
+    },
+    {
+      "id": "python_verify",
+      "kind": "rectangle",
+      "text": "Python 运行时\n自动验证 / 失败分析 / AI修正 / 规则修复"
+    },
+    {
+      "id": "shouji_tools",
+      "kind": "rectangle",
+      "text": "Shouji 工具链\nFFUF / URLFinder / Packer-Fuzzer"
+    },
+    {
+      "id": "jadx_mcp",
+      "kind": "rectangle",
+      "text": "JADX MCP\n连接 / 会话 / 流式聊天"
+    },
+    {
+      "id": "resources",
+      "kind": "data_store",
+      "text": "资源层\nuploads / dict / library / shili / web"
+    }
+  ],
+  "connectors": [
+    {
+      "from": "frontend",
+      "to": "core_api",
+      "kind": "data_flow",
+      "label": "HTTP 请求"
+    },
+    {
+      "from": "core_api",
+      "to": "task_sse",
+      "kind": "data_flow",
+      "label": "创建 Task / 订阅 SSE"
+    },
+    {
+      "from": "task_sse",
+      "to": "frontend",
+      "kind": "data_flow",
+      "label": "实时进度 / 结果"
+    },
+    {
+      "from": "core_api",
+      "to": "scan_modules",
+      "kind": "data_flow",
+      "label": "常规扫描调用"
+    },
+    {
+      "from": "core_api",
+      "to": "ai_modules",
+      "kind": "data_flow",
+      "label": "AI 分析与自动扫描"
+    },
+    {
+      "from": "ai_modules",
+      "to": "scan_modules",
+      "kind": "data_flow",
+      "label": "AI 自动编排工具调用"
+    },
+    {
+      "from": "ai_modules",
+      "to": "python_verify",
+      "kind": "data_flow",
+      "label": "自动验证与修正"
+    },
+    {
+      "from": "core_api",
+      "to": "shouji_tools",
+      "kind": "data_flow",
+      "label": "外部工具调用"
+    },
+    {
+      "from": "core_api",
+      "to": "jadx_mcp",
+      "kind": "data_flow",
+      "label": "MCP 会话"
+    },
+    {
+      "from": "core_api",
+      "to": "resources",
+      "kind": "data_flow",
+      "label": "上传 / 静态资源"
+    },
+    {
+      "from": "scan_modules",
+      "to": "resources",
+      "kind": "data_flow",
+      "label": "读取字典 / POC / 指纹"
+    },
+    {
+      "from": "shouji_tools",
+      "to": "resources",
+      "kind": "data_flow",
+      "label": "读取工具输出 / 报告"
+    },
+    {
+      "from": "ai_modules",
+      "to": "resources",
+      "kind": "data_flow",
+      "label": "读取 POC 结果 / 输出 Python EXP"
+    }
+  ]
+}
+

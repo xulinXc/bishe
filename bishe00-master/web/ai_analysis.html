@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 分析 - NeonScan</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .ai-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .analysis-panel {
+      background: rgba(20, 20, 30, 0.63);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .config-section {
+      margin-bottom: 20px;
+      padding: 16px;
+      background: rgba(15, 15, 25, 0.63);
+      border-radius: 8px;
+    }
+    .config-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .form-group label {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .form-group input, .form-group select {
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 280px);
+      min-height: 600px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      background: rgba(20, 20, 30, 0.63);
+      border-radius: 12px;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 229, 255, 0.6) rgba(17, 24, 39, 0.56);
+    }
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(17, 24, 39, 0.56);
+      border-radius: 4px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(0, 229, 255, 0.6), rgba(124, 58, 237, 0.6));
+      border-radius: 4px;
+    }
+    .message {
+      display: flex;
+      gap: 12px;
+      animation: fadeIn 0.3s;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .message.user {
+      flex-direction: row-reverse;
+    }
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .message.user .message-avatar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .message.assistant .message-avatar {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    .message-content {
+      flex: 1;
+      min-width: 0;
+      max-width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
+    .message.user .message-content {
+      background: rgba(102, 126, 234, 0.2);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+    .message.assistant .message-content {
+      background: rgba(245, 87, 108, 0.2);
+      border: 1px solid rgba(245, 87, 108, 0.3);
+    }
+    .message-time {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+    }
+    .chat-actions {
+      padding: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 15, 25, 0.63);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .chat-actions-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .chat-actions-progress {
+      width: 100%;
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .progress-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .progress-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      justify-content: space-between;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: shimmer 2s infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .analyze-button {
+      padding: 12px 24px;
+      min-width: 120px;
+      height: 44px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+    .analyze-button:hover:not(:disabled) {
+      transform: scale(1.05);
+    }
+    .analyze-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .info-text {
+      flex: 1;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a href="ports.html">端口扫描</a>
+      <a href="dirs.html">目录扫描</a>
+      <a href="poc.html">POC 扫描</a>
+      <a href="exp.html">EXP 验证</a>
+      <a href="probe.html">Web 探针</a>
+      <a href="shouji.html">解包与JS信息收集</a>
+      <a href="jadx_mcp.html">JADX MCP</a>
+      <a href="waf.html">绕 WAF</a>
+      <a class="active" href="ai_analysis.html">AI 分析</a>
+      <a href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+
+  <main class="content">
+    <section class="card">
+      <h2>AI 安全分析</h2>
+      
+      <div class="ai-container">
+        <!-- AI配置面板 -->
+        <div class="analysis-panel">
+          <div class="config-section">
+            <h3>AI 配置</h3>
+            <div class="config-form">
+              <div class="form-group">
+                <label>AI 提供商</label>
+                <select id="ai-provider">
+                  <option value="deepseek">DeepSeek</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="anthropic">Anthropic (Claude)</option>
+                  <option value="ollama">Ollama</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>API Key</label>
+                <input type="password" id="ai-api-key" placeholder="请输入 API Key" value="sk-a16f6cb9003a42629d9584197e7f58c8">
+              </div>
+              <div class="form-group">
+                <label>API Base URL</label>
+                <input type="text" id="ai-base-url" placeholder="留空使用默认地址（DeepSeek: https://api.deepseek.com, OpenAI: https://api.openai.com/v1, Anthropic: https://api.anthropic.com, Ollama: http://localhost:11434）">
+              </div>
+              <div class="form-group" id="deepseek-model-group" style="display: none;">
+                <label>DeepSeek 模型</label>
+                <select id="deepseek-model">
+                  <option value="deepseek-chat">deepseek-chat (非思考模式)</option>
+                  <option value="deepseek-reasoner">deepseek-reasoner (思考模式)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>模型名称</label>
+                <input type="text" id="ai-model" placeholder="留空使用默认模型">
+              </div>
+            </div>
+          </div>
+          <!-- 自动扫描配置 -->
+          <div class="config-section" id="auto-scan-config">
+            <h3>自动扫描配置</h3>
+            <div class="config-form">
+              <div class="form-group">
+                <label>目标地址 *</label>
+                <input type="text" id="auto-scan-target" placeholder="请输入IP或域名（如：192.168.1.1 或 example.com）" required>
+              </div>
+              <div class="form-group">
+                <label>端口范围</label>
+                <input type="text" id="auto-scan-ports" placeholder="默认：1-1000,3000-4000,8000-9000" value="1-1000,3000-4000,8000-9000">
+              </div>
+              <div class="form-group">
+                <label>并发数</label>
+                <input type="number" id="auto-scan-concurrency" placeholder="默认：50" value="50" min="1" max="200">
+              </div>
+              <div class="form-group">
+                <label>超时时间(ms)</label>
+                <input type="number" id="auto-scan-timeout" placeholder="默认：3000" value="3000" min="1000" max="30000">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 聊天界面 -->
+        <div class="chat-container">
+          <div class="chat-messages" id="chat-messages">
+            <div class="message assistant">
+              <div class="message-avatar">AI</div>
+              <div class="message-content">
+                你好！我是安全分析助手。我可以分析你的扫描报告数据，提供安全风险评估和修复建议。
+                <br><br>
+                点击下方的"开始分析"按钮，我将从你的扫描报告中提取所有信息并进行深度安全分析。
+              </div>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <div class="chat-actions-row">
+              <button class="analyze-button" id="analyze-button" onclick="startAnalysis()">开始分析</button>
+              <button class="analyze-button" id="auto-scan-button" onclick="startAutoScan()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">自动扫描</button>
+              <button class="analyze-button" id="export-button" onclick="exportAIAnalysisReport()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: none;">导出报告</button>
+              <div class="info-text" id="info-text">将从扫描报告中提取所有信息进行AI安全分析，或点击"自动扫描"从端口扫描开始完整流程</div>
+            </div>
+            <div class="chat-actions-progress" id="progress-container">
+              <!-- 进度条将动态插入这里 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+  <script>
+    // 全局变量
+    let eventSource = null;     // SSE事件源（当前未使用，保留用于扩展）
+    let isAnalyzing = false;    // 标记是否正在进行AI分析，防止重复请求
+    let allAIContent = [];      // 存储所有AI生成的内容（用于导出）
+    let finalAnalysisContent = ''; // 存储最终分析内容（用于替换中间步骤）
+    
+    // 基于时间的进度条系统
+    let scanStartTime = null;        // 扫描开始时间
+    let currentStepName = '';        // 当前步骤名称
+    let currentStepStartTime = null; // 当前步骤开始时间
+    let currentStepProgress = 0;     // 当前步骤进度 (0-100)
+    let currentTotalProgress = 0;    // 总进度 (0-100)
+    let progressAnimationFrame = null; // 进度条动画帧
+    let completedSteps = new Set();  // 已完成的步骤集合
+    
+    // 步骤配置：名称 -> {权重, 预计时间(秒)}
+    const stepConfig = {
+      '端口扫描': { weight: 15, estimatedTime: 30 },
+      'Web探针': { weight: 10, estimatedTime: 15 },
+      'POC扫描': { weight: 40, estimatedTime: 120 },
+      '目录扫描': { weight: 10, estimatedTime: 20 },
+      'AI分析': { weight: 20, estimatedTime: 30 },
+      'EXP生成': { weight: 5, estimatedTime: 15 }
+    };
+    
+    // 总权重
+    const totalWeight = Object.values(stepConfig).reduce((sum, config) => sum + config.weight, 0);
+
+    /**
+     * 从localStorage加载报告数据
+     * @returns {Object|null} 报告数据对象，如果不存在则返回null
+     */
+    function getReportData() {
+      try {
+        const saved = localStorage.getItem('neonscan-report');
+        if (!saved) {
+          return null;
+        }
+        const data = JSON.parse(saved);
+        return data;
+      } catch (e) {
+        console.error('读取报告数据失败:', e);
+        return null;
+      }
+    }
+
+    /**
+     * 添加消息到聊天界面
+     * @param {string} role - 消息角色：'user' 或 'assistant'
+     * @param {string} content - 消息内容
+     * @returns {HTMLElement} 返回消息内容容器的DOM元素（用于后续更新）
+     */
+    function addMessage(role, content) {
+      const messagesDiv = document.getElementById('chat-messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+      
+      const avatar = document.createElement('div');
+      avatar.className = 'message-avatar';
+      avatar.textContent = role === 'user' ? '我' : 'AI';
+      
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+      contentDiv.textContent = content;
+      
+      const timeDiv = document.createElement('div');
+      timeDiv.className = 'message-time';
+      timeDiv.textContent = new Date().toLocaleTimeString();
+      
+      contentDiv.appendChild(timeDiv);
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(contentDiv);
+      messagesDiv.appendChild(messageDiv);
+      
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      return contentDiv;
+    }
+
+    // 存储完整的AI分析内容（用于导出报告）
+    // 在流式接收过程中累积所有内容，最终保存到reportData.aiAnalysis
+    let fullAnalysisContent = '';
+
+    /**
+     * 更新流式消息内容
+     * 在接收AI流式响应时，实时更新消息显示，同时保存完整内容用于导出
+     * @param {HTMLElement} contentDiv - 消息内容容器元素
+     * @param {string} chunk - 新接收到的内容片段
+     */
+    function updateStreamMessage(contentDiv, chunk) {
+      // 保存时间戳元素
+      const timeDiv = contentDiv.querySelector('.message-time');
+      const timeText = timeDiv ? timeDiv.textContent : '';
+      
+      // 获取当前文本内容（不包含时间戳）
+      let currentText = '';
+      for (let node of contentDiv.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          currentText += node.textContent;
+        }
+      }
+      
+      // 添加新内容
+      const newText = currentText + chunk;
+      // 更新完整内容
+      fullAnalysisContent = newText;
+      
+      // 保存到全局变量（用于导出）
+      if (allAIContent.length === 0 || allAIContent[allAIContent.length - 1].step !== 'AI分析') {
+        allAIContent.push({ step: 'AI分析', content: chunk });
+      } else {
+        allAIContent[allAIContent.length - 1].content += chunk;
+      }
+      
+      // 显示导出按钮
+      const exportButton = document.getElementById('export-button');
+      if (exportButton) {
+        exportButton.style.display = 'block';
+      }
+      
+      // 清空并重新设置内容
+      contentDiv.innerHTML = '';
+      contentDiv.appendChild(document.createTextNode(newText));
+      if (timeDiv) {
+        timeDiv.textContent = timeText; // 恢复时间戳文本
+        contentDiv.appendChild(timeDiv);
+      }
+      
+      const messagesDiv = document.getElementById('chat-messages');
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    /**
+     * 开始AI分析
+     * 从扫描报告中提取数据（排除解包与JS信息收集结果），发送给AI进行分析
+     * 支持流式显示分析结果，并将结果保存到报告数据中
+     */
+    async function startAnalysis() {
+      console.log('[AI分析] 开始分析函数被调用');
+      if (isAnalyzing) {
+        console.log('[AI分析] 正在分析中，忽略重复请求');
+        return;
+      }
+
+      // 步骤1：从localStorage读取报告数据
+      console.log('[AI分析] 读取报告数据...');
+      const reportData = getReportData();
+      if (!reportData) {
+        alert('未找到扫描报告数据，请先执行扫描任务');
+        return;
+      }
+
+      // 步骤2：检查是否有可用于分析的数据（排除解包与JS信息收集结果）
+      // 注意：解包与JS信息收集结果不参与AI分析，只检查其他类型的扫描结果
+      let hasData = false;
+      if (reportData.portScan && reportData.portScan.results && reportData.portScan.results.length > 0) hasData = true;
+      if (reportData.dirScan && reportData.dirScan.results && reportData.dirScan.results.length > 0) hasData = true;
+      if (reportData.pocScan && reportData.pocScan.results && reportData.pocScan.results.length > 0) hasData = true;
+      if (reportData.expScan && reportData.expScan.results && reportData.expScan.results.length > 0) hasData = true;
+      if (reportData.webProbe && reportData.webProbe.results && reportData.webProbe.results.length > 0) hasData = true;
+      // 注意：reportData.shoujiScan（解包与JS信息收集结果）不参与AI分析
+
+      if (!hasData) {
+        alert('扫描报告中暂无数据，请先执行扫描任务');
+        return;
+      }
+
+      // 步骤3：获取AI配置参数
+      const provider = document.getElementById('ai-provider').value; // AI提供商
+      const apiKey = document.getElementById('ai-api-key').value.trim(); // API密钥
+      if (!apiKey) {
+        alert('请输入 API Key');
+        return;
+      }
+
+      const baseURL = document.getElementById('ai-base-url').value.trim(); // API基础URL（可选）
+      let model = document.getElementById('ai-model').value.trim(); // 模型名称（可选）
+      
+      // 如果是DeepSeek且选择了模型，使用选择的模型
+      if (provider === 'deepseek') {
+        const deepseekModel = document.getElementById('deepseek-model');
+        if (deepseekModel && !model) {
+          model = deepseekModel.value.trim();
+        }
+      }
+
+      // 步骤4：在聊天界面添加用户消息
+      addMessage('user', '开始分析扫描报告数据...');
+
+      // 步骤5：创建AI消息容器（用于流式显示分析结果）
+      // addMessage返回的是contentDiv（消息内容容器），后续用于更新内容
+      console.log('[AI分析] 创建AI消息容器...');
+      const aiContentDiv = addMessage('assistant', '');
+      if (!aiContentDiv) {
+        console.error('[AI分析] 错误：无法创建AI消息容器');
+        alert('无法创建消息容器，请刷新页面重试');
+        return;
+      }
+      console.log('[AI分析] AI消息容器创建成功:', aiContentDiv);
+      
+      // 重置完整分析内容变量，准备接收新的分析结果
+      fullAnalysisContent = '';
+
+      // 步骤6：更新UI状态（禁用按钮，显示分析中状态）
+      isAnalyzing = true;
+      const analyzeButton = document.getElementById('analyze-button');
+      analyzeButton.disabled = true;
+      analyzeButton.textContent = '分析中...';
+      document.getElementById('info-text').textContent = '正在分析扫描报告数据...';
+
+      try {
+        // 步骤7：准备发送给AI的报告数据（排除解包与JS信息收集结果）
+        // 深拷贝reportData，避免修改原始数据
+        const reportDataForAI = JSON.parse(JSON.stringify(reportData));
+        // 删除解包与JS信息收集结果，确保AI不会收到这部分数据
+        if (reportDataForAI.shoujiScan) {
+          delete reportDataForAI.shoujiScan;
+        }
+        
+        // 步骤8：发送AI分析请求到服务器
+        console.log('[AI分析] 发送请求到服务器...', {
+          provider: provider,
+          hasApiKey: !!apiKey,
+          baseURL: baseURL || '使用默认',
+          model: model || '使用默认',
+          reportDataSize: JSON.stringify(reportDataForAI).length // 数据大小（用于调试）
+        });
+        const response = await fetch('/ai/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            provider: provider,              // AI提供商
+            apiKey: apiKey,                  // API密钥
+            baseURL: baseURL || undefined,   // 基础URL（可选）
+            model: model || undefined,       // 模型名称（可选）
+            reportData: reportDataForAI      // 报告数据（已排除解包与JS信息收集结果）
+          })
+        });
+
+        // 步骤9：检查响应状态
+        console.log('[AI分析] 收到响应，状态码:', response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[AI分析] 请求失败:', response.status, errorText);
+          throw new Error(`请求失败: ${response.status} - ${errorText}`);
+        }
+
+        // 步骤10：读取流式响应（SSE格式）
+        // 服务器返回的是Server-Sent Events (SSE)流式数据
+        console.log('[AI分析] 开始读取流式响应...');
+        const reader = response.body.getReader(); // 获取ReadableStream的reader
+        const decoder = new TextDecoder();        // 用于将字节流解码为文本
+        let buffer = '';                          // 缓冲区，用于存储不完整的行
+
+        // 循环读取流式数据
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break; // 流读取完成
+
+          // 将字节数据解码为文本，并追加到缓冲区
+          buffer += decoder.decode(value, { stream: true });
+          // 按换行符分割，获取完整的行
+          const lines = buffer.split('\n');
+          buffer = lines.pop(); // 保留最后一个可能不完整的行，等待下次数据
+
+          // 处理每一行数据
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              // SSE格式：data: <内容>
+              const data = line.slice(6); // 移除 "data: " 前缀
+              if (data === '[DONE]') {
+                // 服务器发送结束标记
+                console.log('[AI分析] 流式响应完成');
+                continue;
+              }
+              try {
+                // 解析JSON数据
+                const parsed = JSON.parse(data);
+                if (parsed.content) {
+                  // 提取内容片段
+                  let chunk = parsed.content;
+                  try {
+                    // 尝试再次解析（如果content是JSON字符串）
+                    chunk = JSON.parse(chunk);
+                  } catch (e) {
+                    // 如果不是JSON字符串，直接使用原始值
+                  }
+                  // 更新UI显示，同时保存到fullAnalysisContent
+                  updateStreamMessage(aiContentDiv, chunk);
+                }
+              } catch (e) {
+                console.warn('[AI分析] 解析SSE数据失败:', e, line);
+              }
+            }
+          }
+        }
+
+        // 步骤11：处理缓冲区中剩余的数据
+        if (buffer && buffer.startsWith('data: ')) {
+          const data = buffer.slice(6);
+          if (data !== '[DONE]') {
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.content) {
+                let chunk = parsed.content;
+                try {
+                  chunk = JSON.parse(chunk);
+                } catch (e) {}
+                updateStreamMessage(aiContentDiv, chunk);
+              }
+            } catch (e) {}
+          }
+        }
+
+        // 步骤12：分析完成，更新UI并保存结果
+        console.log('[AI分析] 分析完成');
+        document.getElementById('info-text').textContent = '分析完成';
+        
+        // 保存AI分析结果到报告数据（用于报告导出）
+        if (fullAnalysisContent && typeof window.reportData !== 'undefined') {
+          // 方式1：如果window.reportData可用，直接更新（推荐）
+          window.reportData.aiAnalysis = {
+            enabled: true,
+            analysisTime: new Date().toLocaleString(),
+            content: fullAnalysisContent // 完整的AI分析内容
+          };
+          // 保存到localStorage
+          if (typeof window.saveReportData === 'function') {
+            window.saveReportData();
+            console.log('[AI分析] 分析结果已保存到报告数据');
+          }
+        } else if (fullAnalysisContent) {
+          // 方式2：如果window.reportData不可用，直接从localStorage读取并更新（备用方案）
+          try {
+            const saved = localStorage.getItem('neonscan-report');
+            if (saved) {
+              const reportData = JSON.parse(saved);
+              reportData.aiAnalysis = {
+                enabled: true,
+                analysisTime: new Date().toLocaleString(),
+                content: fullAnalysisContent
+              };
+              localStorage.setItem('neonscan-report', JSON.stringify(reportData));
+              console.log('[AI分析] 分析结果已保存到localStorage');
+            }
+          } catch (e) {
+            console.warn('[AI分析] 保存分析结果失败:', e);
+          }
+        }
+      } catch (error) {
+        // 错误处理：在UI中显示错误信息
+        console.error('分析失败:', error);
+        // 确保aiContentDiv存在，如果存在则在消息中显示错误
+        if (aiContentDiv) {
+          const currentText = aiContentDiv.textContent || '';
+          aiContentDiv.textContent = currentText + '\n\n[错误] ' + error.message;
+        } else {
+          // 如果消息容器不存在，使用alert显示错误
+          alert('分析失败: ' + error.message);
+        }
+        document.getElementById('info-text').textContent = '分析失败: ' + error.message;
+      } finally {
+        // 无论成功还是失败，都要重置UI状态
+        isAnalyzing = false;
+        analyzeButton.disabled = false;
+        analyzeButton.textContent = '开始分析';
+      }
+    }
+
+    // 页面加载完成时的初始化日志
+    console.log('AI分析页面脚本已加载');
+
+    /**
+     * 开始自动扫描工作流
+     * 从端口扫描开始，逐步调用各个扫描功能，最终生成AI分析报告
+     */
+    async function startAutoScan() {
+      console.log('[自动扫描] 开始自动扫描工作流');
+      
+      // 检查是否正在分析中
+      if (isAnalyzing) {
+        console.log('[自动扫描] 正在执行中，忽略重复请求');
+        return;
+      }
+
+      // 获取AI配置
+      const provider = document.getElementById('ai-provider').value;
+      const apiKey = document.getElementById('ai-api-key').value.trim();
+      if (!apiKey) {
+        alert('请输入 API Key');
+        return;
+      }
+
+      const baseURL = document.getElementById('ai-base-url').value.trim();
+      let model = document.getElementById('ai-model').value.trim();
+      
+      // 如果是DeepSeek且选择了模型，使用选择的模型
+      if (provider === 'deepseek') {
+        const deepseekModel = document.getElementById('deepseek-model');
+        if (deepseekModel && !model) {
+          model = deepseekModel.value.trim();
+        }
+      }
+
+      // 获取自动扫描配置
+      const target = document.getElementById('auto-scan-target').value.trim();
+      if (!target) {
+        alert('请输入目标地址（IP或域名）');
+        return;
+      }
+
+      const ports = document.getElementById('auto-scan-ports').value.trim() || '1-1000,3000-4000,8000-9000';
+      const concurrency = parseInt(document.getElementById('auto-scan-concurrency').value) || 50;
+      const timeoutMs = parseInt(document.getElementById('auto-scan-timeout').value) || 3000;
+
+      // 显示配置面板（如果隐藏）
+      const configPanel = document.getElementById('auto-scan-config');
+      if (configPanel && configPanel.style.display === 'none') {
+        configPanel.style.display = 'block';
+      }
+
+      // 添加用户消息
+      addMessage('user', `开始自动扫描：${target}，端口范围：${ports}`);
+
+      // 创建AI消息容器
+      const aiContentDiv = addMessage('assistant', '');
+      fullAnalysisContent = '';
+
+      // 更新UI状态
+      isAnalyzing = true;
+      const analyzeButton = document.getElementById('analyze-button');
+      const autoScanButton = document.getElementById('auto-scan-button');
+      analyzeButton.disabled = true;
+      autoScanButton.disabled = true;
+      autoScanButton.textContent = '扫描中...';
+      autoScanButton.onclick = () => stopAutoScan(); // 改为取消功能
+      document.getElementById('info-text').textContent = '正在执行自动化扫描工作流...';
+      
+      // 重置进度变量
+      currentStepProgress = 0;
+      currentTotalProgress = 0;
+      currentStepName = '';
+      completedSteps = {};
+      progressVelocity = 0;
+      lastProgressUpdate = Date.now();
+      
+      // 创建进度条
+      createProgressBar();
+
+      try {
+        // 发送自动扫描请求
+        console.log('[自动扫描] 发送请求到服务器...');
+        
+        // 创建EventSource连接（用于接收SSE消息）
+        const response = await fetch('/ai/auto-scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            target: target,
+            ports: ports,
+            provider: provider,
+            apiKey: apiKey,
+            baseURL: baseURL || undefined,
+            model: model || undefined,
+            config: {
+              concurrency: concurrency,
+              timeoutMs: timeoutMs
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`请求失败: ${response.status} - ${errorText}`);
+        }
+
+        // 读取SSE流式响应
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let taskIdReceived = false;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          // 检查是否应该停止
+          if (!isAnalyzing) {
+            reader.cancel();
+            break;
+          }
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') {
+                continue;
+              }
+              try {
+                const parsed = JSON.parse(data);
+                
+                // 保存任务ID（用于取消）
+                if (parsed.taskId && !taskIdReceived) {
+                  currentAutoScanTaskId = parsed.taskId;
+                  taskIdReceived = true;
+                }
+                
+                // 处理进度消息
+                if (parsed.type === 'progress') {
+                  const message = parsed.data?.message || '';
+                  const percent = parsed.percent || 0;
+                  if (message) {
+                    // 清理消息：去掉百分比部分，如 "端口扫描中: 250/601 (41.6%)" -> "端口扫描中: 250/601"
+                    let cleanMessage = message.replace(/\s*\([\d.]+%\)/g, '').trim();
+                    // 只显示清理后的消息，不显示[0%]等前缀
+                    updateStreamMessage(aiContentDiv, `\n${cleanMessage}\n`);
+                    // 更新进度条（智能解析消息）
+                    updateProgressBar(cleanMessage, percent);
+                  }
+                }
+                
+                // 处理AI分析流式输出
+                if (parsed.type === 'ai-analysis') {
+                  const step = parsed.data?.step || '';
+                  const chunk = parsed.data?.chunk || '';
+                  if (chunk) {
+                    // 处理转义字符
+                    let cleanChunk = chunk;
+                    cleanChunk = cleanChunk.replace(/\\n/g, '\n');
+                    cleanChunk = cleanChunk.replace(/\\"/g, '"');
+                    cleanChunk = cleanChunk.replace(/""/g, '"');
+                    cleanChunk = cleanChunk.replace(/\\t/g, '\t');
+                    cleanChunk = cleanChunk.replace(/\\r/g, '');
+                    
+                    // 只保存最终分析内容，不显示中间步骤
+                    // 只有"最终总结"、"EXP生成"、"Python利用脚本生成"才显示
+                    if (step === '最终总结' || step === 'EXP生成' || step.indexOf('Python利用脚本') !== -1) {
+                      // 查找或创建该步骤的分析消息
+                      let stepDiv = document.getElementById(`ai-step-${step}`);
+                      if (!stepDiv) {
+                        const stepHeader = document.createElement('div');
+                        stepHeader.style.cssText = 'margin-top: 16px; font-weight: bold; color: #667eea;';
+                        stepHeader.textContent = `\n\n📊 ${step}\n`;
+                        aiContentDiv.appendChild(stepHeader);
+                        
+                        stepDiv = document.createElement('div');
+                        stepDiv.id = `ai-step-${step}`;
+                        stepDiv.style.cssText = 'margin-left: 20px; margin-top: 8px; white-space: pre-wrap;';
+                        aiContentDiv.appendChild(stepDiv);
+                      }
+                      stepDiv.textContent += cleanChunk;
+                      
+                      // 保存内容到全局变量（用于导出）
+                      let existingStep = allAIContent.find(s => s.step === step);
+                      if (existingStep) {
+                        existingStep.content += cleanChunk;
+                      } else {
+                        allAIContent.push({ step: step, content: cleanChunk });
+                      }
+                    } else {
+                      // 中间步骤：只保存到最终内容，不显示
+                      finalAnalysisContent += cleanChunk;
+                    }
+                    
+                    // 显示导出按钮
+                    const exportButton = document.getElementById('export-button');
+                    if (exportButton) {
+                      exportButton.style.display = 'block';
+                    }
+                    
+                    // 滚动到底部
+                    const messagesDiv = document.getElementById('chat-messages');
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                  }
+                }
+                
+                // 处理错误消息
+                if (parsed.type === 'error') {
+                  const errorMsg = parsed.data?.message || '发生未知错误';
+                  updateStreamMessage(aiContentDiv, `\n\n❌ 错误: ${errorMsg}`);
+                }
+                
+                // 处理完成消息
+                if (parsed.type === 'complete') {
+                  updateStreamMessage(aiContentDiv, '\n\n✅ 扫描完成！');
+                  // 标记所有步骤为完成
+                  Object.keys(stepConfig).forEach(step => {
+                    if (!completedSteps.has(step)) {
+                      completedSteps.add(step);
+                    }
+                  });
+                  currentStepProgress = 100;
+                  currentTotalProgress = 100;
+                  updateProgressBarVisual(100, 100);
+                }
+                
+                // 处理报告消息
+                if (parsed.type === 'report') {
+                  const reportData = parsed.data;
+                  if (reportData.aiAnalysis) {
+                    // 获取最终分析内容
+                    let finalContent = '';
+                    if (reportData.aiAnalysis.final) {
+                      finalContent = reportData.aiAnalysis.final;
+                    } else if (reportData.aiAnalysis.content) {
+                      finalContent = reportData.aiAnalysis.content;
+                    }
+                    finalContent = finalContent.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/""/g, '"');
+                    
+                    // 清空之前的消息内容，只保留最终分析结果
+                    aiContentDiv.innerHTML = '';
+                    const finalText = document.createTextNode(finalContent);
+                    aiContentDiv.appendChild(finalText);
+                    fullAnalysisContent = finalContent;
+                    
+                    // 保存到全局变量用于导出
+                    allAIContent = [{ step: 'AI安全分析报告', content: finalContent }];
+                    
+                    // 如果有Python利用脚本生成，也保存并提供下载
+                    if (reportData.expPythonGenerated && Array.isArray(reportData.expPythonGenerated.scripts) && reportData.expPythonGenerated.scripts.length > 0) {
+                      const scripts = reportData.expPythonGenerated.scripts;
+                      scripts.forEach((s, i) => {
+                        const n = s?.name || `exploit_${i+1}`;
+                        const py = (s?.python || '').toString();
+                        allAIContent.push({ step: `Python利用脚本: ${n}`, content: py });
+                      });
+
+                      const timeDiv = aiContentDiv.querySelector('.message-time');
+                      const sec = document.createElement('div');
+                      sec.style.cssText = 'margin-top:16px;';
+                      const h = document.createElement('div');
+                      h.style.cssText = 'margin-top: 16px; font-weight: bold; color: #667eea;';
+                      h.textContent = `\n\n🐍 Python利用脚本（${scripts.length}个）：\n`;
+                      sec.appendChild(h);
+
+                      const downloadText = (filename, text) => {
+                        const blob = new Blob([text], { type: 'text/x-python;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      };
+
+                      scripts.forEach((s, i) => {
+                        const n = (s?.name || `exploit_${i+1}`).toString();
+                        const py = (s?.python || '').toString();
+                        const safeName = n.replace(/[^\w.-]+/g,'_');
+
+                        const row = document.createElement('div');
+                        row.style.cssText = 'margin-top:10px; padding:10px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:6px;';
+                        const title = document.createElement('div');
+                        title.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:10px;';
+                        const left = document.createElement('div');
+                        left.textContent = n;
+                        const btn = document.createElement('button');
+                        btn.textContent = '下载 .py';
+                        btn.className = 'btn btn-ghost';
+                        btn.onclick = () => downloadText(`${safeName}.py`, py);
+                        title.appendChild(left);
+                        title.appendChild(btn);
+
+                        const pre = document.createElement('pre');
+                        pre.style.cssText = 'margin-top:10px; white-space:pre-wrap; font-size:12px; line-height:1.5; overflow:auto;';
+                        pre.textContent = py;
+
+                        row.appendChild(title);
+                        row.appendChild(pre);
+                        sec.appendChild(row);
+                      });
+
+                      if (timeDiv) aiContentDiv.insertBefore(sec, timeDiv);
+                      else aiContentDiv.appendChild(sec);
+                    }
+                    
+                    // 报告生成完毕，确保进度条到100%
+                    Object.keys(stepConfig).forEach(step => {
+                      completedSteps.add(step);
+                    });
+                    currentStepProgress = 100;
+                    currentTotalProgress = 100;
+                    updateProgressBarVisual(100, 100);
+                    
+                    // 显示导出按钮
+                    const exportButton = document.getElementById('export-button');
+                    if (exportButton && allAIContent.length > 0) {
+                      exportButton.style.display = 'block';
+                    }
+                    
+                    // 保存报告数据到localStorage（只保存AI分析总结，不保存扫描过程数据）
+                    try {
+                      const saved = localStorage.getItem('neonscan-report');
+                      let reportDataToSave = saved ? JSON.parse(saved) : {};
+                      // 只保存AI分析结果，不保存扫描过程数据
+                      if (reportData.aiAnalysis) {
+                        reportDataToSave.aiAnalysis = reportData.aiAnalysis;
+                      }
+                      // 如果有Python利用脚本生成，也保存
+                      if (reportData.expPythonGenerated) {
+                        reportDataToSave.expPythonGenerated = reportData.expPythonGenerated;
+                      }
+                      reportDataToSave.scanTime = reportData.scanTime || new Date().toLocaleString();
+                      localStorage.setItem('neonscan-report', JSON.stringify(reportDataToSave));
+                      console.log('[自动扫描] 报告数据已保存');
+                    } catch (e) {
+                      console.warn('[自动扫描] 保存报告数据失败:', e);
+                    }
+                  }
+                }
+              } catch (e) {
+                console.warn('[自动扫描] 解析SSE数据失败:', e, line);
+              }
+            }
+          }
+        }
+
+        // 处理剩余缓冲区
+        if (buffer && buffer.startsWith('data: ')) {
+          const data = buffer.slice(6);
+          if (data !== '[DONE]') {
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.type === 'progress' && parsed.data?.message) {
+                // 清理消息：去掉百分比部分
+                let cleanMessage = parsed.data.message.replace(/\s*\([\d.]+%\)/g, '').trim();
+                updateStreamMessage(aiContentDiv, `\n${cleanMessage}`);
+                updateProgressBar(cleanMessage, parsed.percent);
+              }
+            } catch (e) {}
+          }
+        }
+
+        document.getElementById('info-text').textContent = '自动扫描完成';
+      } catch (error) {
+        console.error('[自动扫描] 扫描失败:', error);
+        if (aiContentDiv) {
+          const currentText = aiContentDiv.textContent || '';
+          aiContentDiv.textContent = currentText + '\n\n[错误] ' + error.message;
+        } else {
+          alert('扫描失败: ' + error.message);
+        }
+        document.getElementById('info-text').textContent = '扫描失败: ' + error.message;
+      } finally {
+        isAnalyzing = false;
+        analyzeButton.disabled = false;
+        autoScanButton.disabled = false;
+        autoScanButton.textContent = '自动扫描';
+        autoScanButton.onclick = () => startAutoScan(); // 恢复原功能
+        // 标记所有步骤为完成
+        Object.keys(stepConfig).forEach(step => {
+          completedSteps.add(step);
+        });
+        currentStepProgress = 100;
+        currentTotalProgress = 100;
+        updateProgressBarVisual(100, 100);
+      }
+    }
+
+    // 存储当前任务ID（用于取消）
+    let currentAutoScanTaskId = null;
+
+    /**
+     * 停止自动扫描
+     */
+    async function stopAutoScan() {
+      if (!currentAutoScanTaskId) {
+        return;
+      }
+      
+      try {
+        await fetch(`/task/stop?task=${currentAutoScanTaskId}`, { method: 'POST' });
+        updateStreamMessage(document.querySelector('#chat-messages .message.assistant:last-child .message-content'), '\n\n⏹️ 扫描已取消');
+        isAnalyzing = false;
+        const autoScanButton = document.getElementById('auto-scan-button');
+        autoScanButton.disabled = false;
+        autoScanButton.textContent = '自动扫描';
+        autoScanButton.onclick = () => startAutoScan();
+        document.getElementById('info-text').textContent = '扫描已取消';
+      } catch (error) {
+        console.error('[自动扫描] 取消失败:', error);
+      }
+    }
+
+    /**
+     * 创建进度条（总进度和步骤进度）
+     */
+    function createProgressBar() {
+      const progressContainer = document.getElementById('progress-container');
+      if (!progressContainer) return;
+      
+      progressContainer.innerHTML = '';
+      
+      // 总进度条
+      const totalProgressItem = document.createElement('div');
+      totalProgressItem.className = 'progress-item';
+      totalProgressItem.innerHTML = `
+        <div class="progress-label">
+          <span>总进度</span>
+          <span id="total-progress-percent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="total-progress-fill" style="width: 0%;"></div>
+        </div>
+      `;
+      
+      // 步骤进度条
+      const stepProgressItem = document.createElement('div');
+      stepProgressItem.className = 'progress-item';
+      stepProgressItem.innerHTML = `
+        <div class="progress-label">
+          <span id="step-progress-name">等待开始...</span>
+          <span id="step-progress-percent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="step-progress-fill" style="width: 0%; background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);"></div>
+        </div>
+      `;
+      
+      progressContainer.appendChild(totalProgressItem);
+      progressContainer.appendChild(stepProgressItem);
+      
+      // 重置进度变量
+      scanStartTime = Date.now();
+      currentStepProgress = 0;
+      currentTotalProgress = 0;
+      currentStepName = '';
+      currentStepStartTime = null;
+      completedSteps = new Set();
+      
+      // 启动基于时间的进度动画
+      startProgressAnimation();
+    }
+
+    /**
+     * 启动基于时间的进度条动画
+     */
+    function startProgressAnimation() {
+      if (progressAnimationFrame) {
+        cancelAnimationFrame(progressAnimationFrame);
+      }
+      
+      function animate() {
+        if (!scanStartTime) {
+          progressAnimationFrame = requestAnimationFrame(animate);
+          return;
+        }
+        
+        const now = Date.now();
+        
+        // 计算当前步骤的进度（基于时间）
+        if (currentStepName) {
+          // 如果步骤已完成，保持100%
+          if (completedSteps.has(currentStepName)) {
+            currentStepProgress = 100;
+          } else if (currentStepStartTime) {
+            const stepCfg = stepConfig[currentStepName];
+            if (stepCfg) {
+              const stepElapsed = (now - currentStepStartTime) / 1000; // 步骤耗时（秒）
+              const estimatedTime = stepCfg.estimatedTime;
+              
+              // 基于时间计算步骤进度，平滑增长，不超过99%（等待完成信号）
+              let timeBasedProgress = Math.min(99, (stepElapsed / estimatedTime) * 100);
+              
+              // 对于AI分析，如果超过预计时间，继续缓慢增长（不超过99%）
+              if (currentStepName === 'AI分析' && stepElapsed > estimatedTime) {
+                // 超过预计时间后，每10秒增加5%，但不超过99%
+                const extraTime = stepElapsed - estimatedTime;
+                const extraProgress = Math.min(5, (extraTime / 10) * 5);
+                timeBasedProgress = Math.min(99, 99 + extraProgress);
+              }
+              
+              // 确保进度只增不减（平滑），避免跳跃
+              if (timeBasedProgress > currentStepProgress) {
+                currentStepProgress = Math.min(99, timeBasedProgress);
+              }
+            }
+          } else {
+            // 如果有步骤名称但还没开始计时，开始计时
+            currentStepStartTime = now;
+          }
+        }
+        
+        // 计算总进度
+        let completedWeight = 0;
+        completedSteps.forEach(stepName => {
+          const stepCfg = stepConfig[stepName];
+          if (stepCfg) {
+            completedWeight += stepCfg.weight;
+          }
+        });
+        
+        // 当前步骤的贡献
+        let currentStepWeight = 0;
+        if (currentStepName && !completedSteps.has(currentStepName)) {
+          const stepCfg = stepConfig[currentStepName];
+          if (stepCfg) {
+            currentStepWeight = (currentStepProgress / 100) * stepCfg.weight;
+          }
+        }
+        
+        // 总进度 = (已完成步骤权重 + 当前步骤进度权重) / 总权重 * 100
+        const calculatedTotal = ((completedWeight + currentStepWeight) / totalWeight) * 100;
+        
+        // 确保总进度只增不减（平滑）
+        if (calculatedTotal > currentTotalProgress) {
+          currentTotalProgress = Math.min(99, calculatedTotal);
+        }
+        
+        // 更新显示
+        updateProgressBarVisual(currentStepProgress, currentTotalProgress);
+        
+        progressAnimationFrame = requestAnimationFrame(animate);
+      }
+      
+      animate();
+    }
+
+    /**
+     * 更新进度条视觉显示
+     */
+    function updateProgressBarVisual(stepPercent, totalPercent) {
+      const stepFill = document.getElementById('step-progress-fill');
+      const stepPercentSpan = document.getElementById('step-progress-percent');
+      const stepNameSpan = document.getElementById('step-progress-name');
+      const totalFill = document.getElementById('total-progress-fill');
+      const totalPercentSpan = document.getElementById('total-progress-percent');
+      
+      if (stepFill) {
+        stepFill.style.width = Math.min(100, Math.max(0, stepPercent)) + '%';
+      }
+      if (stepPercentSpan) {
+        stepPercentSpan.textContent = Math.round(stepPercent) + '%';
+      }
+      if (stepNameSpan && currentStepName) {
+        stepNameSpan.textContent = currentStepName;
+      }
+      if (totalFill) {
+        totalFill.style.width = Math.min(100, Math.max(0, totalPercent)) + '%';
+      }
+      if (totalPercentSpan) {
+        totalPercentSpan.textContent = Math.round(totalPercent) + '%';
+      }
+    }
+
+    /**
+     * 解析进度消息，提取步骤类型和进度信息
+     */
+    function parseProgressMessage(message) {
+      const result = {
+        stepName: '',
+        stepProgress: null,
+        stepTotal: null,
+        stepPercent: null,
+        isCompleted: false
+      };
+      
+      // 识别步骤类型（按优先级，先匹配更具体的）
+      if (message.includes('执行AI工具调用') || message.includes('AI调用')) {
+        // 识别AI调用的具体工具
+        if (message.includes('端口扫描')) {
+          result.stepName = '端口扫描';
+        } else if (message.includes('Web探针') || message.includes('web_probe')) {
+          result.stepName = 'Web探针';
+        } else if (message.includes('POC扫描') || message.includes('poc_scan')) {
+          result.stepName = 'POC扫描';
+        } else if (message.includes('目录扫描') || message.includes('dir_scan')) {
+          result.stepName = '目录扫描';
+        }
+      } else if (message.includes('端口扫描')) {
+        result.stepName = '端口扫描';
+        // 提取进度：如 "端口扫描中: 50/1001 (5.0%)"
+        const match = message.match(/端口扫描中:\s*(\d+)\/(\d+)\s*\(([\d.]+)%\)/);
+        if (match) {
+          result.stepProgress = parseInt(match[1]);
+          result.stepTotal = parseInt(match[2]);
+          result.stepPercent = parseFloat(match[3]);
+        } else if (message.includes('端口扫描完成')) {
+          result.isCompleted = true;
+          result.stepPercent = 100;
+        }
+      } else if (message.includes('Web探针') || message.includes('Web服务')) {
+        result.stepName = 'Web探针';
+        // 提取总数：如 "开始Web探针，共 2 个URL..."
+        const totalMatch = message.match(/共\s*(\d+)\s*个/);
+        if (totalMatch) {
+          result.stepTotal = parseInt(totalMatch[1]);
+        }
+        // 提取已发现数量：如 "已发现 2 个"
+        const foundMatch = message.match(/已发现\s*(\d+)\s*个/);
+        if (foundMatch) {
+          result.stepProgress = parseInt(foundMatch[1]);
+          if (result.stepTotal) {
+            result.stepPercent = Math.min(95, (result.stepProgress / result.stepTotal) * 100);
+          } else {
+            // 如果没有总数，假设每发现一个增加10%
+            result.stepPercent = Math.min(90, result.stepProgress * 10);
+          }
+        } else if (message.includes('开始Web探针')) {
+          result.stepPercent = 0; // 从0%开始
+        } else if (message.includes('Web探针完成')) {
+          result.isCompleted = true;
+          result.stepPercent = 100;
+        } else if (message.includes('发现Web服务')) {
+          // 如果只是发现Web服务，使用当前进度（不强制设置）
+          // 让进度条自然增长，不直接跳到50%
+        }
+      } else if (message.includes('POC扫描')) {
+        result.stepName = 'POC扫描';
+        // POC扫描通常比较快，使用简单进度
+        if (message.includes('POC扫描完成') || message.includes('发现') && message.includes('漏洞')) {
+          result.stepPercent = 100;
+          result.isCompleted = true;
+        } else if (message.includes('开始POC扫描') || message.includes('调用POC扫描')) {
+          result.stepPercent = 0; // 从0%开始
+        }
+        // 进行中不设置固定值，让进度自然增长
+      } else if (message.includes('目录扫描')) {
+        result.stepName = '目录扫描';
+        // 提取进度：如 "目录扫描中: 5/16"
+        const match = message.match(/目录扫描中:\s*(\d+)\/(\d+)/);
+        if (match) {
+          result.stepProgress = parseInt(match[1]);
+          result.stepTotal = parseInt(match[2]);
+          result.stepPercent = (result.stepProgress / result.stepTotal) * 100;
+        } else if (message.includes('目录扫描完成')) {
+          result.isCompleted = true;
+          result.stepPercent = 100;
+        } else if (message.includes('发现目录')) {
+          // 动态更新进度
+          const match = message.match(/已发现\s*(\d+)\s*个目录/);
+          if (match) {
+            result.stepProgress = parseInt(match[1]);
+            if (result.stepTotal) {
+              result.stepPercent = Math.min(95, (result.stepProgress / result.stepTotal) * 100);
+            }
+          }
+        }
+      } else if (message.includes('AI正在分析') || message.includes('AI分析') || message.includes('AI正在决策')) {
+        result.stepName = 'AI分析';
+        // 不设置具体进度，由时间系统自动计算
+      } else if (message.includes('EXP生成') || message.includes('生成EXP')) {
+        result.stepName = 'EXP生成';
+        if (message.includes('完成')) {
+          result.isCompleted = true;
+          result.stepPercent = 100;
+        } else if (message.includes('开始') || message.includes('调用')) {
+          result.stepPercent = 0; // 从0%开始
+        }
+        // 进行中不设置固定值
+      }
+      
+      return result;
+    }
+
+    /**
+     * 更新进度条（基于时间，平滑前进）
+     */
+    function updateProgressBar(message, percent) {
+      if (!message) return;
+      
+      const parsed = parseProgressMessage(message);
+      
+      // 如果识别到新的步骤，切换到新步骤
+      if (parsed.stepName && parsed.stepName !== currentStepName) {
+        // 如果之前有步骤在进行，标记为完成
+        if (currentStepName && !completedSteps.has(currentStepName)) {
+          completedSteps.add(currentStepName);
+        }
+        
+        // 切换到新步骤，重置步骤进度为0
+        currentStepName = parsed.stepName;
+        currentStepProgress = 0;
+        currentStepStartTime = Date.now();
+      } else if (parsed.stepName && !currentStepStartTime) {
+        // 如果步骤名称相同但还没开始计时，开始计时
+        currentStepStartTime = Date.now();
+      }
+      
+      // 如果步骤完成，标记为完成
+      if (parsed.isCompleted && parsed.stepName) {
+        completedSteps.add(parsed.stepName);
+        currentStepProgress = 100;
+        // 步骤完成后，等待下一个步骤开始（由parseProgressMessage识别）
+        // 动画函数会保持100%，直到新步骤开始时会重置为0
+      }
+      
+      // 注意：步骤进度和总进度主要由时间动画函数计算，这里只更新步骤状态
+      // 不直接修改进度值，避免跳跃
+    }
+
+    /**
+     * 导出AI分析报告为Markdown格式
+     * 注意：只导出AI分析总结，不包含扫描过程数据
+     */
+    function exportAIAnalysisReport() {
+      if (allAIContent.length === 0) {
+        alert('暂无AI分析内容可导出');
+        return;
+      }
+
+      const lines = [];
+      lines.push('# AI 安全分析报告');
+      lines.push('');
+      lines.push(`生成时间: ${new Date().toLocaleString('zh-CN')}`);
+      lines.push('');
+
+      // 遍历所有AI分析内容
+      allAIContent.forEach((item, index) => {
+        lines.push(`## ${item.step || `步骤 ${index + 1}`}`);
+        lines.push('');
+        
+        // 处理内容，保持格式
+        const contentLines = item.content.split('\n');
+        contentLines.forEach(line => {
+          lines.push(line);
+        });
+        
+        lines.push('');
+      });
+
+      // 生成Markdown文件
+      const content = lines.join('\n');
+      const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ai-analysis-report-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('[导出] AI分析报告已导出');
+    }
+
+    // 监听AI提供商变化，显示/隐藏DeepSeek模型选择
+    document.addEventListener('DOMContentLoaded', function() {
+      const aiProviderSelect = document.getElementById('ai-provider');
+      const deepseekModelGroup = document.getElementById('deepseek-model-group');
+      
+      function updateDeepSeekModelVisibility() {
+        if (aiProviderSelect && deepseekModelGroup) {
+          if (aiProviderSelect.value === 'deepseek') {
+            deepseekModelGroup.style.display = 'flex';
+          } else {
+            deepseekModelGroup.style.display = 'none';
+          }
+        }
+      }
+      
+      if (aiProviderSelect) {
+        aiProviderSelect.addEventListener('change', updateDeepSeekModelVisibility);
+        updateDeepSeekModelVisibility(); // 初始化
+      }
+      
+      const autoScanButton = document.getElementById('auto-scan-button');
+      const configPanel = document.getElementById('auto-scan-config');
+      
+      if (autoScanButton && configPanel) {
+        // 点击按钮时显示配置面板
+        autoScanButton.addEventListener('click', function() {
+          if (configPanel.style.display === 'none') {
+            configPanel.style.display = 'block';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+

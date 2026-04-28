@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>目录扫描 - NeonScan</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a href="ports.html">端口扫描</a>
+      <a class="active" href="dirs.html">目录扫描</a>
+      <a href="poc.html">POC 扫描</a>
+      <a href="exp.html">EXP 验证</a>
+      <a href="probe.html">Web 探针</a>
+      <a href="shouji.html">解包与JS信息收集</a>
+      <a href="jadx_mcp.html">JADX MCP</a>
+      <a href="waf.html">绕 WAF</a>
+      <a href="ai_analysis.html">AI 分析</a>
+      <a href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+  <main class="content">
+    <section class="card">
+      <h2>目录扫描</h2>
+      <div class="grid">
+        <label>基础URL<input id="ds-base" placeholder="https://target.com"/></label>
+        <label>自定义字典文件路径<div class="input-row"><input id="ds-dict" placeholder="C:\\path\\to\\dict.txt（可选，多个用分号分隔）"/><button id="ds-pick" type="button" class="icon-btn">选择</button></div></label>
+        <label>并发<div class="number-input-wrapper"><input id="ds-conc" type="number" value="200"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('ds-conc', 10)">▲</div><div class="number-stepper" onclick="adjustNumber('ds-conc', -10)">▼</div></div></div></label>
+        <label>超时(毫秒)<div class="number-input-wrapper"><input id="ds-timeout" type="number" value="1500"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('ds-timeout', 100)">▲</div><div class="number-stepper" onclick="adjustNumber('ds-timeout', -100)">▼</div></div></div></label>
+      </div>
+      <div class="dict-section">
+        <h3>内置字典选择</h3>
+        <div id="ds-builtin-dicts" class="dict-selector"></div>
+      </div>
+      <div class="file-selection-area" id="ds-file-area" style="display:none">
+        <h4>已选择的字典文件</h4>
+        <div id="ds-dict-list" class="selected-list"></div>
+      </div>
+      <div class="btn-row"><button id="ds-start" class="btn">开始扫描</button> <button id="ds-stop" class="btn btn-ghost">停止</button> <button id="ds-clear" class="btn btn-ghost">清理</button></div>
+      <div class="progress"><div id="ds-bar" class="bar"></div><span id="ds-text">0%</span></div>
+      <div id="ds-out" class="output"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+@startuml
+title NeonScan 2.0 主类图-MCP与JADX
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+package "MCP接口 / JADX" {
+interface "MCPConnection" as MCPConnection {
+  + IsConnected(): bool
+  + GetTools(): List<AITool>
+  + CallTool(name: string, arguments: map<string, any>): tuple<any, error>
+}
+interface "ChatSession" as ChatSession {
+  + GetID(): string
+  + GetAPIKey(): string
+  + GetAPIType(): string
+  + GetMessages(): List<ChatMessage>
+  + GetMCPConnection(): MCPConnection
+  + SetMessages(messages: List<ChatMessage>): void
+  + AddMessage(msg: ChatMessage): void
+  + GetLastActivity(): time.Time
+  + UpdateLastActivity(): void
+}
+class "BaseChatSession" as BaseChatSession {
+  - mu: sync.RWMutex
+  + ID: string
+  + APIKey: string
+  + APIType: string
+  + Messages: List<ChatMessage>
+  + MCPConnection: MCPConnection
+  + CreatedAt: time.Time
+  + LastActivity: time.Time
+  --
+  + GetID(): string
+  + GetAPIKey(): string
+  + GetAPIType(): string
+  + GetMessages(): List<ChatMessage>
+  + GetMCPConnection(): MCPConnection
+  + SetMessages(messages: List<ChatMessage>): void
+  + AddMessage(msg: ChatMessage): void
+  + GetLastActivity(): time.Time
+  + UpdateLastActivity(): void
+}
+class "JADXMCPConnection" as JADXMCPConnection {
+  - mu: sync.RWMutex
+  - baseURL: string
+  - client: *http.Client
+  - connected: bool
+  - tools: List<MCPTool>
+  - lastRequestID: int64
+  - sessionID: string
+  --
+  - initialize(): error
+  - listTools(): tuple<List<MCPTool>, error>
+  + SendMCPRequest(method: string, params: map<string, any>): tuple<map<string, any>, error>
+  + CallTool(toolName: string, arguments: map<string, any>): tuple<any, error>
+  + GetTools(): List<AITool>
+  + IsConnected(): bool
+  + Close(): error
+}
+class "JADXChatSession" as JADXChatSession {
+  + GetOrCreateJADXSession(sessionID: string): *JADXChatSession
+  + CleanupOldJADXSessions(maxAge: time.Duration): void
+}
+class "MCPTool" as MCPTool {
+  + Name: string
+  + Description: string
+  + Parameters: map<string, any>
+}
+}
+
+BaseChatSession <|.. ChatSession : implements
+JADXChatSession <|-- BaseChatSession : embedding/generalization
+JADXMCPConnection <|.. MCPConnection : implements
+BaseChatSession "1" --> "0..1" MCPConnection : MCPConnection
+JADXMCPConnection "1" *-- "0..*" MCPTool : tools cache
+@enduml

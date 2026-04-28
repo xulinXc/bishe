@@ -1,0 +1,80 @@
+@startuml
+title 合并示例：EXP模块 与 AI核心模块 的真实连接
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+package "EXP与AI-EXP" {
+class AIGenPythonFromExpReq {
+  + Provider: string
+  + TargetBaseURL: string
+  + Exp: ExpSpec
+  + Verify: ExpVerifyInfo
+  + AutoVerify: bool
+  + TargetURL: string
+  + MaxRetries: int
+}
+
+class AIGenPythonFromExpBatchReq {
+  + Provider: string
+  + TargetBaseURL: string
+  + ExpPaths: List<string>
+  + InlineExps: List<ExpSpec>
+  + Concurrency: int
+}
+
+class ExpVerifyInfo {
+  + MatchedSteps: int
+  + LastStatus: int
+  + Usage: string
+  + Suggestion: string
+}
+
+class ExpSpec {
+  + Name: string
+  + Steps: List<ExpStep>
+  + ExploitSuggestion: string
+}
+
+class ExpVerifyConfig {
+  + TargetURL: string
+  + ExpSpec: ExpSpec
+  + PythonCode: string
+  + MaxRetries: int
+}
+}
+
+package "AI核心" {
+interface AIProvider {
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): result
+}
+
+class ChatMessage {
+  + Role: string
+  + Content: string
+  + Time: string
+}
+
+class AITool {
+  + Type: string
+  + Name: string
+  + Description: string
+}
+}
+
+AIGenPythonFromExpReq --> ExpSpec : Exp
+AIGenPythonFromExpReq ..> ExpVerifyInfo : optional Verify
+AIGenPythonFromExpBatchReq ..> ExpSpec : InlineExps
+ExpVerifyConfig --> ExpSpec : ExpSpec
+
+' 真实跨图连接
+AIGenPythonFromExpReq ..> AIProvider : provider
+AIGenPythonFromExpBatchReq ..> AIProvider : provider
+ExpVerifyConfig ..> AIProvider : GenerateAndVerifyExp(provider, ...)
+AIProvider ..> ChatMessage : input messages
+AIProvider ..> AITool : available tools
+@enduml
+

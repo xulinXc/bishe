@@ -1,0 +1,69 @@
+@startuml
+title NeonScan 2.0 补充类图-AI核心交互
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+package "主类图引用" {
+class "BaseChatSession\n(见 主类图-MCP与JADX)" as BaseChatSessionRef
+interface "MCPConnection\n(见 主类图-MCP与JADX)" as MCPConnectionRef
+}
+
+package "AI核心" {
+class "ChatMessage" as ChatMessage {
+  + Role: string
+  + Content: string
+  + Time: string
+  + ToolCallID: string
+  + ToolCalls: List<AIToolCall>
+}
+
+interface "AIProvider" as AIProvider {
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+}
+
+interface "ChatStreamProvider" as ChatStreamProvider {
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: *StreamController): tuple<string, List<AIToolCall>, error>
+}
+
+class "AITool" as AITool {
+  + Type: string
+  + Name: string
+  + Description: string
+  + Parameters: map<string, any>
+}
+
+class "AIToolCall" as AIToolCall {
+  + ID: string
+  + Name: string
+  + Arguments: map<string, any>
+}
+
+class "StreamController" as StreamController {
+  - mu: sync.RWMutex
+  - aborted: bool
+  - abortChan: chan struct
+  - messageChan: chan string
+  --
+  + Abort(): void
+  + IsAborted(): bool
+  + Send(message: string): bool
+  + GetMessageChan(): recv-chan string
+  + GetAbortChan(): recv-chan struct
+}
+}
+
+ChatMessage "1" *-- "0..*" AIToolCall : ToolCalls
+AIProvider ..> ChatMessage : input messages
+AIProvider ..> AITool : available tools
+AIProvider ..> AIToolCall : returns tool calls
+ChatStreamProvider ..> StreamController : stream controller
+
+BaseChatSessionRef ..> AIProvider : 使用AI能力
+BaseChatSessionRef *-- ChatMessage : 持有消息
+MCPConnectionRef ..> AITool : 提供工具
+@enduml
+

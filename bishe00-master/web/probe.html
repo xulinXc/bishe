@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web 探针 - NeonScan</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <aside class="sidebar">
+    <div class="logo">NeonScan</div>
+    <nav class="side-links">
+      <a href="ports.html">端口扫描</a>
+      <a href="dirs.html">目录扫描</a>
+      <a href="poc.html">POC 扫描</a>
+      <a href="exp.html">EXP 验证</a>
+      <a class="active" href="probe.html">Web 探针</a>
+      <a href="shouji.html">解包与JS信息收集</a>
+      <a href="jadx_mcp.html">JADX MCP</a>
+      <a href="waf.html">绕 WAF</a>
+      <a href="ai_analysis.html">AI 分析</a>
+      <a href="report.html">扫描报告</a>
+    </nav>
+    <div class="glow"></div>
+  </aside>
+  <main class="content">
+    <section class="card">
+      <h2>Web 探针</h2>
+      <div class="grid">
+        <label>目标 URL（换行分隔）<textarea id="wb-urls" class="compact" style="height:40px; min-height:40px; max-height:120px; overflow-y:auto; resize:vertical" placeholder="https://site1.com\nhttps://site2.com"></textarea></label>
+        <label>并发<div class="number-input-wrapper"><input id="wb-conc" type="number" value="50"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('wb-conc', 5)">▲</div><div class="number-stepper" onclick="adjustNumber('wb-conc', -5)">▼</div></div></div></label>
+        <label>超时（毫秒）<div class="number-input-wrapper"><input id="wb-timeout" type="number" value="3000"/><div class="number-steppers"><div class="number-stepper" onclick="adjustNumber('wb-timeout', 500)">▲</div><div class="number-stepper" onclick="adjustNumber('wb-timeout', -500)">▼</div></div></div></label>
+        <label>自定义请求头（JSON）<textarea id="wb-headers" rows="3" placeholder='{"User-Agent":"NeonScan"}'></textarea><div id="wb-headers-err" class="form-hint error"></div></label>
+        <label>跟随重定向<div class="checkline"><input id="wb-follow" type="checkbox" checked/> <span>允许 30x 跟随</span></div></label>
+        <label>抓取 favicon 指纹<div class="checkline"><input id="wb-favicon" type="checkbox" checked/> <span>计算 /favicon.ico 的 sha1</span></div></label>
+        <label>检查 robots.txt<div class="checkline"><input id="wb-robots" type="checkbox"/> <span>存在则标记</span></div></label>
+      </div>
+      <div class="btn-row"><button id="wb-start" class="btn">开始扫描</button> <button id="wb-stop" class="btn btn-ghost">停止</button> <button id="wb-clear" class="btn btn-ghost">清理</button></div>
+      <div class="progress"><div id="wb-bar" class="bar"></div><span id="wb-text">0%</span></div>
+      <div id="wb-out" class="output"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

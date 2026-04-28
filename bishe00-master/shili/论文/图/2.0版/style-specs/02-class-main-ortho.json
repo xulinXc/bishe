@@ -1,0 +1,681 @@
+{
+  "title": "NeonScan 2.0 主类图（原版风格）",
+  "page_name": "02-主类图-ortho",
+  "page_width": 28.0,
+  "page_height": 18.0,
+  "items": [
+    {
+      "id": "req_box",
+      "kind": "rectangle",
+      "text": "",
+      "x": 7.0,
+      "y": 16.2,
+      "w": 12.4,
+      "h": 2.8,
+      "layer": 0,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "req_title",
+      "kind": "rectangle",
+      "text": "扫描请求",
+      "x": 7.0,
+      "y": 17.249999999999996,
+      "w": 12.4,
+      "h": 0.45,
+      "layer": 1,
+      "char_size": "8 pt"
+    },
+    {
+      "id": "task_box",
+      "kind": "rectangle",
+      "text": "",
+      "x": 2.3,
+      "y": 12.0,
+      "w": 4.1,
+      "h": 4.8,
+      "layer": 0,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "task_title",
+      "kind": "rectangle",
+      "text": "任务管理",
+      "x": 2.3,
+      "y": 14.05,
+      "w": 4.1,
+      "h": 0.45,
+      "layer": 1,
+      "char_size": "8 pt"
+    },
+    {
+      "id": "poc_box",
+      "kind": "rectangle",
+      "text": "",
+      "x": 8.2,
+      "y": 10.8,
+      "w": 8.3,
+      "h": 8.0,
+      "layer": 0,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "poc_title",
+      "kind": "rectangle",
+      "text": "POC规则",
+      "x": 8.2,
+      "y": 14.450000000000001,
+      "w": 8.3,
+      "h": 0.45,
+      "layer": 1,
+      "char_size": "8 pt"
+    },
+    {
+      "id": "exp_box",
+      "kind": "rectangle",
+      "text": "",
+      "x": 16.9,
+      "y": 10.8,
+      "w": 4.7,
+      "h": 8.0,
+      "layer": 0,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "exp_title",
+      "kind": "rectangle",
+      "text": "EXP与AI-EXP",
+      "x": 16.9,
+      "y": 14.450000000000001,
+      "w": 4.7,
+      "h": 0.45,
+      "layer": 1,
+      "char_size": "8 pt"
+    },
+    {
+      "id": "mcp_box",
+      "kind": "rectangle",
+      "text": "",
+      "x": 23.5,
+      "y": 10.8,
+      "w": 8.4,
+      "h": 8.0,
+      "layer": 0,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "mcp_title",
+      "kind": "rectangle",
+      "text": "MCP接口 / JADX",
+      "x": 23.5,
+      "y": 14.450000000000001,
+      "w": 8.4,
+      "h": 0.45,
+      "layer": 1,
+      "char_size": "8 pt"
+    },
+    {
+      "id": "port_req",
+      "kind": "rectangle",
+      "text": "端口扫描请求\n--\nHost\nPorts\nConcurrency\nTimeoutMs\nScanType\nGrabBanner",
+      "x": 2.6,
+      "y": 15.8,
+      "w": 2.3,
+      "h": 1.45,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "dir_req",
+      "kind": "rectangle",
+      "text": "目录扫描请求\n--\nBaseURL\nDictPaths\nBuiltinDicts\nConcurrency\nTimeoutMs",
+      "x": 5.2,
+      "y": 15.8,
+      "w": 2.3,
+      "h": 1.45,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "web_req",
+      "kind": "rectangle",
+      "text": "Web探测请求\n--\nURLs\nConcurrency\nTimeoutMs\nHeaders\nFollowRedirect",
+      "x": 7.8,
+      "y": 15.8,
+      "w": 2.3,
+      "h": 1.45,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "poc_req",
+      "kind": "rectangle",
+      "text": "POC扫描请求\n--\nBaseURL\nPocDir\nPocPaths\nTimeoutMs\nConcurrency",
+      "x": 10.4,
+      "y": 15.8,
+      "w": 2.3,
+      "h": 1.45,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "exp_req",
+      "kind": "rectangle",
+      "text": "EXP执行请求\n--\nBaseURL\nExpDir\nExpPaths\nInlineExps\nConcurrency",
+      "x": 13.0,
+      "y": 15.8,
+      "w": 2.3,
+      "h": 1.45,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "ai_req",
+      "kind": "rectangle",
+      "text": "AI分析请求\n--\nProvider\nAPIKey\nBaseURL\nModel\nReportData",
+      "x": 15.6,
+      "y": 15.8,
+      "w": 2.3,
+      "h": 1.45,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "aiexp_req",
+      "kind": "rectangle",
+      "text": "AI生成EXP请求\n--\nProvider\nTargetBaseURL\nExp\nVerify\nAutoVerify\nTargetURL\nMaxRetries",
+      "x": 18.6,
+      "y": 15.8,
+      "w": 2.3,
+      "h": 1.45,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "aiexp_batch_req",
+      "kind": "rectangle",
+      "text": "AI批量生成EXP请求\n--\nTargetBaseURL\nExpDir\nExpPaths\nInlineExps\nConcurrency",
+      "x": 21.8,
+      "y": 15.8,
+      "w": 2.3,
+      "h": 1.45,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "task_cls",
+      "kind": "rectangle",
+      "text": "任务\n--\nID\nTotal\nDone\nCreated\nch\nstop\n--\nIncDone()\nSend()\nClose()",
+      "x": 2.3,
+      "y": 11.2,
+      "w": 2.2,
+      "h": 2.2,
+      "layer": 2,
+      "char_size": "7 pt"
+    },
+    {
+      "id": "sse_cls",
+      "kind": "rectangle",
+      "text": "SSE消息\n--\nType\nTaskID\nProgress\nPercent\nData",
+      "x": 2.3,
+      "y": 8.5,
+      "w": 2.2,
+      "h": 1.55,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "poc_legacy",
+      "kind": "rectangle",
+      "text": "POC规则\n--\nName\nMethod\nPath\nBody\nHeaders\nMatch",
+      "x": 6.8,
+      "y": 12.8,
+      "w": 2.2,
+      "h": 1.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "xr_poc",
+      "kind": "rectangle",
+      "text": "X射线POC规则\n--\nID\nInfo\nRules\nExpression",
+      "x": 10.0,
+      "y": 12.8,
+      "w": 2.4,
+      "h": 1.5,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "xr_info",
+      "kind": "rectangle",
+      "text": "X射线POC信息\n--\nName\nAuthor\nSeverity\nReference",
+      "x": 13.0,
+      "y": 12.8,
+      "w": 2.2,
+      "h": 1.5,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "xr_rule",
+      "kind": "rectangle",
+      "text": "X射线规则\n--\nRequest\nExpression",
+      "x": 13.0,
+      "y": 10.6,
+      "w": 2.0,
+      "h": 1.2,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "xr_req",
+      "kind": "rectangle",
+      "text": "X射线请求\n--\nMethod\nPath\nBody\nHeaders",
+      "x": 10.0,
+      "y": 10.6,
+      "w": 2.0,
+      "h": 1.3,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "nuclei_poc",
+      "kind": "rectangle",
+      "text": "Nuclei POC规则\n--\nID\nInfo\nRequests\nMatchers\nMatchersCondition",
+      "x": 6.8,
+      "y": 8.4,
+      "w": 2.4,
+      "h": 1.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "nuclei_info",
+      "kind": "rectangle",
+      "text": "Nuclei POC信息\n--\nName\nAuthor\nSeverity\nRisk\nDescription",
+      "x": 10.0,
+      "y": 8.4,
+      "w": 2.4,
+      "h": 1.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "nuclei_req",
+      "kind": "rectangle",
+      "text": "Nuclei请求\n--\nMethod\nPath\nHeaders\nBody\nMatchers",
+      "x": 13.0,
+      "y": 8.4,
+      "w": 2.2,
+      "h": 1.6,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "nuclei_matcher",
+      "kind": "rectangle",
+      "text": "Nuclei匹配器\n--\nType\nPart\nWords\nRegex\nStatus",
+      "x": 10.0,
+      "y": 6.2,
+      "w": 2.3,
+      "h": 1.6,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "nuclei_headers",
+      "kind": "rectangle",
+      "text": "Nuclei请求头\n--\nMapHeaders\nArrayHeaders\n--\n解析YAML()",
+      "x": 13.0,
+      "y": 6.2,
+      "w": 2.2,
+      "h": 1.3,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "exp_spec",
+      "kind": "rectangle",
+      "text": "EXP规范\n--\nName\nSteps\nExploitSuggestion",
+      "x": 18.0,
+      "y": 12.8,
+      "w": 2.2,
+      "h": 1.5,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "exp_step",
+      "kind": "rectangle",
+      "text": "EXP步骤\n--\nMethod\nPath\nBody\nHeaders\nValidate\nExtract",
+      "x": 18.0,
+      "y": 10.5,
+      "w": 2.4,
+      "h": 1.8,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "validation",
+      "kind": "rectangle",
+      "text": "验证规则\n--\nStatus\nBodyContains\nHeaderContains",
+      "x": 18.0,
+      "y": 8.4,
+      "w": 2.2,
+      "h": 1.4,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "extract_rule",
+      "kind": "rectangle",
+      "text": "提取规则\n--\nBodyRegex\nHeaderRegex",
+      "x": 20.6,
+      "y": 8.4,
+      "w": 2.0,
+      "h": 1.2,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "verify_info",
+      "kind": "rectangle",
+      "text": "EXP验证信息\n--\nMatchedSteps\nLastStatus\nUsage\nSuggestion",
+      "x": 20.6,
+      "y": 12.8,
+      "w": 2.2,
+      "h": 1.5,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "verify_cfg",
+      "kind": "rectangle",
+      "text": "EXP验证配置\n--\nTargetURL\nExpSpec\nPythonCode\nCategory\nMaxRetries",
+      "x": 20.6,
+      "y": 10.5,
+      "w": 2.2,
+      "h": 1.6,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "verify_result",
+      "kind": "rectangle",
+      "text": "EXP验证结果\n--\nSuccess\nOutput\nError\nMatched\nCanExtract",
+      "x": 18.0,
+      "y": 6.2,
+      "w": 2.2,
+      "h": 1.6,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "mcp_conn",
+      "kind": "rectangle",
+      "text": "<<interface>> MCP连接\n--\nIsConnected()\nGetTools()\nCallTool()",
+      "x": 22.2,
+      "y": 12.8,
+      "w": 2.4,
+      "h": 1.3,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "chat_session",
+      "kind": "rectangle",
+      "text": "<<interface>> 聊天会话\n--\nGetID()\nGetMessages()\nAddMessage()\nUpdateLastActivity()",
+      "x": 25.4,
+      "y": 12.8,
+      "w": 2.6,
+      "h": 1.5,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "base_chat",
+      "kind": "rectangle",
+      "text": "基础聊天会话\n--\nID\nAPIKey\nAPIType\nMessages\nMCPConnection\nLastActivity\n--\nGetMessages()\nAddMessage()",
+      "x": 22.2,
+      "y": 10.3,
+      "w": 2.6,
+      "h": 1.9,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "jadx_conn",
+      "kind": "rectangle",
+      "text": "JADXMCP连接\n--\nbaseURL\nclient\nconnected\ntools\nsessionID\n--\nGetTools()\nCallTool()\nClose()",
+      "x": 25.8,
+      "y": 10.3,
+      "w": 2.8,
+      "h": 1.9,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "jadx_session",
+      "kind": "rectangle",
+      "text": "JADX聊天会话\n--\nGetOrCreateJADXSession()\nCleanupOldJADXSessions()",
+      "x": 22.2,
+      "y": 7.5,
+      "w": 2.6,
+      "h": 1.3,
+      "layer": 2,
+      "char_size": "6 pt"
+    },
+    {
+      "id": "mcp_tool",
+      "kind": "rectangle",
+      "text": "MCP工具\n--\nName\nDescription\nParameters",
+      "x": 25.8,
+      "y": 7.5,
+      "w": 2.4,
+      "h": 1.2,
+      "layer": 2,
+      "char_size": "6 pt"
+    }
+  ],
+  "routes": [
+    {
+      "from": "port_req",
+      "to": "task_cls",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "dir_req",
+      "to": "task_cls",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "web_req",
+      "to": "task_cls",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "poc_req",
+      "to": "task_cls",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "exp_req",
+      "to": "task_cls",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "ai_req",
+      "to": "task_cls",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "aiexp_req",
+      "to": "exp_spec",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "aiexp_req",
+      "to": "verify_info",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "aiexp_batch_req",
+      "to": "exp_spec",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "aiexp_batch_req",
+      "to": "verify_cfg",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "task_cls",
+      "to": "sse_cls",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "xr_poc",
+      "to": "xr_info",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "xr_poc",
+      "to": "xr_rule",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "xr_rule",
+      "to": "xr_req",
+      "from_side": "left",
+      "to_side": "right"
+    },
+    {
+      "from": "nuclei_poc",
+      "to": "nuclei_info",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "nuclei_poc",
+      "to": "nuclei_req",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "nuclei_poc",
+      "to": "nuclei_matcher",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "nuclei_req",
+      "to": "nuclei_headers",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "poc_legacy",
+      "to": "nuclei_poc",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "nuclei_poc",
+      "to": "sse_cls",
+      "from_side": "left",
+      "to_side": "right"
+    },
+    {
+      "from": "exp_spec",
+      "to": "exp_step",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "exp_step",
+      "to": "validation",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "exp_step",
+      "to": "extract_rule",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "verify_cfg",
+      "to": "exp_spec",
+      "from_side": "left",
+      "to_side": "right"
+    },
+    {
+      "from": "verify_cfg",
+      "to": "verify_result",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "verify_info",
+      "to": "exp_spec",
+      "from_side": "left",
+      "to_side": "right"
+    },
+    {
+      "from": "chat_session",
+      "to": "base_chat",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "mcp_conn",
+      "to": "jadx_conn",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "base_chat",
+      "to": "chat_session",
+      "from_side": "right",
+      "to_side": "left"
+    },
+    {
+      "from": "base_chat",
+      "to": "mcp_conn",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "jadx_session",
+      "to": "base_chat",
+      "from_side": "top",
+      "to_side": "bottom"
+    },
+    {
+      "from": "jadx_conn",
+      "to": "mcp_tool",
+      "from_side": "bottom",
+      "to_side": "top"
+    },
+    {
+      "from": "jadx_conn",
+      "to": "mcp_conn",
+      "from_side": "top",
+      "to_side": "bottom"
+    }
+  ]
+}

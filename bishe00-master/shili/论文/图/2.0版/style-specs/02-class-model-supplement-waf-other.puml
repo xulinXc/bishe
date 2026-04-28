@@ -1,0 +1,58 @@
+@startuml
+title NeonScan 2.0 补充类图-WAF与辅助数据
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+package "主类图引用" {
+class "DirScanReq\n(见 主类图-任务与扫描请求)" as DirScanReqRef
+class "WebProbeReq\n(见 主类图-任务与扫描请求)" as WebProbeReqRef
+}
+
+package "WAF绕过" {
+class "WAFBypassReq" as WAFBypassReq {
+  + BaseURL: string
+  + Path: string
+  + Payloads: List<string>
+  + Methods: List<string>
+  + Strategies: List<string>
+  + Match: string
+  + Concurrency: int
+  + TimeoutMs: int
+  + PayloadType: PayloadType
+}
+
+class "PayloadVariant" as PayloadVariant {
+  + Variant: string
+  + Strategies: List<string>
+}
+}
+
+package "辅助数据" {
+class "FingerprintRule" as FingerprintRule {
+  + CMS: string
+  + Method: string
+  + Location: string
+  + Keyword: List<string>
+}
+
+class "FingerprintData" as FingerprintData {
+  + Fingerprint: List<FingerprintRule>
+}
+
+class "DictInfo" as DictInfo {
+  + Name: string
+  + Path: string
+  + Category: string
+}
+}
+
+WAFBypassReq ..> PayloadVariant : 产生Payload变体
+FingerprintData "1" *-- "0..*" FingerprintRule : Fingerprint
+DirScanReqRef ..> DictInfo : 使用字典信息
+WebProbeReqRef ..> FingerprintData : 使用指纹数据
+@enduml
+

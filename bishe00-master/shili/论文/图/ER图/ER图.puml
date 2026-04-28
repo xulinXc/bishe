@@ -1,0 +1,109 @@
+@startuml
+
+' ========== 实体（矩形）==========
+
+entity Task {
+  * ID
+  --
+  Total
+  Done
+  Created
+}
+
+entity ScanResult {
+  * TaskID
+  --
+  ResultData
+  Type
+  Status
+}
+
+entity POC {
+  * Name
+  --
+  Method
+  Path
+  MatchRules
+}
+
+entity ChatSession {
+  * SessionID
+  --
+  APIKey
+  APIType
+  LastActivity
+}
+
+entity ChatMessage {
+  * Role
+  --
+  Content
+  Time
+  ToolCallID
+}
+
+entity MCPConnection {
+  * SessionID
+  --
+  ConnType
+  BinaryPath
+  Status
+}
+
+' ========== 关系定义 ==========
+
+Task ||--o{ ScanResult : "产生"
+
+POC ||..o{ ScanResult : "检测匹配"
+
+ChatSession ||--o{ ChatMessage : "包含"
+
+ChatSession ||--o| MCPConnection : "关联"
+
+Task }o..o{ ChatSession : "AI分析"
+
+' ========== 注释说明 ==========
+
+note right of Task
+  扫描任务实体
+  ──────────
+  • 端口扫描
+  • 目录扫描
+  • POC扫描
+  • WAF绕过
+  • JS资产收集
+end note
+
+note left of POC
+  POC规则实体
+  ──────────
+  • 传统POC
+  • X-Ray POC
+  • Nuclei POC
+end note
+
+note bottom of ChatSession
+  会话实体
+  ────────
+  • AI安全分析
+  • IDA逆向分析
+  • JADX反编译
+end note
+
+note as Legend
+  ER图符号说明
+  ════════════
+  
+  ||--o{ : 一对多（1:N）
+  }o..o{ : 多对多（M:N）
+  ||--o| : 一对一或零（1:0..1）
+  ||..o{ : 依赖关系
+  
+  存储架构：
+  • 纯内存存储
+  • Go map管理
+  • SSE实时通信
+end note
+
+@enduml
+

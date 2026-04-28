@@ -1,0 +1,78 @@
+@startuml
+title NeonScan 2.0 补充类图-AI Provider实现
+top to bottom direction
+hide empty members
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+package "AI接口" {
+interface "AIProvider" as AIProvider {
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+}
+
+interface "ChatStreamProvider" as ChatStreamProvider {
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: *StreamController): tuple<string, List<AIToolCall>, error>
+}
+}
+
+package "Provider实现" {
+class "OpenAIProvider" as OpenAIProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + MaxTokens: int
+  + Timeout: time.Duration
+  --
+  + SetTimeout(timeout: time.Duration): void
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: *StreamController): tuple<string, List<AIToolCall>, error>
+}
+
+class "DeepSeekProvider" as DeepSeekProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + MaxTokens: int
+  + Timeout: time.Duration
+  --
+  + SetTimeout(timeout: time.Duration): void
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: *StreamController): tuple<string, List<AIToolCall>, error>
+}
+
+class "AnthropicProvider" as AnthropicProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + MaxTokens: int
+  + Timeout: time.Duration
+  --
+  + SetTimeout(timeout: time.Duration): void
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+}
+
+class "OllamaProvider" as OllamaProvider {
+  + APIKey: string
+  + BaseURL: string
+  + Model: string
+  + MaxTokens: int
+  + Timeout: time.Duration
+  --
+  + SetTimeout(timeout: time.Duration): void
+  + Chat(messages: List<ChatMessage>, tools: List<AITool>): tuple<string, List<AIToolCall>, error>
+  + ChatStream(messages: List<ChatMessage>, tools: List<AITool>, controller: *StreamController): tuple<string, List<AIToolCall>, error>
+}
+}
+
+AIProvider <|.. OpenAIProvider
+AIProvider <|.. DeepSeekProvider
+AIProvider <|.. AnthropicProvider
+AIProvider <|.. OllamaProvider
+
+ChatStreamProvider <|.. OpenAIProvider
+ChatStreamProvider <|.. DeepSeekProvider
+ChatStreamProvider <|.. OllamaProvider
+@enduml
+
